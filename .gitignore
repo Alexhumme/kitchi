@@ -1,0 +1,50 @@
+# Entorno y configuración local
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Django
+backend/staticfiles/
+*.log
+local_settings.py
+
+# Bases de datos y volcados
+*.sqlite3
+*.sql
+db_dumps/
+
+# Archivos generados por el motor y resultados temporales
+storage/*
+!storage/.gitkeep
+/tmp/
+temp_*/
+media/
+
+# Fotografías privadas de usuarios (nunca en Git)
+*.jpg
+*.jpeg
+*.png
+!assets/**/*.png
+!docs/**/*.png
+
+# Herramientas
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
