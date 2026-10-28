@@ -1,29 +1,34 @@
 # 03 · Arquitectura — Kitchi Studio
 
-Arquitectura lógica, tecnologías y estructura del repositorio · Versión 1.0
+Arquitectura lógica, tecnologías, estructura del repositorio y calidad técnica · Versión 1.1 · 28 de octubre de 2026
 
-> Decisiones de arquitectura registradas en [`decisions/`](decisions/). No cambiar la arquitectura, el esquema de datos, los contratos de API ni las dependencias principales sin un ADR previo.
+> Decisiones de arquitectura registradas en [`decisions/`](decisions/). No cambiar la arquitectura, el esquema de datos, los contratos de API ni las dependencias principales sin un ADR previo. La adecuación a la rúbrica del curso está en [ADR-004](decisions/ADR-004-academic-requirements.md).
 
 ## Decisión arquitectónica de base
 
-Se conserva Python, Flet, Django y MySQL, con una distinción importante:
+Se conserva Python, Flet, Django REST Framework y MySQL, con una distinción importante:
 
-- **Flet** será la interfaz del prototipo web.
+- **Flet** será la interfaz web móvil.
 - **Django REST Framework** será la API del sistema.
+- **MySQL** será la persistencia relacional.
+- **Pillow** será el motor de composición 2D.
+- **drf-spectacular** generará la documentación OpenAPI/Swagger.
 
 No se recomienda crear dos backends, repartir la lógica entre Flet y Django, ni introducir microservicios o infraestructura compleja. La propuesta se apoya en librerías conocidas y evita una cola de mensajes o un servidor de tareas independiente durante la primera versión.
+
+El PDF del curso no impone un stack concreto; esta arquitectura cumple el requisito de aplicación real con interfaz, API, base de datos y documentación automática. MySQL es el motor elegido; SQLite o PostgreSQL son alternativas válidas si un ADR de contingencia lo justifica.
 
 ## Arquitectura lógica
 
 ### Capa 1 — Interfaz Flet
 
-Editor · Selector de poses · Hub · Login · Descargas
+Editor · Selector de poses · Hub · Login · Descargas · Estados de error y carga
 
 ### Capa 2 — Django REST Framework
 
-API REST · Validación · Autorización · Reglas de negocio · Tareas
+API REST · Validación · Autorización · Reglas de negocio · OpenAPI/Swagger · Tareas
 
-- **MySQL:** usuarios y metadatos.
+- **MySQL:** usuarios, gatos, publicaciones, paquetes y trabajos.
 - **Almacenamiento de archivos:** PNG, referencias y recursos gráficos (sistema de archivos local durante la demostración).
 
 ### Capa 3 — Motor de generación
@@ -38,11 +43,14 @@ Pillow · asyncio · procesos trabajadores · adaptador de IA
 | Flet | Interfaz web móvil y controles del editor |
 | Django | Backend, modelos, autenticación y reglas de negocio |
 | Django REST Framework | API consumida por la interfaz |
+| drf-spectacular | Esquema OpenAPI y Swagger UI |
 | MySQL | Persistencia relacional |
+| python-dotenv | Carga de configuración y secretos desde `.env` |
 | Pillow | Composición, transformación y exportación de imágenes |
 | `asyncio` | Coordinación asíncrona de operaciones de E/S |
 | `concurrent.futures` | Ejecución en hilos o procesos, según el tipo de tarea |
 | Servicio de IA o modelo preentrenado | Transformación de fotografías |
+| pytest | Pruebas unitarias y de integración |
 | Git y repositorio compartido | Integración, revisión y trazabilidad del desarrollo |
 
 ## Diseño integrado del flujo de generación
@@ -66,6 +74,16 @@ Resultado: seis PNG · estado completado o fallido · métricas de ejecución
 
 Detalle de los casos de uso de concurrencia en [08_CONCURRENCY_AND_PARALLELISM.md](08_CONCURRENCY_AND_PARALLELISM.md).
 
+## Documentación de la API
+
+- `GET /api/schema/` — esquema OpenAPI 3 generado por drf-spectacular.
+- `GET /api/docs/` — Swagger UI navegable.
+- `GET /api/health/` — verificación básica de disponibilidad.
+- Los contratos compartidos se versionan en `shared/contracts/`.
+- La API debe poder demostrarse desde Swagger sin depender de la interfaz Flet.
+
+Swagger/OpenAPI es un requisito académico (AR-06 / AC-18) y también una herramienta de trabajo para frontend y backend en paralelo.
+
 ## Condiciones que validan la arquitectura (semana 1)
 
 Ver antes [01_MASTER_PLAN.md](01_MASTER_PLAN.md#condiciones-técnicas-que-deben-verificarse-en-la-semana-1). Los resultados se documentan en [`reports/`](reports/) y las decisiones derivadas en [`decisions/`](decisions/).
@@ -73,7 +91,7 @@ Ver antes [01_MASTER_PLAN.md](01_MASTER_PLAN.md#condiciones-técnicas-que-deben-
 ## Estructura del repositorio
 
 ```
-kitchi-studio/
+kitchi/
 ├── README.md
 ├── AGENTS.md
 ├── .gitignore
@@ -92,10 +110,14 @@ kitchi-studio/
 │   ├── 09_TEST_PLAN.md
 │   ├── 10_DEVELOPMENT_CHECKLIST.md
 │   ├── 11_DEMO_SCRIPT.md
+│   ├── 12_GUIA_PLATAFORMA.md
+│   ├── 13_CUMPLIMIENTO_ACADEMICO.md
+│   ├── Proyecto-final-Programacion-Avanzada-A1-20262.pdf
 │   ├── decisions/
 │   │   ├── ADR-001-frontend-backend.md
 │   │   ├── ADR-002-character-rendering.md
-│   │   └── ADR-003-ai-strategy.md
+│   │   ├── ADR-003-ai-strategy.md
+│   │   └── ADR-004-academic-requirements.md
 │   └── reports/
 ├── frontend/
 │   ├── pyproject.toml
@@ -130,9 +152,36 @@ kitchi-studio/
 
 Notas:
 
-- La estructura es orientativa. No es obligatorio separar cada entidad en una aplicación Django diferente si el código resultante es demasiado pequeño.
+- La estructura es orientativa. No es obligatorio separar cada entidad en una aplicación Django diferente si el código resultante es demasiado pequeño, pero la separación por dominio debe ser clara.
 - `frontend/src/` y `backend/apps/` se adaptan al empaquetado real que se escoja.
 - `docker-compose.yml` queda opcional: no se introduce Docker si el equipo no lo domina o su configuración consume tiempo necesario para las funcionalidades.
+- `backend/requirements.txt` y `frontend/pyproject.toml` deben fijar versiones verificadas antes de la entrega. Si se prefiere, un único `requirements.txt` en la raíz es aceptable para la rúbrica.
+- `storage/` y `.env` nunca se versionan.
+
+## Calidad técnica del código
+
+La rúbrica evalúa código limpio, organizado por módulos o apps, uso correcto del framework, variables descriptivas, separación de lógica y presentación, `.env` para secretos y ausencia de código muerto. Reglas del proyecto:
+
+- Una app Django por dominio (`accounts`, `catalog`, `cats`, `stickers`, `community`, `ai_jobs`).
+- Modelos, serializers, vistas y servicios con responsabilidades separadas.
+- La lógica de composición y la lógica de IA viven en servicios/módulos, no en las vistas.
+- Las vistas orquestan; no contienen reglas de negocio duplicadas del frontend.
+- Nombres descriptivos en español o inglés consistente; no abreviaturas crípticas.
+- Sin código comentado, archivos vacíos ni funciones sin uso al cerrar la entrega.
+- Configuración por variables de entorno; ningún secreto hardcodeado.
+- Pruebas automatizadas para límites, permisos, estados y composición.
+- Revisión cruzada antes de fusionar; ningún integrante fusiona su propio cambio sin revisión.
+- Documentación actualizada y guía viva de la plataforma en cada incremento.
+
+## Repositorio y reproducibilidad
+
+- Repositorio público en GitHub: `https://github.com/Alexhumme/kitchi` (verificar visibilidad antes de la entrega).
+- Mínimo 5 commits descriptivos por integrante, incluida la diseñadora.
+- `.gitignore` sin `.env`, `__pycache__`, bases locales ni temporales.
+- `requirements.txt` o `pyproject.toml` con versiones fijadas.
+- README con instalación y ejecución verificadas desde un clon limpio.
+- Sin secretos, tokens, contraseñas ni fotografías privadas en el historial.
+- La instalación se valida en la tarea P29 y se registra en [`reports/clean-install.md`](reports/clean-install.md).
 
 ## Trabajo paralelo con agentes e integrantes
 
@@ -146,4 +195,4 @@ Reglas operativas:
 - Un único responsable de aprobar migraciones y cambios arquitectónicos.
 - Ningún agente puede sobrescribir silenciosamente cambios de otro integrante.
 
-Para tres integrantes: dividir las tareas por componentes y asignar un responsable de integración. No permitir que varios agentes modifiquen simultáneamente los mismos modelos, contratos o archivos de configuración. La documentación y los contratos compartidos son más importantes que la cantidad de agentes utilizados.
+Para tres integrantes de desarrollo y una diseñadora: dividir las tareas por componentes y asignar un responsable de integración. No permitir que varios agentes modifiquen simultáneamente los mismos modelos, contratos o archivos de configuración. La documentación y los contratos compartidos son más importantes que la cantidad de agentes utilizados. La diseñadora también debe registrar commits propios (recursos, guía visual, documentación) para cumplir la rúbrica.

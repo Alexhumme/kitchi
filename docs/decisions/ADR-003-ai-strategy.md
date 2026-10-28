@@ -6,7 +6,7 @@
 
 ## Contexto y problema
 
-El MVP debe incluir una integración de IA real y demostrable (AC-08) que transforme fotografías de personas o gatos reales en representaciones felinas estilizadas, con presupuesto cero, sin GPU garantizada y sin conocer aún la rúbrica del profesor sobre si se exige un modelo de aprendizaje automático real o basta un servicio externo.
+El MVP debe incluir una integración de IA real y demostrable (AC-08) que transforme fotografías de personas o gatos reales en representaciones felinas estilizadas, con presupuesto cero, sin GPU garantizada y con un plazo de cuatro semanas. El PDF del curso permite usar IA, pero no la exige: la integración es un diferenciador de producto y no puede bloquear las tres funcionalidades mínimas. La decisión sobre el modelo sigue pendiente de la prueba comparativa de los días 28–31 de octubre (tarea P05).
 
 ## Alternativas evaluadas
 
@@ -33,7 +33,7 @@ Completa el criterio de selección del documento [07_AI_INTEGRATION.md](../07_AI
 
 - **Riesgo alto / probabilidad alta:** IA gratuita no disponible o limitada → validación en semana 1 y adaptador de proveedor.
 - Si la prueba consume más tiempo del presupuestado, se congela el alcance de IA y se documenta (regla de retrasos de [01_MASTER_PLAN.md](../01_MASTER_PLAN.md)).
-- Si la rúbrica exige IA central y no hay alternativa viable sin coste, la prueba de concepto de la semana 1 es puerta de decisión: renegociar alcance con el profesor.
+- Si la rúbrica del docente cambia y exige IA central, y no hay alternativa viable sin coste, la prueba de concepto de la semana 1 es puerta de decisión: renegociar alcance con el profesor. Con la rúbrica vigente, la IA es un diferenciador y no bloquea la entrega.
 - Privacidad: registrar en este ADR si el servicio externo recibe fotografías y con qué consentimiento.
 
 ## Plantilla de cierre (rellenar tras la prueba)

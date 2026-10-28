@@ -1,6 +1,6 @@
 # 06 · Sistema visual y motor gráfico 2D — Kitchi Studio
 
-Recursos gráficos, orden de capas y contrato entre diseño y desarrollo · Versión 1.0
+Recursos gráficos, orden de capas y contrato entre diseño y desarrollo · Versión 1.1 · 28 de octubre de 2026
 
 > Esta es la parte central del producto. La aplicación **no** almacena una ilustración diferente para cada combinación: almacena una configuración del personaje y reconstruye su apariencia usando recursos gráficos ([ADR-002](decisions/ADR-002-character-rendering.md)).
 
@@ -102,8 +102,22 @@ Para el prototipo:
 
 > Los 512 × 512 son una decisión de trabajo para la demostración, no una garantía para integraciones futuras. Los requisitos específicos de WhatsApp se revisan solo si más adelante se implementa la importación directa de paquetes (fuera del MVP).
 
+## Criterios de diseño para la evaluación
+
+La rúbrica valora que el producto sea utilizable por alguien que no programa y que la demo fluya sin errores. El diseño debe cubrir:
+
+- **Móvil primero:** el editor y el hub deben funcionar en una pantalla pequeña sin controles inaccesibles.
+- **Consistencia visual:** las 18 opciones comparten proporciones, paleta y estilo; no se mezclan ilustraciones incompatibles.
+- **Estados completos:** cada pantalla debe tener estado de carga, vacío, error y éxito. Un fallo visible y comprensible cuenta para el criterio 2.
+- **Feedback inmediato:** al cambiar una categoría, el personaje se actualiza; al generar, se muestra progreso; al descargar, se confirma el resultado.
+- **Accesibilidad básica:** contraste suficiente, textos legibles, controles con etiquetas y navegación clara.
+- **Recursos originales o con licencia:** no se copian personajes, interfaces ni stickers de terceros sin permiso. La autoría y licencia se registran en `assets/catalog.json`.
+- **Evidencias visuales:** capturas del editor, del paquete y del hub para el README y la sustentación.
+- **Commits de la diseñadora:** los recursos, la guía visual y los ajustes de diseño se registran con commits propios y descriptivos.
+
 ## Estado
 
-- Guía visual y proporciones: **pendiente** de aprobación (tarea P06).
+- Guía visual y proporciones: **pendiente** de aprobación (tarea P06, fecha objetivo 31 de octubre).
 - Primer gato componible: **pendiente** (tarea P04 / día 2 del plan de 72 horas).
-- Formato definitivo de recursos y poses: decisión pendiente con fecha día 4 ([01_MASTER_PLAN.md](01_MASTER_PLAN.md)).
+- Formato definitivo de recursos y poses: decisión pendiente con fecha 2 de noviembre ([01_MASTER_PLAN.md](01_MASTER_PLAN.md)).
+- Capturas para README y sustentación: **pendiente** (tarea P31/P37).

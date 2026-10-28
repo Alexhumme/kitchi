@@ -17,7 +17,7 @@ El editor debe permitir combinar seis campos de personalización con tres opcion
 
 ## Decisión
 
-El personaje se define por un documento de configuración JSON validado contra el catálogo de recursos ([04_DATA_MODEL.md](../04_DATA_MODEL.md)) y el motor compone las capas con Pillow en el orden explícito definido en [06_DESIGN_SYSTEM.md](06_DESIGN_SYSTEM.md). La función principal es determinista. Exportación: PNG RGBA, 512×512, sRGB cuando sea posible.
+El personaje se define por un documento de configuración JSON validado contra el catálogo de recursos ([04_DATA_MODEL.md](../04_DATA_MODEL.md)) y el motor compone las capas con Pillow en el orden explícito definido en [06_DESIGN_SYSTEM.md](../06_DESIGN_SYSTEM.md). La función principal es determinista. Exportación: PNG RGBA, 512×512, sRGB cuando sea posible.
 
 ## Justificación
 
@@ -27,7 +27,7 @@ El personaje se define por un documento de configuración JSON validado contra e
 
 ## Consecuencias y riesgos
 
-- **Riesgo:** inconsistencia de ilustraciones (anclajes, transparencias) → mitigado con el contrato diseño–desarrollo y la hoja de control de recursos ([06_DESIGN_SYSTEM.md](06_DESIGN_SYSTEM.md)).
+- **Riesgo:** inconsistencia de ilustraciones (anclajes, transparencias) → mitigado con el contrato diseño–desarrollo y la hoja de control de recursos ([06_DESIGN_SYSTEM.md](../06_DESIGN_SYSTEM.md)).
 - **Riesgo:** retrasos en las capas → primera entrega: un gato completo con pocas opciones antes que seis categorías incompletas.
 - El orden de capas definitivo y las claves del esquema pueden cambiar según las ilustraciones; la compatibilidad de prendas/accesorios debe validarse con pruebas de composición.
 

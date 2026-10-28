@@ -1,8 +1,10 @@
 # 04 · Modelo de datos — Kitchi Studio
 
-Esquema MySQL, entidades, relaciones y decisiones de modelado · Versión 1.0
+Esquema MySQL, entidades, relaciones y decisiones de modelado · Versión 1.1 · 28 de octubre de 2026
 
 > La base de datos representa usuarios, configuraciones de personajes, paquetes de stickers, publicaciones y trabajos de generación. **No** es necesario crear tablas para cada una de las 729 combinaciones posibles. Los nombres son una propuesta inicial y se normalizan al fijar el esquema definitivo.
+
+> **Motor elegido:** MySQL 8 mediante el ORM de Django. El PDF del curso no impone un motor; MySQL cumple el requisito de persistencia. Si la instalación desde un clon limpio se vuelve un riesgo para la demo, se evaluará SQLite como contingencia mediante un ADR, sin cambiar el modelo de datos ni las migraciones.
 
 ## Entidades principales
 
@@ -14,7 +16,7 @@ Esquema MySQL, entidades, relaciones y decisiones de modelado · Versión 1.0
 | `stickers` | Imágenes individuales | `id`, `pack_id`, `pose_id`, `file_path`, `status` |
 | `poses` | Catálogo de poses | `id`, `code`, `name`, `asset_path`, `is_active` |
 | `catalog_options` | Opciones del editor | `id`, `category`, `code`, `asset_path`, `is_premium`, `is_active` |
-| `publications` | Creaciones compartidas | `id`, `cat_id`, `user_id`, `title`, `description`, `visibility`, `created_at` |
+| `publications` | Creaciones compartidas | `id`, `cat_id`, `user_id`, `title`, `description`, `visibility`, `created_at`, `updated_at` |
 | `generation_jobs` | Trabajos de IA o composición | `id`, `user_id`, `job_type`, `status`, `created_at`, `started_at`, `completed_at`, `error_code` |
 
 ## Relaciones
@@ -102,8 +104,30 @@ Como mínimo:
 - Acceso a publicaciones públicas sin permitir modificar datos de otros usuarios.
 - No confiar en los identificadores enviados por el cliente para autorizar modificaciones.
 
+## Persistencia y evidencia académica
+
+La rúbrica exige datos que persistan y al menos tres funcionalidades completas. El modelo debe permitir demostrar:
+
+- Una cuenta registrada conserva su sesión y sus gatos tras reiniciar la aplicación.
+- Un gato guardado se recupera con la misma configuración y apariencia.
+- Una publicación sigue disponible en el hub después de reiniciar.
+- Un paquete completado conserva la referencia a sus seis stickers y permite descargarlos.
+- Los estados de los trabajos (`pending`, `running`, `completed`, `failed`) se recuperan correctamente.
+- La eliminación de un gato o una publicación respeta las políticas de borrado y no deja registros huérfanos.
+
+Evidencias: pruebas de integración, [`reports/acceptance-run.md`](reports/acceptance-run.md) y [`reports/clean-install.md`](reports/clean-install.md).
+
+## Datos de demostración
+
+- `scripts/seed_demo_data.py` debe ser idempotente y crear cuentas, gatos publicados y paquetes de respaldo sin editar la base de datos a mano.
+- Los datos de demostración no deben contener fotografías privadas ni información personal real.
+- El script debe poder ejecutarse después de las migraciones en un clon limpio.
+- La demostración debe poder reiniciarse a un estado conocido antes de la sustentación.
+
 ## Migraciones y configuración
 
 - El esquema se administra mediante **modelos y migraciones de Django**. No crear manualmente las tablas y después intentar sincronizarlas con los modelos.
-- La configuración de MySQL utiliza **variables de entorno** (ver [`.env.example`](../.env.example)). Se añade un archivo de ejemplo con nombres de variables, sin credenciales reales.
+- La configuración de MySQL utiliza **variables de entorno** (ver [`.env.example`](../.env.example)) y `python-dotenv`. Se añade un archivo de ejemplo con nombres de variables, sin credenciales reales.
 - Las migraciones y cambios de esquema los aprueba un único responsable de integración ([03_ARCHITECTURE.md](03_ARCHITECTURE.md)).
+- Las migraciones deben aplicarse desde cero en un clon limpio. No se modifican migraciones ya aplicadas de forma destructiva.
+- No se versionan bases de datos locales (`*.sqlite3`, `*.sqlite`), volcados (`*.sql`) ni archivos de `storage/`.

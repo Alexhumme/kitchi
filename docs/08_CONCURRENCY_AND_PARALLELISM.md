@@ -1,8 +1,10 @@
 # 08 · Concurrencia, multiprocesamiento y paralelismo — Kitchi Studio
 
-Casos de uso académicos, evidencia y estrategia · Versión 1.0
+Casos de uso académicos, evidencia y estrategia · Versión 1.1 · 28 de octubre de 2026
 
-> Esta sección debe diseñarse en función de los criterios de evaluación del profesor. Como la rúbrica aún no está disponible, la estrategia es demostrar cada concepto por separado y mantener **evidencias reproducibles** en [`reports/`](reports/). La rúbrica obtenida se transcribe aquí antes de cerrar el alcance (tarea P01).
+> La rúbrica vigente del curso (PDF del profesor) **no exige explícitamente** concurrencia, multiprocesamiento ni paralelismo. En Kitchi Studio se conservan como **diferenciadores de calidad técnica** y como evidencia de alcance, pero **no son una puerta de entrega**. Primero se completan las tres funcionalidades mínimas de [`02_REQUIREMENTS.md`](02_REQUIREMENTS.md); después se integran estas pruebas con evidencias reales en [`reports/`](reports/).
+
+> Si el docente confirma que valora estos conceptos, se priorizan en la semana 3. Si no, se presentan como trabajo adicional reproducible, sin inventar resultados.
 
 ## Definiciones (no confundir)
 
@@ -90,15 +92,17 @@ Si la ejecución secuencial tarda 4 s y la paralela 2,5 s, la aceleración obser
 - Crear un proceso por cada tarea sin límite.
 - Lanzar procesos desde una petición web y bloquear la respuesta hasta terminar.
 - Usar `asyncio` para envolver una función intensiva de CPU sin delegar el trabajo.
-- Abrir una conexión MySQL antes de crear procesos y reutilizarla en todos.
+- Abrir una conexión a la base de datos antes de crear procesos y reutilizarla en todos.
 - Utilizar una sola prueba artificial como única evidencia de los requisitos académicos.
 - Medir solamente el tiempo total sin registrar qué se está comparando.
+- Presentar una prueba de `asyncio.sleep` como si fuera una operación real.
 
-## Estrategia de implementación en cinco semanas
+## Estrategia de implementación en cuatro semanas
 
-1. Primero se implementa el **motor secuencial correcto**.
+1. Primero se implementa el **motor secuencial correcto** (semana 3).
 2. Después se añaden las pruebas de concurrencia y paralelismo como **módulos claramente separados**.
 3. Solo cuando estén verificadas se integran con la interfaz.
+4. Si el tiempo aprieta, se documenta lo que no se pudo ejecutar y se prioriza la demo funcional. No se inventan métricas.
 
 Si el profesor exige tecnologías concretas (`threading`, `multiprocessing`, `asyncio`, `ProcessPoolExecutor`, `ThreadPoolExecutor`), esa decisión se ajusta a la rúbrica. No conviene añadir todos estos mecanismos sin necesidad antes de conocer los requisitos.
 

@@ -6,7 +6,7 @@
 
 ## Contexto y problema
 
-El equipo debe decidir cómo repartir interfaz, lógica de negocio y persistencia entre las tecnologías elegidas para el curso (Python), con presupuesto cero y cinco semanas de desarrollo. Existe el riesgo de repartir la lógica entre dos sistemas o crear dos backends.
+El equipo debe decidir cómo repartir interfaz, lógica de negocio y persistencia entre las tecnologías elegidas para el curso (Python), con presupuesto cero y cuatro semanas de desarrollo. Existe el riesgo de repartir la lógica entre dos sistemas o crear dos backends.
 
 ## Alternativas evaluadas
 
@@ -24,6 +24,7 @@ Flet es la interfaz del prototipo web y Django REST Framework es la API del sist
 - Mantiene responsabilidades claras (capa 1 interfaz / capa 2 API / capa 3 motor de generación).
 - La validación y autorización residen en el backend, requisito de las reglas de acceso y de AC-05/AC-14.
 - Se apoya en librerías conocidas y evita colas de mensajes o servidores de tareas en la primera versión.
+- El PDF del curso no impone un stack concreto; Flet + DRF cumple el requisito de aplicación real con interfaz y API ([ADR-004](ADR-004-academic-requirements.md)).
 
 ## Consecuencias y riesgos
 
