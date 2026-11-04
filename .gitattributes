@@ -1,0 +1,10 @@
+# Detecta automáticamente el texto y normaliza los finales de línea a LF en el
+# repositorio, evitando diffs falsos entre Windows y Linux.
+* text=auto
+
+# Binarios: nunca se convierten.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
+*.ico binary
