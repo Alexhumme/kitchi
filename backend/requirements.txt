@@ -1,0 +1,18 @@
+# Entorno del backend — versiones verificadas en Python 3.14.7 (Windows).
+# No actualizar dependencias a mitad del proyecto sin razón concreta (AGENTS.md).
+
+Django==5.2.19
+djangorestframework==3.18.3
+drf-spectacular==0.30.0
+django-cors-headers==4.9.0
+
+# Driver MySQL en Python puro: mysqlclient no publica ruedas para 3.14 y
+# exigiría compilador en Windows (ver ADR-005).
+PyMySQL==1.2.3
+cryptography==50.0.2
+
+pillow==13.0.0
+python-dotenv==1.2.4
+
+pytest==9.2.0
+pytest-django==4.14.0

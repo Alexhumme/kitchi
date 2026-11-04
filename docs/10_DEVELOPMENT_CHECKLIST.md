@@ -9,26 +9,26 @@ Tablero de seguimiento del proyecto · Versión 1.1 · 28 de octubre de 2026
 ## Semana 1 — Fundamentos (28 oct – 3 nov)
 
 - [x] **P01** — Transcribir y analizar la rúbrica académica. *Responsable: todo el equipo · Dependencia: ninguna · Criterio: rúbrica en [`reports/rubric.md`](reports/rubric.md) y requisitos en [`13_CUMPLIMIENTO_ACADEMICO.md`](13_CUMPLIMIENTO_ACADEMICO.md).*
-- [ ] **P02** — Validar Flet, Django REST Framework, MySQL, Pillow y Swagger. *Responsable: A + B · Dependencia: P01 · Criterio: prototipo mínimo Flet ↔ API ↔ MySQL funcionando y `/api/docs/` disponible; registro en `docs/reports/week1-validation.md`.*
-- [ ] **P03** — Definir contratos iniciales de la API. *Responsable: A + B · Dependencia: P02 · Criterio: tabla de endpoints definitiva en [05_API_CONTRACTS.md](05_API_CONTRACTS.md) y contratos en `shared/contracts/`.*
+- [~] **P02** — Validar Flet, Django REST Framework, MySQL, Pillow y Swagger. *Responsable: A + B · Dependencia: P01 · Criterio: prototipo mínimo Flet ↔ API ↔ MySQL funcionando y `/api/docs/` disponible; registro en `docs/reports/week1-validation.md`.* **Lado backend validado (4 nov):** Django ↔ MySQL, migraciones desde cero, Swagger y esquema versionado. Faltan las comprobaciones de Flet y del motor Pillow.
+- [~] **P03** — Definir contratos iniciales de la API. *Responsable: A + B · Dependencia: P02 · Criterio: tabla de endpoints definitiva en [05_API_CONTRACTS.md](05_API_CONTRACTS.md) y contratos en `shared/contracts/`.* **Avance (4 nov):** rutas de cuentas, catálogo, poses y gatos fijadas; autenticación por token y RBAC acordadas en [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md); `shared/contracts/openapi.yaml` publicado. Faltan las rutas de paquetes, IA y comunidad.
 - [ ] **P04** — Probar composición de un gato con capas. *Responsable: C · Dependencia: capas iniciales de la diseñadora · Criterio: un gato visible compuesto con Pillow; tiempos registrados.*
 - [ ] **P05** — Evaluar una opción real de IA. *Responsable: C · Dependencia: ninguna · Criterio: las 7 preguntas de [07_AI_INTEGRATION.md](07_AI_INTEGRATION.md#criterio-para-elegir-el-modelo) respondidas y ADR-003 actualizado.*
 - [ ] **P06** — Aprobar guía de ilustraciones y poses. *Responsable: diseñadora + C · Dependencia: ninguna · Criterio: contrato de diseño de [06_DESIGN_SYSTEM.md](06_DESIGN_SYSTEM.md) con los 7 puntos acordados.*
 - [~] **P07** — Crear repositorio y reglas de integración. *Responsable: todo el equipo · Dependencia: ninguna · Criterio: estructura documental, `AGENTS.md`, repositorio local y remoto; falta verificar visibilidad pública y permisos.*
 - [~] **P31** — Completar README académico. *Responsable: A · Dependencia: P01 · Criterio: nombre, problema, funciones, stack, instalación, uso de IA, integrantes y enlace; faltan nombres e instalación verificada.*
-- [ ] **P32** — Crear `requirements.txt` / `pyproject.toml` con versiones fijadas. *Responsable: B + A · Dependencia: P02 · Criterio: instalación reproducible y sin versiones flotantes.*
-- [ ] **P33** — Publicar Swagger/OpenAPI. *Responsable: B · Dependencia: P03 · Criterio: `/api/schema/` y `/api/docs/` funcionando con drf-spectacular.*
+- [x] **P32** — Crear `requirements.txt` con versiones fijadas. *Responsable: B + A · Dependencia: P02 · Criterio: instalación reproducible y sin versiones flotantes.* **Backend hecho (4 nov):** `backend/requirements.txt` con 10 versiones fijadas en Python 3.14.7. Falta `frontend/pyproject.toml` (Integrante A) y la verificación en clon limpio (P29).
+- [x] **P33** — Publicar Swagger/OpenAPI. *Responsable: B · Dependencia: P03 · Criterio: `/api/schema/` y `/api/docs/` funcionando con drf-spectacular.* **Hecho (4 nov):** ambos responden 200, 9 endpoints, 0 errores y 0 advertencias; esquema en `shared/contracts/openapi.yaml`. Evidencia en `docs/reports/week1-validation.md`.
 - [ ] **P34** — Establecer y auditar la política de commits. *Responsable: integración · Dependencia: P07 · Criterio: mínimo 5 commits descriptivos por integrante y sin secretos; evidencia en `reports/commits-audit.md`.*
 - [x] **P35** — Crear la guía viva de la plataforma. *Responsable: todo el equipo · Dependencia: P01 · Criterio: [`12_GUIA_PLATAFORMA.md`](12_GUIA_PLATAFORMA.md) con esqueleto y reglas de actualización.*
 - [~] **P36** — Actualizar la guía viva por incremento. *Responsable: quien implementa · Dependencia: cada tarea funcional · Criterio: la guía refleja el flujo real, sin funciones inventadas.*
 
 ## Semana 2 — Editor y persistencia (4 – 10 nov)
 
-- [ ] **P08** — Implementar catálogo de recursos. *Responsable: B + diseñadora · Dependencia: P06 · Criterio: `catalog.json` + tabla `catalog_options` coherentes y servidos por `/api/catalog/`.*
+- [~] **P08** — Implementar catálogo de recursos. *Responsable: B + diseñadora · Dependencia: P06 · Criterio: `catalog.json` + tabla `catalog_options` coherentes y servidos por `/api/catalog/`.* **Media:** endpoint y tabla listos; `assets/catalog.json` sigue vacío porque la diseñadora no ha entregado los recursos (P06).
 - [ ] **P09** — Implementar configuración de personajes. *Responsable: C · Dependencia: P08 · Criterio: documento de configuración validado contra catálogo (schema_version).*
 - [ ] **P10** — Implementar editor manual. *Responsable: A · Dependencia: P08, P09 · Criterio: AC-01 y AC-02.*
-- [ ] **P11** — Crear modelos y migraciones. *Responsable: B · Dependencia: P08 · Criterio: esquema de [04_DATA_MODEL.md](04_DATA_MODEL.md) aplicado vía migraciones de Django.*
-- [ ] **P12** — Implementar registro e inicio de sesión. *Responsable: B + A · Dependencia: P03, P11 · Criterio: AC-06.*
+- [x] **P11** — Crear modelos y migraciones. *Responsable: B · Dependencia: P08 · Criterio: esquema de [04_DATA_MODEL.md](04_DATA_MODEL.md) aplicado vía migraciones de Django.* **Hecho (4 nov):** 6 apps con sus modelos, índices, restricciones y estados validados; 19 tablas aplicadas en MySQL 8.0.45. Evidencia: `python manage.py migrate` y `pytest` (30 pruebas).
+- [~] **P12** — Implementar registro e inicio de sesión. *Responsable: B + A · Dependencia: P03, P11 · Criterio: AC-06.* **Backend hecho (4 nov):** registro, login, logout y `me` con token de Django y roles RBAC ([ADR-005](decisions/ADR-005-autenticacion-y-rbac.md)); queda pendiente el AC-06 completo cuando exista la pantalla de Flet (Integrante A).
 - [ ] **P39** — Implementar manejo de errores visible. *Responsable: A + B · Dependencia: P10, P12 · Criterio: estados de carga, vacío, error y éxito en las pantallas principales.*
 
 ## Semana 3 — Stickers, IA y comunidad (11 – 17 nov)

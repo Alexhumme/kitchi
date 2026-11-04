@@ -4,7 +4,7 @@ Aplicación web móvil para crear gatos chibi personalizados mediante ilustracio
 
 **Proyecto final de Programación Avanzada A1 — Universidad de La Guajira · 2026-2**
 
-> **Estado actual:** documentación, arquitectura y plan de 4 semanas listos. El código de la aplicación aún no está implementado; el avance real se sigue en [`docs/10_DEVELOPMENT_CHECKLIST.md`](docs/10_DEVELOPMENT_CHECKLIST.md). No se presentan como terminadas las funciones que solo existen en el diseño.
+> **Estado actual:** el **backend** está implementado y en uso: API REST con Django REST Framework, modelo de datos aplicado sobre MySQL 8, cuentas con token y permisos RBAC, validación contra catálogo y documentación OpenAPI/Swagger (`http://127.0.0.1:8000/api/docs/`). La **interfaz Flet, el motor de composición con Pillow y la integración de IA todavía no existen**; el avance real se sigue en [`docs/10_DEVELOPMENT_CHECKLIST.md`](docs/10_DEVELOPMENT_CHECKLIST.md). No se presentan como terminadas las funciones que solo existen en el diseño.
 
 ## Problema que resuelve
 
@@ -64,12 +64,17 @@ Todos los integrantes deben poder explicar cualquier parte del código durante l
 
 ## Instalación y ejecución
 
-> **Contrato de instalación:** los comandos siguientes se validarán desde un clon limpio en la tarea P29 y se corregirán aquí. Mientras el código no exista, esta sección describe la instalación prevista; no es una promesa de que ya funcione.
+> **Contrato de instalación:** los comandos marcados como **verificados** se ejecutaron en
+> este equipo el 4 de noviembre de 2026 (Python 3.14.7, Windows, MySQL 8.0.45) y dejaron
+> evidencia en [`docs/reports/week1-validation.md`](docs/reports/week1-validation.md). Los
+> comandos del frontend siguen siendo previsión hasta que exista el código de Flet; la
+> validación completa desde un clon limpio corresponde a la tarea P29.
 
 ### Requisitos previos
 
-- Python 3.12 o superior (versión exacta por fijar en P02).
-- MySQL 8 en local (o la alternativa que se apruebe en un ADR).
+- **Python 3.14.7** (versión verificada; `requirements.txt` está fijado sobre ella).
+- MySQL 8 en local (verificado con 8.0.45). Si tu equipo no puede instalarlo, arranca con
+  `DB_ENGINE=sqlite` en `.env` — el modelo de datos y las migraciones no cambian ([ADR-005](docs/decisions/ADR-005-autenticacion-y-rbac.md)).
 - Git.
 - PowerShell, Bash o una terminal equivalente.
 
@@ -106,45 +111,60 @@ Editar `.env` con las credenciales locales de MySQL y la clave de Django. **Nunc
 
 ```bash
 pip install -r backend/requirements.txt
-pip install -e frontend
 ```
 
-Las versiones se fijan en `backend/requirements.txt` y `frontend/pyproject.toml` (tarea P32). Si el equipo opta por un único archivo, se documentará aquí.
+Verificado: 10 paquetes con versiones fijadas en `backend/requirements.txt` (tarea P32). El
+driver de MySQL es **PyMySQL**, porque `mysqlclient` no publica ruedas para Python 3.14 y
+obligaría a instalar un compilador en cada equipo.
+
+El frontend aún no tiene dependencias que instalar: `pip install -e frontend` queda pendiente
+de que exista `frontend/pyproject.toml` (Integrante A).
 
 ### 5. Preparar la base de datos
 
 ```bash
 python backend/manage.py migrate
-python scripts/seed_demo_data.py
 ```
 
-`seed_demo_data.py` debe ser idempotente y no requiere editar la base de datos a mano.
+Verificado contra MySQL 8.0.45: seis migraciones de dominio, 19 tablas creadas. Requiere una
+`.env` con `DB_*` correctos. `scripts/seed_demo_data.py` sigue siendo un marcador sin
+implementar (tarea P26); no lo ejecutes todavía.
 
 ### 6. Iniciar backend y frontend
 
-En una terminal:
-
 ```bash
-python backend/manage.py runserver
+python backend/manage.py runserver 127.0.0.1:8000
 ```
 
-En otra terminal:
+- API: `http://127.0.0.1:8000/api/health/` → `{"status":"ok","database":"up","engine":"mysql"}`
+- Swagger: `http://127.0.0.1:8000/api/docs/` (verificado, 9 endpoints)
+- Esquema OpenAPI: `http://127.0.0.1:8000/api/schema/` (verificado)
+
+La interfaz Flet todavía no existe. Cuando esté, se levantará así:
 
 ```bash
 flet run frontend/src/main.py --web --port 8550
 ```
 
-- API: `http://127.0.0.1:8000/`
-- Swagger: `http://127.0.0.1:8000/api/docs/`
-- Esquema OpenAPI: `http://127.0.0.1:8000/api/schema/`
 - Interfaz: `http://127.0.0.1:8550/`
 
 ### 7. Pruebas y benchmark
 
 ```bash
-pytest
-python scripts/benchmark_generation.py
+cd backend && python -m pytest
 ```
+
+Verificado: 30 pruebas en verde. Usan SQLite en memoria porque el usuario de desarrollo de
+MySQL no tiene privilegio `CREATE DATABASE`; la verificación sobre MySQL real se hace con el
+servidor en marcha:
+
+```bash
+python scripts/check_backend.py
+```
+
+Verificado: 19 comprobaciones del flujo de cuentas, catálogo y gatos, con limpieza automática
+de sus propios datos. `scripts/benchmark_generation.py` sigue siendo un marcador sin
+implementar (tareas P22/P27).
 
 Los comandos exactos y los resultados se registran en [`docs/reports/`](docs/reports/).
 
@@ -155,6 +175,7 @@ La rúbrica permite usar IA, pero exige que cada integrante entienda el código 
 | Herramienta | Para qué se usó | Partes del proyecto |
 | --- | --- | --- |
 | OpenCode (agente de IA) | Análisis del PDF del curso, revisión de la documentación, redacción y adecuación de la rúbrica | `docs/00`–`docs/13`, `README.md`, `AGENTS.md` |
+| Qoder (agente de IA) | Andamiaje del backend: estructura de apps, modelos y migraciones, permisos RBAC, envoltorio de errores, endpoints de cuentas/catálogo/gatos, pruebas pytest y verificación en vivo sobre MySQL. Todo el código se revisó, se ejecutó y se explica en [`docs/12_GUIA_PLATAFORMA.md`](docs/12_GUIA_PLATAFORMA.md) | `backend/`, `shared/contracts/openapi.yaml`, `scripts/check_backend.py`, [ADR-005](docs/decisions/ADR-005-autenticacion-y-rbac.md) |
 | _[Completar por cada integrante]_ | _[Desarrollo, pruebas, revisión, diseño]_ | _[Módulos]_ |
 
 Reglas:
