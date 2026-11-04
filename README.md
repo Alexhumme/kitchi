@@ -56,10 +56,9 @@ Detalle completo en [`docs/03_ARCHITECTURE.md`](docs/03_ARCHITECTURE.md). Decisi
 
 | Nombre | Rol | Responsabilidad principal | Commits |
 | --- | --- | --- | --- |
-| _[Completar]_ | Integrante A — Frontend y UX | Flet, navegación, editor, estados, hub | ≥ 5 |
-| _[Completar]_ | Integrante B — Backend y datos | DRF, MySQL, autenticación, permisos, Swagger | ≥ 5 |
-| _[Completar]_ | Integrante C — Motor gráfico, IA y programación avanzada | Pillow, exportación, IA, benchmark | ≥ 5 |
-| _[Completar]_ | Diseñadora gráfica | Guía visual, personajes, poses, accesorios, documentación visual | ≥ 5 |
+| Martin Solano | Integrante A — Frontend y UX | Flet, navegación, editor, estados, hub | ≥ 5 |
+| Alex Valdelamar | Integrante B — Backend y datos | DRF, MySQL, autenticación, permisos, Swagger | ≥ 5 |
+| Aixa Claret Gutierrez | Integrante C — | Guía visual, personajes, poses, accesorios, documentación visual | ≥ 5 |
 
 Todos los integrantes deben poder explicar cualquier parte del código durante la sustentación, no solo su módulo.
 
