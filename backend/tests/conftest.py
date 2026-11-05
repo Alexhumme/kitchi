@@ -62,3 +62,15 @@ def admin_client(user):
 @pytest.fixture
 def anon_client():
     return APIClient()
+
+
+@pytest.fixture
+def console_superuser(db):
+    return User.objects.create_superuser(username="staff", email="staff@example.test", password="Contrasena123!")
+
+
+@pytest.fixture
+def console_client(client, console_superuser):
+    """Cliente de la consola `/admin/`; no confundir con `admin_client`, que es el rol RBAC."""
+    client.force_login(console_superuser)
+    return client

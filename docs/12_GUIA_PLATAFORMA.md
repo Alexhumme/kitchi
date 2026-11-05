@@ -1,6 +1,6 @@
 # 12 · Guía viva de la plataforma — Kitchi Studio
 
-Documento de estudio para la sustentación · Versión 0.2 · 4 de noviembre de 2026
+Documento de estudio para la sustentación · Versión 0.3 · 4 de noviembre de 2026
 
 > **Estado:** documento vivo, casi vacío a propósito. Se completará **por incrementos** a medida que la aplicación se implemente. No describe funcionalidades que aún no existen.
 >
@@ -82,7 +82,9 @@ Cómo se arranca y cómo se comprueba:
 | Instalar dependencias | `pip install -r backend/requirements.txt` | Versiones fijadas; PyMySQL como driver porque `mysqlclient` no tiene ruedas para Python 3.14 |
 | Crear el esquema | `python manage.py migrate` | Aplica las 6 migraciones de dominio sobre MySQL (o SQLite con `DB_ENGINE=sqlite`) |
 | Levantar la API | `python manage.py runserver` | Sirve `/api/…`, `/api/schema/` y `/api/docs/` |
-| Pruebas automatizadas | `python -m pytest` (en `backend/`) | 30 pruebas sobre SQLite en memoria |
+| Crear una cuenta de consola | `python manage.py createsuperuser` | Usuario con `is_staff` para entrar en `/admin/` |
+| Consola de administración | `http://127.0.0.1:8000/admin/` | Gestión de cuentas, catálogo, poses, gatos, paquetes, publicaciones y trabajos |
+| Pruebas automatizadas | `python -m pytest` (en `backend/`) | 47 pruebas sobre SQLite en memoria |
 | Verificación en vivo | `python scripts/check_backend.py` | 19 comprobaciones contra el servidor en marcha y MySQL real; autolimpia sus datos |
 
 Puntos de diseño que conviene saber explicar:
@@ -97,6 +99,38 @@ Puntos de diseño que conviene saber explicar:
   `CAT_LIMIT_REACHED` o `INVALID_CONFIGURATION`.
 - **El límite de tres gatos se aplica en el backend** con `select_for_update` sobre la fila del
   usuario, para que dos peticiones simultáneas no lo excedan.
+
+### 5.1 La consola de administración (`/admin/`)
+
+Es la pantalla desde la que el equipo administra el contenido; no sustituye a la API, usa las
+mismas reglas de negocio. Nueve registros, uno por entidad (`apps/*/admin.py`):
+
+| Qué se gestiona | Cómo está configurado |
+| --- | --- |
+| Cuentas y perfiles | El perfil RBAC (`role`, `premium`) se edita dentro de la pantalla del usuario, no en otra vista |
+| Opciones del catálogo y poses | Filtros por categoría y `z_order`/`is_premium`/`is_active` editables desde el listado; acciones para activar o desactivar en lote |
+| Gatos | El formulario valida `configuration` contra `validate_configuration` (la misma función de la API); `schema_version` es de solo lectura y se sincroniza al guardar |
+| Paquetes y stickers | El estado del paquete es de solo lectura: solo cambia con las acciones `poner en ejecución`, `marcar completados`, `marcar fallidos` y `volver a la cola` |
+| Publicaciones | Filtro por visibilidad y acciones para publicar o retirar del hub |
+| Trabajos de generación | Las acciones llaman a `mark_started`/`mark_completed`/`mark_failed` del modelo; `ADMIN_MANUAL` queda registrado como causa del fallo |
+
+Dos decisiones que conviene poder explicar:
+
+- **La validación no se duplica.** `apps/cats/admin.py` importa el servicio del catálogo y
+  convierte el `APIError` en `ValidationError` del formulario, así que la consola rechaza exactamente
+  lo que rechazaría `/api/cats/`, incluidas las opciones premium sin el plan.
+- **Las acciones de estado respetan la máquina de estados.** Aplican `transition_to` entidad por
+  entidad; las transiciones ilegales se cuentan y se informan como aviso, nunca se fuerzan escribiendo
+  el campo. Por eso `status` y `error_code` son de solo lectura en el formulario.
+
+Una pose con stickers generados no se puede borrar (`PROTECT`): la propia consola muestra el error y
+la alternativa es desactivarla.
+
+**Dos puertas distintas.** La consola protege a Django con `is_staff` y la sesión del navegador; la
+API protege cada recurso con el rol del perfil (`member`/`admin`) y el token. Una cuenta creada con
+`createsuperuser` entra en `/admin/` pero sigue siendo `member` para la API: para que un administrador
+de contenido también escriba catálogo por REST hay que poner `role = admin` en su perfil desde la
+misma consola.
 
 ## 6. Modelo de datos
 
@@ -156,7 +190,10 @@ Implementado y en uso (backend):
 - Documentación OpenAPI/Swagger servida y versionada en `shared/contracts/openapi.yaml`.
 - Esquema de datos completo con migraciones aplicadas sobre MySQL 8.
 - Permisos RBAC por rol y por recurso; manejo de errores con formato único.
-- Pruebas automatizadas (30) y verificación en vivo contra MySQL (19 comprobaciones).
+- Consola `/admin/` con las nueve entidades, validación de catálogo en el formulario de gatos y
+  acciones de estado que usan la máquina de estados.
+- Pruebas automatizadas (47) y verificación en vivo contra MySQL (19 comprobaciones de API y las
+  nueve pantallas de la consola abiertas sobre la base de desarrollo).
 
 Pendiente de implementar (existe solo el modelo de datos o ni eso):
 
@@ -169,7 +206,8 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 - **Concurrencia y paralelismo:** nada implementado (P20–P22).
 - **Catálogo real vacío:** `assets/catalog.json` no tiene opciones mientras la diseñadora prepara
   los recursos, así que `/api/catalog/` responde `categories: {}` y el guardado de gatos fallará
-  hasta sembrar el catálogo (P06/P08). Las pruebas inyectan sus propias opciones.
+  hasta sembrar el catálogo (P06/P08). La consola `/admin/` ya permite cargar opciones y poses a
+  mano, y las pruebas inyectan las suyas.
 - **Modo invitado:** decidido como almacenamiento local del navegador; no implementado.
 - **Tokens que no caducan:** el token de Django no tiene expiración; aceptable para un
   prototipo local y registrado como riesgo en [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md).
@@ -199,3 +237,4 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 | --- | --- | --- | --- |
 | 2026-10-28 | Estructura inicial | Se creó el esqueleto y las reglas de actualización; aún no hay funcionalidades implementadas | Equipo |
 | 2026-11-04 | Base del backend (P02, P11, P12, P32, P33) | Arquitectura real con las siete apps, modelo de datos aplicado en MySQL, autenticación por token, permisos RBAC, errores normalizados, Swagger y cómo arrancar y verificar cada pieza; limitaciones del lado frontend, motor e IA | Alex Valdelamar |
+| 2026-11-04 | Consola de administración (`/admin/`) | Sección 5.1: las nueve entidades registradas, validación de catálogo compartida con la API, acciones de estado sobre la máquina de estados, protección de las poses en uso y el alta de la cuenta de consola con `createsuperuser` | Alex Valdelamar |

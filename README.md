@@ -4,7 +4,7 @@ Aplicación web móvil para crear gatos chibi personalizados mediante ilustracio
 
 **Proyecto final de Programación Avanzada A1 — Universidad de La Guajira · 2026-2**
 
-> **Estado actual:** el **backend** está implementado y en uso: API REST con Django REST Framework, modelo de datos aplicado sobre MySQL 8, cuentas con token y permisos RBAC, validación contra catálogo y documentación OpenAPI/Swagger (`http://127.0.0.1:8000/api/docs/`). La **interfaz Flet, el motor de composición con Pillow y la integración de IA todavía no existen**; el avance real se sigue en [`docs/10_DEVELOPMENT_CHECKLIST.md`](docs/10_DEVELOPMENT_CHECKLIST.md). No se presentan como terminadas las funciones que solo existen en el diseño.
+> **Estado actual:** el **backend** está implementado y en uso: API REST con Django REST Framework, modelo de datos aplicado sobre MySQL 8, cuentas con token y permisos RBAC, validación contra catálogo, consola de administración (`http://127.0.0.1:8000/admin/`) y documentación OpenAPI/Swagger (`http://127.0.0.1:8000/api/docs/`). La **interfaz Flet, el motor de composición con Pillow y la integración de IA todavía no existen**; el avance real se sigue en [`docs/10_DEVELOPMENT_CHECKLIST.md`](docs/10_DEVELOPMENT_CHECKLIST.md). No se presentan como terminadas las funciones que solo existen en el diseño.
 
 ## Problema que resuelve
 
@@ -124,11 +124,14 @@ de que exista `frontend/pyproject.toml` (Integrante A).
 
 ```bash
 python backend/manage.py migrate
+python backend/manage.py createsuperuser   # cuenta para la consola /admin/
 ```
 
 Verificado contra MySQL 8.0.45: seis migraciones de dominio, 19 tablas creadas. Requiere una
-`.env` con `DB_*` correctos. `scripts/seed_demo_data.py` sigue siendo un marcador sin
-implementar (tarea P26); no lo ejecutes todavía.
+`.env` con `DB_*` correctos. La consola de administración gestiona cuentas, catálogo, poses,
+gatos, paquetes, publicaciones y trabajos; su funcionamiento se explica en la
+[guía viva, sección 5.1](docs/12_GUIA_PLATAFORMA.md). `scripts/seed_demo_data.py` sigue siendo un
+marcador sin implementar (tarea P26); no lo ejecutes todavía.
 
 ### 6. Iniciar backend y frontend
 
@@ -139,6 +142,7 @@ python backend/manage.py runserver 127.0.0.1:8000
 - API: `http://127.0.0.1:8000/api/health/` → `{"status":"ok","database":"up","engine":"mysql"}`
 - Swagger: `http://127.0.0.1:8000/api/docs/` (verificado, 9 endpoints)
 - Esquema OpenAPI: `http://127.0.0.1:8000/api/schema/` (verificado)
+- Consola de administración: `http://127.0.0.1:8000/admin/` (verificado, 9 entidades)
 
 La interfaz Flet todavía no existe. Cuando esté, se levantará así:
 
@@ -154,9 +158,9 @@ flet run frontend/src/main.py --web --port 8550
 cd backend && python -m pytest
 ```
 
-Verificado: 30 pruebas en verde. Usan SQLite en memoria porque el usuario de desarrollo de
-MySQL no tiene privilegio `CREATE DATABASE`; la verificación sobre MySQL real se hace con el
-servidor en marcha:
+Verificado: 47 pruebas en verde, incluidas las de la consola de administración. Usan SQLite en
+memoria porque el usuario de desarrollo de MySQL no tiene privilegio `CREATE DATABASE`; la
+verificación sobre MySQL real se hace con el servidor en marcha:
 
 ```bash
 python scripts/check_backend.py

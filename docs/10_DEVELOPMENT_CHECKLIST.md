@@ -24,7 +24,7 @@ Tablero de seguimiento del proyecto · Versión 1.1 · 28 de octubre de 2026
 
 ## Semana 2 — Editor y persistencia (4 – 10 nov)
 
-- [~] **P08** — Implementar catálogo de recursos. *Responsable: B + diseñadora · Dependencia: P06 · Criterio: `catalog.json` + tabla `catalog_options` coherentes y servidos por `/api/catalog/`.* **Media:** endpoint y tabla listos; `assets/catalog.json` sigue vacío porque la diseñadora no ha entregado los recursos (P06).
+- [~] **P08** — Implementar catálogo de recursos. *Responsable: B + diseñadora · Dependencia: P06 · Criterio: `catalog.json` + tabla `catalog_options` coherentes y servidos por `/api/catalog/`.* **Media:** endpoint y tabla listos y la consola `/admin/` ya permite cargar y activar opciones y poses (4 nov); `assets/catalog.json` sigue vacío porque la diseñadora no ha entregado los recursos (P06), así que queda pendiente el sembrado real y su coherencia con la tabla.
 - [ ] **P09** — Implementar configuración de personajes. *Responsable: C · Dependencia: P08 · Criterio: documento de configuración validado contra catálogo (schema_version).*
 - [ ] **P10** — Implementar editor manual. *Responsable: A · Dependencia: P08, P09 · Criterio: AC-01 y AC-02.*
 - [x] **P11** — Crear modelos y migraciones. *Responsable: B · Dependencia: P08 · Criterio: esquema de [04_DATA_MODEL.md](04_DATA_MODEL.md) aplicado vía migraciones de Django.* **Hecho (4 nov):** 6 apps con sus modelos, índices, restricciones y estados validados; 19 tablas aplicadas en MySQL 8.0.45. Evidencia: `python manage.py migrate` y `pytest` (30 pruebas).
