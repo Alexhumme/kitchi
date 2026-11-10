@@ -21,30 +21,36 @@ Reglas:
 
 ## Endpoints propuestos
 
-| Método | Endpoint | Propósito | Autenticación |
-| --- | --- | --- | --- |
-| `POST` | `/api/auth/register/` | Registrar un usuario | Pública |
-| `POST` | `/api/auth/login/` | Iniciar sesión | Pública |
-| `POST` | `/api/auth/logout/` | Cerrar sesión | Requerida |
-| `GET` | `/api/auth/me/` | Consultar el usuario actual | Requerida |
-| `GET` | `/api/catalog/` | Obtener opciones disponibles | Pública |
-| `GET` | `/api/poses/` | Obtener las poses | Pública |
-| `GET` | `/api/cats/` | Listar gatos propios | Requerida* |
-| `POST` | `/api/cats/` | Crear un gato | Requerida* |
-| `GET` | `/api/cats/{id}/` | Consultar un gato | Dueño / pública si publicada |
-| `PATCH` | `/api/cats/{id}/` | Actualizar su configuración | Solo dueño |
-| `DELETE` | `/api/cats/{id}/` | Eliminar un gato propio | Solo dueño |
-| `POST` | `/api/sticker-packs/` | Solicitar generación de un paquete | Requerida* |
-| `GET` | `/api/sticker-packs/{id}/` | Consultar estado y resultado | Dueño |
-| `GET` | `/api/sticker-packs/{id}/download/` | Descargar el paquete completo o un sticker | Dueño |
-| `POST` | `/api/ai-jobs/` | Solicitar una transformación por IA | Requerida |
-| `GET` | `/api/ai-jobs/{id}/` | Consultar el resultado de IA | Dueño |
-| `GET` | `/api/publications/` | Explorar el hub (paginado) | Pública |
-| `POST` | `/api/publications/` | Publicar una creación | Requerida |
-| `GET` | `/api/publications/{id}/` | Ver una publicación | Pública |
-| `PATCH` | `/api/publications/{id}/` | Editar una publicación propia | Solo dueño |
-| `DELETE` | `/api/publications/{id}/` | Retirar una publicación propia | Solo dueño |
-| `POST` | `/api/publications/{id}/copy/` | Copiar una creación pública | Requerida |
+Estado a 4 de noviembre de 2026. **Implementado** significa que el endpoint existe, está
+servido por la API y tiene prueba automatizada; no que la interfaz ya lo consuma.
+
+| Método | Endpoint | Propósito | Autenticación | Estado |
+| --- | --- | --- | --- | --- |
+| `POST` | `/api/auth/register/` | Registrar un usuario | Pública | Implementado |
+| `POST` | `/api/auth/login/` | Iniciar sesión | Pública | Implementado |
+| `POST` | `/api/auth/logout/` | Cerrar sesión | Requerida | Implementado |
+| `GET` | `/api/auth/me/` | Consultar el usuario actual | Requerida | Implementado |
+| `GET` | `/api/catalog/` | Obtener opciones disponibles | Pública | Implementado (catálogo vacío hasta P08) |
+| `GET` | `/api/poses/` | Obtener las poses | Pública | Implementado (sin poses hasta P06) |
+| `GET` | `/api/cats/` | Listar gatos propios | Requerida* | Implementado |
+| `POST` | `/api/cats/` | Crear un gato | Requerida* | Implementado |
+| `GET` | `/api/cats/{id}/` | Consultar un gato | Dueño / pública si publicada | Implementado |
+| `PATCH` | `/api/cats/{id}/` | Actualizar su configuración | Solo dueño | Implementado |
+| `DELETE` | `/api/cats/{id}/` | Eliminar un gato propio | Solo dueño | Implementado |
+| `POST` | `/api/sticker-packs/` | Solicitar generación de un paquete | Requerida* | Pendiente (P15) |
+| `GET` | `/api/sticker-packs/{id}/` | Consultar estado y resultado | Dueño | Pendiente (P15) |
+| `GET` | `/api/sticker-packs/{id}/download/` | Descargar el paquete completo o un sticker | Dueño | Pendiente (P14/P15) |
+| `POST` | `/api/ai-jobs/` | Solicitar una transformación por IA | Requerida | Pendiente (P16) |
+| `GET` | `/api/ai-jobs/{id}/` | Consultar el resultado de IA | Dueño | Pendiente (P16) |
+| `GET` | `/api/publications/` | Explorar el hub (paginado) | Pública | Pendiente (P18) |
+| `POST` | `/api/publications/` | Publicar una creación | Requerida | Pendiente (P18) |
+| `GET` | `/api/publications/{id}/` | Ver una publicación | Pública | Pendiente (P18) |
+| `PATCH` | `/api/publications/{id}/` | Editar una publicación propia | Solo dueño | Pendiente (P18) |
+| `DELETE` | `/api/publications/{id}/` | Retirar una publicación propia | Solo dueño | Pendiente (P18) |
+| `POST` | `/api/publications/{id}/copy/` | Copiar una creación pública | Requerida | Pendiente (P19) |
+
+Los modelos de `sticker_packs`, `stickers`, `publications` y `generation_jobs` ya existen
+con sus migraciones (P11); lo pendiente en esas filas son los endpoints.
 
 \* El modo invitado funciona con almacenamiento local del navegador; la API autoriza operaciones de cuenta solo para usuarios registrados. La persistencia en servidor de invitados es decisión pendiente ([01_MASTER_PLAN.md](01_MASTER_PLAN.md)).
 
@@ -54,7 +60,13 @@ Reglas:
 - Listados paginados con `page` y `page_size`; el hub usa paginación por defecto.
 - Las rutas de archivos se devuelven como URLs autorizadas, no como rutas absolutas del servidor.
 - Los identificadores de recursos se validan contra el catálogo; el cliente no puede enviar nombres de archivo arbitrarios.
-- La autenticación exacta (sesión o token) se decide en la tarea P03 y se registra como ADR. Mientras tanto, los contratos usan “Requerida” sin fijar el mecanismo.
+- La autenticación es por **token de Django** (`Authorization: Token <clave>`), decisión
+  registrada en [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md). `SessionAuthentication`
+  queda habilitado solo para probar la API desde Swagger en el mismo navegador.
+- La autorización es **RBAC** con dos roles (`member`, `admin`) y política por recurso:
+  los recursos propios (`cats`, `sticker_packs`, `publications`, `generation_jobs`) se
+  leen y escriben solo por su dueño o por un admin; los compartidos (`catalog`, `poses`)
+  son de lectura autenticada y escritura restringida a `admin`.
 - CORS se configura solo para los orígenes locales de Flet; no se usa `*` en producción.
 
 ## Comportamiento de la generación
@@ -124,11 +136,34 @@ Reglas:
 - Los errores de IA se muestran como estados comprensibles y no como una inferencia exitosa.
 - Swagger debe documentar los códigos de error principales.
 
+Códigos de negocio ya implementados en el backend (envoltorio `{error: {code, message, details}}`
+en [`backend/apps/core/exceptions.py`](../backend/apps/core/exceptions.py)):
+
+| `error.code` | HTTP | Cuándo se devuelve |
+| --- | --- | --- |
+| `INVALID_CREDENTIALS` | 401 | Inicio de sesión con usuario o contraseña incorrectos |
+| `INVALID_CONFIGURATION` | 400 | La configuración usa recursos fuera del catálogo o incompletos; `details.campos` indica la clave fallida |
+| `UNSUPPORTED_SCHEMA_VERSION` | 400 | El documento de configuración declara una versión de esquema desconocida |
+| `CAT_NOT_FOUND` | 404 | No existe el gato solicitado |
+| `CAT_LIMIT_REACHED` | 409 | Se intenta guardar un cuarto gato en el plan gratuito; `details.limite` y `details.actuales` acompañan el mensaje |
+
+Cualquier otro fallo usa el código genérico `HTTP_<estado>` con el mismo envoltorio, así la
+interfaz siempre puede leer `error.code` y `error.message`.
+
 ## Próximos pasos para cerrar contratos (tarea P03)
 
-- [ ] Fijar nombres definitivos de endpoints y sustituir esta tabla.
-- [ ] Definir esquemas de request/response por endpoint (JSON).
-- [ ] Acordar el mecanismo de autenticación entre Flet y Django (sesión vs token) y registrarlo como ADR.
-- [ ] Publicar los contratos compartidos en `shared/contracts/`.
-- [ ] Verificar que `/api/docs/` muestra todos los endpoints y permite probarlos.
-- [ ] Añadir ejemplos de error y de respuestas paginadas.
+- [~] Fijar nombres definitivos de endpoints y sustituir esta tabla. **Hecho para las
+  rutas de cuentas, catálogo, poses y gatos**; quedan por fijar las de paquetes, IA y
+  comunidad cuando se implementen (P15/P16/P18).
+- [~] Definir esquemas de request/response por endpoint. Los endpoints implementados
+  tienen su esquema generado por drf-spectacular y versionado en
+  [`shared/contracts/openapi.yaml`](../shared/contracts/openapi.yaml).
+- [x] Acordar el mecanismo de autenticación entre Flet y Django: token de Django +
+  RBAC, registrado como [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md). Falta
+  probarlo desde el cliente Flet (tarea P02, comprobación 2).
+- [x] Publicar los contratos compartidos en `shared/contracts/`.
+- [x] Verificar que `/api/docs/` muestra todos los endpoints y permite probarlos.
+- [ ] Añadir ejemplos de error y de respuestas paginadas al documento de contrato. El
+  formato de error ya está implementado (envoltura `{error: {code, message, details}}`
+  en [`backend/apps/core/exceptions.py`](../backend/apps/core/exceptions.py)) y la
+  paginación es la por defecto de DRF (`page`, `page_size`, 12 elementos).
