@@ -4,7 +4,7 @@ Aplicación web móvil para crear gatos chibi personalizados mediante ilustracio
 
 **Proyecto final de Programación Avanzada A1 — Universidad de La Guajira · 2026-2**
 
-> **Estado actual:** el **backend** está implementado y en uso: API REST con Django REST Framework, modelo de datos aplicado sobre MySQL 8, cuentas con token y permisos RBAC, validación contra catálogo, consola de administración (`http://127.0.0.1:8000/admin/`) y documentación OpenAPI/Swagger (`http://127.0.0.1:8000/api/docs/`). La **interfaz Flet, el motor de composición con Pillow y la integración de IA todavía no existen**; el avance real se sigue en [`docs/10_DEVELOPMENT_CHECKLIST.md`](docs/10_DEVELOPMENT_CHECKLIST.md). No se presentan como terminadas las funciones que solo existen en el diseño.
+> **Estado actual:** el **backend** está implementado y en uso: API REST con Django REST Framework, modelo de datos aplicado sobre MySQL 8, cuentas con token y permisos RBAC, validación contra catálogo, consola de administración (`http://127.0.0.1:8000/admin/`) y documentación OpenAPI/Swagger (`http://127.0.0.1:8000/api/docs/`). La **interfaz Flet Web ya está implementada** y consume la API para catálogo, poses, registro, login, sesión y CRUD de gatos; el editor muestra una **previsualización provisional con placeholders de color** porque la diseñadora aún no entregó los assets definitivos. El **motor de composición con Pillow**, la generación/descarga de stickers, el hub y la integración de IA siguen pendientes. El avance real se sigue en [`docs/10_DEVELOPMENT_CHECKLIST.md`](docs/10_DEVELOPMENT_CHECKLIST.md); no se presentan como terminadas las funciones que solo existen en el diseño.
 
 ## Problema que resuelve
 
@@ -14,11 +14,12 @@ El valor diferencial es el **motor 2D por capas**: no se producen 729 ilustracio
 
 ## Funcionalidades principales
 
-1. **Editor de personajes:** crear un gato y personalizar pelaje, ojos, cabello, parte superior, parte inferior y accesorios.
-2. **Generación y descarga:** generar seis poses y descargar los PNG transparentes.
-3. **Cuenta y comunidad:** registrarse, iniciar sesión, publicar una creación, explorarla desde otra sesión y copiarla sin alterar el original.
-4. **IA (diferenciador):** subir una fotografía, ejecutar una inferencia real, revisar el resultado y continuar el flujo manual si el servicio falla.
-5. **Programación avanzada (diferenciador):** evidencias reproducibles de concurrencia, multiprocesamiento y paralelismo en la generación de stickers.
+1. **Editor de personajes:** crear un gato y personalizar pelaje, ojos, cabello, parte superior, parte inferior y accesorios. La previsualización usa placeholders de color hasta que existan los assets de diseño.
+2. **Cuenta y persistencia:** registrarse, iniciar sesión, mantener la sesión y guardar hasta tres gatos por cuenta; el modo invitado guarda en el almacenamiento del navegador.
+3. **Generación y descarga:** generar seis poses y descargar los PNG transparentes. **Pendiente:** requiere el motor Pillow y los endpoints de paquetes.
+4. **Comunidad:** publicar una creación, explorarla desde otra sesión y copiarla sin alterar el original. **Pendiente:** requiere los endpoints de publicaciones.
+5. **IA (diferenciador):** subir una fotografía, ejecutar una inferencia real, revisar el resultado y continuar el flujo manual si el servicio falla. **Pendiente.**
+6. **Programación avanzada (diferenciador):** evidencias reproducibles de concurrencia, multiprocesamiento y paralelismo en la generación de stickers. **Pendiente.**
 
 ## Stack
 
@@ -64,15 +65,18 @@ Todos los integrantes deben poder explicar cualquier parte del código durante l
 
 ## Instalación y ejecución
 
-> **Contrato de instalación:** los comandos marcados como **verificados** se ejecutaron en
-> este equipo el 4 de noviembre de 2026 (Python 3.14.7, Windows, MySQL 8.0.45) y dejaron
-> evidencia en [`docs/reports/week1-validation.md`](docs/reports/week1-validation.md). Los
-> comandos del frontend siguen siendo previsión hasta que exista el código de Flet; la
-> validación completa desde un clon limpio corresponde a la tarea P29.
+> **Contrato de instalación:** el backend se verificó en este equipo el 4 de noviembre de
+> 2026 (Python 3.14.7, Windows, MySQL 8.0.45) y dejó evidencia en
+> [`docs/reports/week1-validation.md`](docs/reports/week1-validation.md). El frontend Flet
+> y la integración se ejecutaron con Python 3.11.6 el 9 de noviembre de 2026; sus pruebas
+> están registradas en [`docs/reports/frontend-integration.md`](docs/reports/frontend-integration.md).
+> La validación completa desde un clon limpio sigue correspondiendo a la tarea P29.
 
 ### Requisitos previos
 
-- **Python 3.14.7** (versión verificada; `requirements.txt` está fijado sobre ella).
+- **Python 3.14.7** para el backend (versión con la que se fijó `backend/requirements.txt`;
+  el entorno de este equipo está en 3.11.6 y las 47 pruebas también pasan).
+- **Python 3.11+** para el frontend Flet (`frontend/pyproject.toml`); verificado con 3.11.6.
 - MySQL 8 en local (verificado con 8.0.45). Si tu equipo no puede instalarlo, arranca con
   `DB_ENGINE=sqlite` en `.env` — el modelo de datos y las migraciones no cambian ([ADR-005](docs/decisions/ADR-005-autenticacion-y-rbac.md)).
 - Git.
@@ -117,8 +121,15 @@ Verificado: 10 paquetes con versiones fijadas en `backend/requirements.txt` (tar
 driver de MySQL es **PyMySQL**, porque `mysqlclient` no publica ruedas para Python 3.14 y
 obligaría a instalar un compilador en cada equipo.
 
-El frontend aún no tiene dependencias que instalar: `pip install -e frontend` queda pendiente
-de que exista `frontend/pyproject.toml` (Integrante A).
+Instala el frontend (Flet Web y herramientas de prueba):
+
+```bash
+pip install -e "frontend[dev]"
+```
+
+El frontend declara `flet[web]==1.1.2` y `requires-python = ">=3.11"` en
+[`frontend/pyproject.toml`](frontend/pyproject.toml). Si usas un Python distinto al del
+backend, instala el frontend en su propio entorno o con `python -m pip` del intérprete 3.11.
 
 ### 5. Preparar la base de datos
 
@@ -130,8 +141,19 @@ python backend/manage.py createsuperuser   # cuenta para la consola /admin/
 Verificado contra MySQL 8.0.45: seis migraciones de dominio, 19 tablas creadas. Requiere una
 `.env` con `DB_*` correctos. La consola de administración gestiona cuentas, catálogo, poses,
 gatos, paquetes, publicaciones y trabajos; su funcionamiento se explica en la
-[guía viva, sección 5.1](docs/12_GUIA_PLATAFORMA.md). `scripts/seed_demo_data.py` sigue siendo un
-marcador sin implementar (tarea P26); no lo ejecutes todavía.
+[guía viva, sección 5.1](docs/12_GUIA_PLATAFORMA.md).
+
+El catálogo real de assets todavía no existe (P06), pero la API necesita opciones para que
+el editor funcione. Siembra las 18 opciones y 6 poses provisionales (idempotente):
+
+```bash
+python scripts/seed_catalog.py
+```
+
+El script usa las rutas `assets/placeholders/...`; no crea imágenes. Las opciones y poses
+quedan activas en MySQL y `/api/catalog/` y `/api/poses/` ya las devuelven.
+`scripts/seed_demo_data.py` sigue siendo un marcador sin implementar (tarea P26); no lo
+ejecutes todavía.
 
 ### 6. Iniciar backend y frontend
 
@@ -144,13 +166,19 @@ python backend/manage.py runserver 127.0.0.1:8000
 - Esquema OpenAPI: `http://127.0.0.1:8000/api/schema/` (verificado)
 - Consola de administración: `http://127.0.0.1:8000/admin/` (verificado, 9 entidades)
 
-La interfaz Flet todavía no existe. Cuando esté, se levantará así:
+Con el backend en marcha, levanta la interfaz Flet en otra terminal:
 
 ```bash
 flet run frontend/src/main.py --web --port 8550
 ```
 
 - Interfaz: `http://127.0.0.1:8550/`
+- El cliente lee `KITCHI_API_URL`, luego `API_BASE_URL` (entorno o `.env` de la raíz). Sin
+  URL, entra en **modo local**: la interfaz de invitado funciona con almacenamiento del
+  navegador, sin llamadas a la API.
+- La pantalla **Perfil** muestra si la API está conectada, el origen del catálogo y los
+  datos de la sesión. Los estados de error de login, registro y guardado se muestran en
+  línea o como SnackBar.
 
 ### 7. Pruebas y benchmark
 
@@ -170,6 +198,19 @@ Verificado: 19 comprobaciones del flujo de cuentas, catálogo y gatos, con limpi
 de sus propios datos. `scripts/benchmark_generation.py` sigue siendo un marcador sin
 implementar (tareas P22/P27).
 
+Pruebas del frontend:
+
+```bash
+python -m pytest -q frontend/tests
+```
+
+Verificado: **34 pruebas en verde** (cliente HTTP, catálogo, almacenamiento de invitado y
+sesión, modelos y adaptación de la configuración del backend). El 9 de noviembre también se
+construyeron todas las pantallas con un `FakeApp` para comprobar que los controles Flet se
+crean sin errores; el resultado está en
+[`docs/reports/frontend-integration.md`](docs/reports/frontend-integration.md). No se ha
+hecho todavía una prueba manual completa en navegador desde un clon limpio.
+
 Los comandos exactos y los resultados se registran en [`docs/reports/`](docs/reports/).
 
 ## Uso de IA
@@ -179,6 +220,7 @@ La rúbrica permite usar IA, pero exige que cada integrante entienda el código 
 | Herramienta | Para qué se usó | Partes del proyecto |
 | --- | --- | --- |
 | OpenCode (agente de IA) | Análisis del PDF del curso, revisión de la documentación, redacción y adecuación de la rúbrica | `docs/00`–`docs/13`, `README.md`, `AGENTS.md` |
+| OpenCode (agente de IA) | Integración Flet ↔ API: cliente HTTP, catálogo dinámico, sesión, pantallas de login/perfil, editor con placeholders, ajustes de tests y documentación del incremento. Todo el código se revisó y se ejecutó con pytest y un smoke test de pantallas | `frontend/`, `scripts/seed_catalog.py`, [`docs/reports/frontend-integration.md`](docs/reports/frontend-integration.md) |
 | Qoder (agente de IA) | Andamiaje del backend: estructura de apps, modelos y migraciones, permisos RBAC, envoltorio de errores, endpoints de cuentas/catálogo/gatos, pruebas pytest y verificación en vivo sobre MySQL. Todo el código se revisó, se ejecutó y se explica en [`docs/12_GUIA_PLATAFORMA.md`](docs/12_GUIA_PLATAFORMA.md) | `backend/`, `shared/contracts/openapi.yaml`, `scripts/check_backend.py`, [ADR-005](docs/decisions/ADR-005-autenticacion-y-rbac.md) |
 | _[Completar por cada integrante]_ | _[Desarrollo, pruebas, revisión, diseño]_ | _[Módulos]_ |
 

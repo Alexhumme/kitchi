@@ -118,6 +118,8 @@ La rúbrica valora que el producto sea utilizable por alguien que no programa y 
 ## Estado
 
 - Guía visual y proporciones: **pendiente** de aprobación (tarea P06, fecha objetivo 31 de octubre).
+- Previsualización provisional: el editor usa la paleta del catálogo local y etiquetas de
+  color para cada pieza; no pretende ser el arte final ni reemplaza los assets (9 nov).
 - Primer gato componible: **pendiente** (tarea P04 / día 2 del plan de 72 horas).
 - Formato definitivo de recursos y poses: decisión pendiente con fecha 2 de noviembre ([01_MASTER_PLAN.md](01_MASTER_PLAN.md)).
 - Capturas para README y sustentación: **pendiente** (tarea P31/P37).

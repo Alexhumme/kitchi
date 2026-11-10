@@ -1,6 +1,6 @@
 # Validación técnica de la semana 1
 
-Evidencia de P02 · Estado: **parcial — lado backend validado; lado Flet pendiente** · Fecha: 2026-11-04
+Evidencia de P02 · Estado: **parcial — backend y Flet validados; Pillow y composición pendientes** · Fecha: 2026-11-04 (actualizado 2026-11-09)
 
 > Registrar versiones exactas y resultados reales. No marcar como validado lo que no se ejecutó.
 
@@ -9,8 +9,9 @@ Evidencia de P02 · Estado: **parcial — lado backend validado; lado Flet pendi
 | Elemento | Valor |
 | --- | --- |
 | Sistema operativo | Windows 10.0.26200 (x64) |
-| Python | 3.14.7 |
-| Flet | — (sin instalar; comprobación pendiente del lado frontend) |
+| Python (backend) | 3.14.7 |
+| Python (frontend) | 3.11.6 |
+| Flet | 1.1.2 (`flet[web]`), validado el 9 nov: servidor en `http://127.0.0.1:8550/` con `GET /` → 200; detalle en [`frontend-integration.md`](frontend-integration.md) |
 | Django | 5.2.19 |
 | Django REST Framework | 3.18.3 |
 | drf-spectacular | 0.30.0 |
@@ -102,3 +103,14 @@ python -m pytest tests/test_admin.py
   catálogo terminado en la demo hasta P08.
 - Comprobaciones 1, 2, 5 y 6 continúan abiertas; P02 no puede marcarse como terminada
   hasta que el Integrante A valide Flet y el Integrante C compose el primer gato.
+
+## Actualización del 9 de noviembre de 2026
+
+El Integrante A completó la validación de Flet: la interfaz arranca en
+`http://127.0.0.1:8550/` (`GET /` respondió 200), consume la API de catálogo, poses,
+cuentas y gatos, y tiene 34 pruebas en verde. El catálogo ya no está vacío: se sembraron
+18 opciones y 6 poses con `scripts/seed_catalog.py`, todavía con rutas de placeholder.
+El detalle está en [`frontend-integration.md`](frontend-integration.md).
+
+Siguen abiertas la composición del primer gato con Pillow (Integrante C) y la prueba
+manual del flujo completo en navegador; por eso P02 permanece en progreso.

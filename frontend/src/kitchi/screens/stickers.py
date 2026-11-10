@@ -1,7 +1,8 @@
 """Stickers IA: flujo de generación de seis poses.
 
 La generación real vive en el backend/motor (P13–P16, semana 3). Esta pantalla
-muestra el flujo acordado y sus estados, sin simular resultados.
+muestra las poses reales que expone la API y los estados del flujo, sin simular
+resultados.
 """
 
 from __future__ import annotations
@@ -11,19 +12,11 @@ import flet as ft
 from .. import components as c
 from .. import theme as t
 
-POSES = (
-    ("greeting", "Saludo"),
-    ("happy", "Alegría"),
-    ("angry", "Enfado"),
-    ("sad", "Tristeza"),
-    ("surprised", "Sorpresa"),
-    ("sleepy", "Sueño"),
-)
-
 
 def build(app) -> ft.Control:
     cats = app.cats
     cat_names = [cat["name"] for cat in cats]
+    poses = app.poses or []
 
     picker = ft.Dropdown(
         label="Gato de partida",
@@ -35,19 +28,24 @@ def build(app) -> ft.Control:
         expand=True,
     )
 
+    pose_chips = [c.chip(pose.get("name") or pose.get("code"), bgcolor=t.CREMA_HONDO,
+                         icon="emoji_emotions") for pose in poses]
     flow = c.card(
         ft.Column(
             [
                 c.section_title("El paquete", "Seis stickers PNG con fondo transparente"),
-                ft.Row(
-                    [c.chip(name, bgcolor=t.CREMA_HONDO, icon="emoji_emotions") for _, name in POSES],
-                    spacing=6,
-                    wrap=True,
-                    run_spacing=6,
+                ft.Row(pose_chips, spacing=6, wrap=True, run_spacing=6) if pose_chips
+                else c.banner("La API no devolvió poses activas. Ejecuta scripts/seed_catalog.py.",
+                              icon="warning_amber", tone="warning"),
+                ft.Text(
+                    f"{len(poses)} poses cargadas desde /api/poses/." if app.api_online and poses
+                    else "Poses empaquetadas para el modo local.",
+                    style=t.caption(),
                 ),
                 ft.Text(
                     "El motor compondrá tu gato en las seis poses y podrás descargar "
-                    "cada PNG o el paquete completo.",
+                    "cada PNG o el paquete completo. Mientras no existan los assets se "
+                    "usará el mismo placeholder de color del editor.",
                     style=t.body(),
                 ),
             ],
@@ -61,20 +59,20 @@ def build(app) -> ft.Control:
                 ft.Row(
                     [
                         ft.Icon("auto_awesome", size=22, color=t.VIOLETA),
-                        ft.Text("Generación: semana 3", style=t.section()),
+                        ft.Text("Generación pendiente (semana 3)", style=t.section()),
                         c.chip("P13–P16", bgcolor=t.LAVANDA),
                     ],
                     spacing=8,
                 ),
                 ft.Text(
                     "El motor gráfico (Pillow), el seguimiento de trabajos y la integración "
-                    "de IA se implementan en la semana 3. Aquí verás el progreso real: "
+                    "de IA aún no están implementados. Aquí verás el progreso real: "
                     "pendiente, en proceso, completado o fallido.",
                     style=t.body(),
                 ),
                 c.banner(
-                    "Nada se genera todavía: este botón se activará cuando el backend "
-                    "exponga /api/sticker-packs/ y /api/ai-jobs/.",
+                    "Nada se genera todavía: faltan /api/sticker-packs/ y /api/ai-jobs/ "
+                    "en el backend. La pantalla no simula resultados.",
                     icon="info_outline",
                 ),
             ],

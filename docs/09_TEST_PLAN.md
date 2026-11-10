@@ -41,6 +41,11 @@ Ubicación: `backend/tests/`, `frontend/tests/` y los módulos de evidencia de c
 | Se abre `/api/docs/` | Swagger muestra los endpoints y permite probarlos |
 | Se provoca un error de validación | La UI muestra un mensaje comprensible y la API no expone trazas internas |
 
+Estado al 9 de noviembre de 2026: las filas de catálogo, registro y persistencia de gatos
+están cubiertas por `frontend/tests/` (34 pruebas) y por el cliente HTTP; las de paquetes,
+publicaciones, copia e IA siguen pendientes porque sus endpoints no existen. La prueba
+manual en navegador aún no se registra en `docs/reports/`.
+
 ## Pruebas de aceptación
 
 ### Escenario de aceptación principal

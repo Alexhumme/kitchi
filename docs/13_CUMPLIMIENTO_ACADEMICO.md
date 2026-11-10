@@ -147,9 +147,9 @@ Reglas:
 - [x] Reglas académicas incorporadas a [`AGENTS.md`](../AGENTS.md).
 - [ ] Nombres de los integrantes en el README.
 - [ ] Repositorio verificado como público.
-- [ ] `requirements.txt` / `pyproject.toml` con versiones verificadas.
+- [x] `backend/requirements.txt` y `frontend/pyproject.toml` con versiones verificadas.
 - [ ] Instalación desde clon limpio.
-- [ ] Swagger/OpenAPI funcionando.
-- [ ] Tres funcionalidades completas demostrables.
+- [x] Swagger/OpenAPI funcionando (`/api/docs/` y `/api/schema/`, verificado el 4 de noviembre).
+- [ ] Tres funcionalidades completas demostrables (editor, cuentas y persistencia ya funcionan; faltan stickers, hub e IA).
 - [ ] 5 commits por integrante.
 - [ ] Ensayo de la defensa de 10 minutos.

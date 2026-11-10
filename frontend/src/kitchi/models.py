@@ -26,6 +26,17 @@ def new_cat(name: str, configuration: dict) -> dict:
     }
 
 
+def cat_from_api(record: dict) -> dict:
+    """Adapta un gato de la API al formato que usa la interfaz."""
+    return {
+        "id": record.get("id"),
+        "name": record.get("name") or "Sin nombre",
+        "configuration": catalog.normalize_configuration(record.get("configuration")),
+        "created_at": record.get("created_at") or now_iso(),
+        "updated_at": record.get("updated_at") or now_iso(),
+    }
+
+
 def validate_name(name: str) -> str | None:
     cleaned = name.strip()
     if not cleaned:

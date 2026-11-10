@@ -9,6 +9,7 @@ Directorio de evidencias reproducibles exigidas por el plan maestro y por la rú
 | [`rubric.md`](rubric.md) | Rúbrica del PDF transcrita y sus implicaciones para el proyecto | Criterios 1–5 | P01 |
 | `academic-audit.md` | Auditoría final de README, repositorio, producto y sustentación | Criterios 2, 3 y 5 | P40 |
 | `week1-validation.md` | Validación de Flet, DRF, MySQL, Pillow y Swagger (versiones exactas fijadas) | Criterio 2 / AC-12 | P02 |
+| [`frontend-integration.md`](frontend-integration.md) | Integración Flet ↔ API, sembrado del catálogo provisional, 34 pruebas y smoke test de pantallas | Criterio 2 / AC-12 | P02, P08, P10, P12, P36, P39 |
 | `ai-evaluation.md` | Prueba comparativa de IA: las 7 preguntas de [07_AI_INTEGRATION.md](../07_AI_INTEGRATION.md) | AC-08 | P05 |
 | `concurrency-logs.md` | Logs de la prueba concurrente con operaciones reales | AC-09 | P20 |
 | `multiprocessing-evidence.md` | Identificación de procesos trabajadores y resultados | AC-10 | P21 |

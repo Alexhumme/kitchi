@@ -1,6 +1,6 @@
 # 12 · Guía viva de la plataforma — Kitchi Studio
 
-Documento de estudio para la sustentación · Versión 0.3 · 4 de noviembre de 2026
+Documento de estudio para la sustentación · Versión 0.4 · 9 de noviembre de 2026
 
 > **Estado:** documento vivo, casi vacío a propósito. Se completará **por incrementos** a medida que la aplicación se implemente. No describe funcionalidades que aún no existen.
 >
@@ -28,17 +28,21 @@ Kitchi Studio es una aplicación web móvil con la que una persona que no sabe d
 compone un gato chibi combinando recursos 2D por capas, guarda hasta tres personajes,
 pide un paquete de seis stickers PNG transparentes y comparte sus creaciones en un hub.
 
-**Estado a 4 de noviembre:** el backend (API, datos, cuentas, permisos y documentación
-OpenAPI) está implementado y en uso. La interfaz Flet y el motor de composición todavía
-no existen, por lo que el flujo completo de usuario aún no puede recorrerse.
+**Estado a 9 de noviembre:** el backend (API, datos, cuentas, permisos y documentación
+OpenAPI) está implementado y en uso. La interfaz Flet Web existe y consume la API para
+catálogo, poses, cuentas y gatos; el editor ya permite crear, previsualizar con
+placeholders de color, guardar y editar hasta tres gatos. El motor de composición y los
+endpoints de stickers, publicaciones e IA siguen pendientes, así que el flujo completo de
+usuario todavía no puede recorrerse de principio a fin.
 
 ## 2. Problema, usuario y propuesta de valor
 
 - **Problema:** conseguir stickers personalizados exige saber ilustrar o pagar una
   herramienta de diseño.
 - **Usuario previsto:** cualquier persona desde el navegador del teléfono; sin cuenta
-  compone en el navegador y con cuenta guarda y publica. **Ninguna de las dos rutas
-  existe todavía:** primero hay que implementar la interfaz Flet (P10) y el hub (P18).
+  compone y guarda en el navegador; con cuenta guarda en la API. Ambas rutas de
+  composición y guardado ya existen (P10/P12). Publicar y copiar creaciones sigue
+  pendiente del hub (P18/P19).
 - **Propuesta de valor:** el motor 2D por capas. En lugar de producir 3⁶ = 729
   ilustraciones, se mantiene un catálogo de 18 opciones conceptuales (3 por cada uno de
   los 6 campos) y la apariencia se reconstruye desde una configuración ([ADR-002](decisions/ADR-002-character-rendering.md)).
@@ -47,18 +51,54 @@ no existen, por lo que el flujo completo de usuario aún no puede recorrerse.
 
 ## 3. Flujo completo del usuario
 
-_Pendiente (P10–P19). Debe cubrir: crear gato → personalizar → generar seis stickers → descargar → registrarse → publicar → copiar._
+Lo que ya se puede recorrer (9 de noviembre):
+
+1. **Entrar sin cuenta.** La app arranca en modo invitado y guarda los gatos en el
+   almacenamiento del navegador (`SharedPreferences`). El límite de tres también se aplica
+   localmente.
+2. **Crear y personalizar.** En **Crear** se eligen las seis categorías del catálogo. La
+   previsualización cambia en tiempo real usando **placeholders de color**, porque los
+   assets definitivos no existen (P06).
+3. **Guardar, editar y borrar.** El gato se guarda en el navegador o, con sesión, en la API.
+   Borrar en modo invitado ofrece **Deshacer**; en cuenta pide confirmación y llama a
+   `DELETE /api/cats/{id}/`.
+4. **Crear cuenta o iniciar sesión.** **Perfil → Crear cuenta / Iniciar sesión** usa
+   `/api/auth/register/` y `/api/auth/login/`, guarda el token y mantiene la sesión. Si
+   había gatos de invitado y hay espacio, se migran a la cuenta automáticamente.
+5. **Mis gatos.** Con sesión, la lista viene de `/api/cats/`; sin sesión, del navegador.
+   El contador muestra `n/3` y el backend valida el límite.
+6. **Stickers IA.** La pantalla muestra las seis poses reales de `/api/poses/`, pero el
+   botón de generar está deshabilitado: faltan motor, paquetes y descargas (P13–P16).
+7. **Explorar.** El hub explica el flujo y muestra si `/api/publications/` todavía responde
+   404 (P18). No se simulan publicaciones ni copias.
+
+Pendiente para cerrar el recorrido: generar seis PNG, descargarlos, publicar en el hub y
+copiar una creación. Nada de eso se presenta como terminado.
 
 ## 4. Pantallas y navegación
 
-_Pendiente por pantalla: Inicio, Editor, Importación de fotografía, Revisión de IA, Generador, Paquete, Registro/Login, Hub, Publicación y Mis gatos._
+La barra inferior mantiene cinco secciones: **Navegar**, **Mis gatos**, **Crear**,
+**Stickers IA** y **Perfil**. La cabecera muestra el nombre de la cuenta o “Invitado”.
+
+| Pantalla | Qué hace hoy | Qué falta |
+| --- | --- | --- |
+| **Navegar** (hub de bienvenida) | Presenta el producto, el flujo de tres pasos y el estado del hub; los botones llevan al editor y a Mis gatos | Publicaciones reales, publicar y copiar (P18/P19) |
+| **Mis gatos** | Lista los gatos de la cuenta (API) o del navegador (invitado), con editar y eliminar; aplica el límite de tres | — |
+| **Crear** | Editor de seis categorías con tres opciones cada una, previsualización de color en tiempo real, guardado/edición y eliminar | Assets finales (P06) y render con Pillow (P13) |
+| **Stickers IA** | Muestra las seis poses reales y explica el flujo; el botón está deshabilitado | Paquetes, polling, descargas, IA (P13–P17) |
+| **Perfil** | Identidad, sesión, estado de API/catálogo, datos locales y “Acerca de”; abre login/registro y permite actualizar o cerrar sesión | — |
+| **Login / Registro** | Formulario con validación local, errores inline, estado de carga y llamada a la API | Verificación manual en navegador y caso de token expirado |
+| **Importación de IA / Revisión** | No existen | P16 |
+
+El detalle de widgets y estilos vive en [`06_DESIGN_SYSTEM.md`](06_DESIGN_SYSTEM.md); la
+implementación está en `frontend/src/kitchi/screens/`.
 
 ## 5. Arquitectura en cinco minutos
 
 Tres capas, un solo backend y sin infraestructura externa ([ADR-001](decisions/ADR-001-frontend-backend.md)):
 
 ```
-Flet Web (interfaz)            → aún no implementado
+Flet Web (interfaz)            → implementado; render provisional con placeholders
         │ HTTP/JSON · Authorization: Token <clave>
         ▼
 Django REST Framework          → sí existe y está en uso
@@ -79,12 +119,16 @@ Cómo se arranca y cómo se comprueba:
 
 | Acción | Comando | Qué ocurre |
 | --- | --- | --- |
-| Instalar dependencias | `pip install -r backend/requirements.txt` | Versiones fijadas; PyMySQL como driver porque `mysqlclient` no tiene ruedas para Python 3.14 |
+| Instalar backend | `pip install -r backend/requirements.txt` | Versiones fijadas; PyMySQL como driver porque `mysqlclient` no tiene ruedas para Python 3.14 |
+| Instalar frontend | `pip install -e "frontend[dev]"` | Flet 1.1.2 para web y pytest; requiere Python 3.11+ |
 | Crear el esquema | `python manage.py migrate` | Aplica las 6 migraciones de dominio sobre MySQL (o SQLite con `DB_ENGINE=sqlite`) |
+| Sembrar catálogo provisional | `python scripts/seed_catalog.py` | 18 opciones y 6 poses con rutas de placeholder; idempotente |
 | Levantar la API | `python manage.py runserver` | Sirve `/api/…`, `/api/schema/` y `/api/docs/` |
+| Levantar la interfaz | `flet run frontend/src/main.py --web --port 8550` | Flet Web en `http://127.0.0.1:8550/`; lee `API_BASE_URL` del `.env` |
 | Crear una cuenta de consola | `python manage.py createsuperuser` | Usuario con `is_staff` para entrar en `/admin/` |
 | Consola de administración | `http://127.0.0.1:8000/admin/` | Gestión de cuentas, catálogo, poses, gatos, paquetes, publicaciones y trabajos |
-| Pruebas automatizadas | `python -m pytest` (en `backend/`) | 47 pruebas sobre SQLite en memoria |
+| Pruebas del backend | `python -m pytest` (en `backend/`) | 47 pruebas sobre SQLite en memoria |
+| Pruebas del frontend | `python -m pytest -q frontend/tests` | 34 pruebas del cliente HTTP, catálogo, sesión, almacenamiento y modelos |
 | Verificación en vivo | `python scripts/check_backend.py` | 19 comprobaciones contra el servidor en marcha y MySQL real; autolimpia sus datos |
 
 Puntos de diseño que conviene saber explicar:
@@ -99,6 +143,15 @@ Puntos de diseño que conviene saber explicar:
   `CAT_LIMIT_REACHED` o `INVALID_CONFIGURATION`.
 - **El límite de tres gatos se aplica en el backend** con `select_for_update` sobre la fila del
   usuario, para que dos peticiones simultáneas no lo excedan.
+- **El cliente usa los códigos del backend.** `frontend/src/kitchi/catalog.py` reemplaza las
+  opciones locales con las de `/api/catalog/` y adapta la configuración normalizada
+  (`{"fur": {"code": "tabby"}}` → `"tabby"`). Si la API no responde, conserva el catálogo
+  empaquetado y el modo invitado.
+- **La sesión decide dónde viven los gatos.** `frontend/src/kitchi/app.py` carga el token de
+  `SharedPreferences`; con token usa `/api/cats/`, sin token usa el almacenamiento local. Al
+  iniciar sesión, los gatos de invitado se migran a la cuenta si hay espacio.
+- **La previsualización es honesta.** El editor dibuja cada pieza con el color del catálogo y
+  la etiqueta “Vista previa con placeholders”; no finge que existen los PNG finales.
 
 ### 5.1 La consola de administración (`/admin/`)
 
@@ -164,7 +217,15 @@ Decisiones de modelado que hay que saber defender:
 
 ## 7. Motor de stickers
 
-_Pendiente (P04/P13/P14). Capas, orden de composición, transparencia, validación de los seis PNG y determinismo._
+**Estado:** no implementado (P04/P13/P14). Lo que existe hoy es una previsualización
+provisional en el editor: seis capas de color construidas con `Container`/`Stack` de Flet,
+actualizadas al cambiar la configuración. Las rutas `assets/placeholders/...` del catálogo
+son etiquetas de intención, no archivos de imagen.
+
+Cuando se implemente, el motor deberá componer las capas con Pillow, respetar el orden
+`z_order`, exportar seis PNG con transparencia y validar que el paquete tenga los seis
+archivos antes de marcarlo como completado (P13–P15). El telefono no descargará rutas
+absolutas: la API devolverá URLs autorizadas.
 
 ## 8. Integración de IA
 
@@ -184,31 +245,35 @@ _Pendiente. Añadir preguntas reales de los ensayos y respuestas breves._
 
 ## 12. Limitaciones conocidas y trabajo futuro
 
-Implementado y en uso (backend):
+Implementado y en uso:
 
 - API REST con cuentas por token, catálogo, poses y CRUD de gatos con límite de tres.
+- Interfaz Flet Web con cinco secciones, login/registro, sesión persistida, perfil, modo
+  invitado y CRUD de gatos; el catálogo y las poses se leen de la API.
+- Editor con seis categorías, tres opciones cada una y previsualización de color en tiempo real.
+- Migración automática de gatos de invitado a la cuenta al iniciar sesión, si hay espacio.
+- Manejo visible de errores en login/registro, guardado, perfil, hub y Mis gatos.
 - Documentación OpenAPI/Swagger servida y versionada en `shared/contracts/openapi.yaml`.
 - Esquema de datos completo con migraciones aplicadas sobre MySQL 8.
 - Permisos RBAC por rol y por recurso; manejo de errores con formato único.
 - Consola `/admin/` con las nueve entidades, validación de catálogo en el formulario de gatos y
   acciones de estado que usan la máquina de estados.
-- Pruebas automatizadas (47) y verificación en vivo contra MySQL (19 comprobaciones de API y las
-  nueve pantallas de la consola abiertas sobre la base de desarrollo).
+- Pruebas: 47 del backend, 34 del frontend y verificación en vivo contra MySQL.
 
 Pendiente de implementar (existe solo el modelo de datos o ni eso):
 
-- **Interfaz Flet completa:** ninguna pantalla existe todavía (P10, P18). Sin ella no hay demo
-  de producto, solo de API.
+- **Assets reales:** `assets/catalog.json` sigue vacío; el catálogo sembrado con
+  `scripts/seed_catalog.py` usa rutas `assets/placeholders/...` que no son imágenes. El editor
+  muestra placeholders de color (P06/P08).
 - **Motor de composición con Pillow:** `stickers` y `poses` tienen tabla, pero no hay código que
   genere PNG (P13/P14). Los endpoints de paquetes y descargas tampoco (P15).
 - **IA:** `generation_jobs` está listo para registrar trabajos y estados; el adaptador del
   proveedor no existe y `AI_PROVIDER=none` ([ADR-003](decisions/ADR-003-ai-strategy.md)) (P16).
+- **Hub:** la pantalla explica el flujo, pero `/api/publications/` aún no existe; no hay
+  publicar ni copiar (P18/P19).
 - **Concurrencia y paralelismo:** nada implementado (P20–P22).
-- **Catálogo real vacío:** `assets/catalog.json` no tiene opciones mientras la diseñadora prepara
-  los recursos, así que `/api/catalog/` responde `categories: {}` y el guardado de gatos fallará
-  hasta sembrar el catálogo (P06/P08). La consola `/admin/` ya permite cargar opciones y poses a
-  mano, y las pruebas inyectan las suyas.
-- **Modo invitado:** decidido como almacenamiento local del navegador; no implementado.
+- **Prueba manual en navegador:** las pantallas se construyen en pruebas y smoke test, pero
+  falta recorrer el flujo completo con backend real y verificar la sesión de extremo a extremo.
 - **Tokens que no caducan:** el token de Django no tiene expiración; aceptable para un
   prototipo local y registrado como riesgo en [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md).
 - **Suscripciones premium:** el campo `premium` y el flag `is_premium` existen y se validan, pero
@@ -238,3 +303,4 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 | 2026-10-28 | Estructura inicial | Se creó el esqueleto y las reglas de actualización; aún no hay funcionalidades implementadas | Equipo |
 | 2026-11-04 | Base del backend (P02, P11, P12, P32, P33) | Arquitectura real con las siete apps, modelo de datos aplicado en MySQL, autenticación por token, permisos RBAC, errores normalizados, Swagger y cómo arrancar y verificar cada pieza; limitaciones del lado frontend, motor e IA | Alex Valdelamar |
 | 2026-11-04 | Consola de administración (`/admin/`) | Sección 5.1: las nueve entidades registradas, validación de catálogo compartida con la API, acciones de estado sobre la máquina de estados, protección de las poses en uso y el alta de la cuenta de consola con `createsuperuser` | Alex Valdelamar |
+| 2026-11-09 | Interfaz Flet e integración con la API (P02, P08, P10, P12, P36, P39) | Se actualizaron resumen, flujo, pantallas, arquitectura y limitaciones: cinco secciones, login/registro, sesión invitado/cuenta, CRUD de gatos, catálogo sembrado y editor con previsualización de placeholders. Se documentó lo que sigue pendiente (assets, Pillow, hub, IA) y se añadieron los comandos de instalación y prueba del frontend | Martin Solano |

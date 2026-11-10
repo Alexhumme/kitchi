@@ -14,6 +14,7 @@ import json
 from .models import validate_cat_record
 
 STORAGE_KEY = "kitchi.guest.cats.v1"
+SESSION_KEY = "kitchi.session.v1"
 
 
 class MemoryStorage:
@@ -57,6 +58,32 @@ async def load_cats(storage) -> list[dict]:
 
 async def persist_cats(storage, cats: list[dict]) -> None:
     await storage.set(STORAGE_KEY, json.dumps(cats, ensure_ascii=False))
+
+
+async def load_session(storage) -> tuple[str | None, dict | None]:
+    raw = await storage.get(SESSION_KEY)
+    if not raw:
+        return None, None
+    try:
+        data = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return None, None
+    if not isinstance(data, dict):
+        return None, None
+    token = data.get("token")
+    user = data.get("user")
+    if not isinstance(token, str) or not token:
+        return None, None
+    return token, user if isinstance(user, dict) else None
+
+
+async def persist_session(storage, token: str, user: dict | None) -> None:
+    payload = {"token": token, "user": user or {}}
+    await storage.set(SESSION_KEY, json.dumps(payload, ensure_ascii=False))
+
+
+async def clear_session(storage) -> None:
+    await storage.set(SESSION_KEY, "")
 
 
 def clone_cats(cats: list[dict]) -> list[dict]:

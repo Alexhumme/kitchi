@@ -1,9 +1,10 @@
 """Editor de creación: el gato al centro, categorías a los lados.
 
 La barra inferior global NO se sustituye: vive a nivel de page. Los controles
-laterales solo modifican el personaje. La previsualización real del gato
-llegará con los assets de la diseñadora (P06); mientras tanto el editor es
-funcional y honesto: selección, deshacer, reiniciar, azar y guardado.
+laterales solo modifican el personaje. La previsualización usa placeholders de
+color del catálogo hasta que lleguen los assets de la diseñadora (P06); el
+editor ya es funcional y honesto: selección, deshacer, reiniciar, azar, guardado
+y render provisional en tiempo real.
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ class EditorScreen:
         self._undo_button = ft.Container()
         self._options_panel = ft.Column(spacing=8)
         self._combo_panel = ft.Container()
+        self._stage_host = ft.Container()
         self._title = ft.Text(style=t.title())
 
     # --- construcción ---------------------------------------------------
@@ -72,7 +74,9 @@ class EditorScreen:
                     expand=True,
                 ),
                 ft.Text(
-                    "Modo invitado: se guarda en este navegador (máximo 3 gatos).",
+                    f"Se guarda en tu cuenta ({self.app.user.get('username')}, máximo 3 gatos)."
+                    if self.app.user
+                    else "Modo invitado: se guarda en este navegador (máximo 3 gatos).",
                     style=t.caption(),
                     text_align=ft.TextAlign.CENTER,
                 ),
@@ -140,38 +144,149 @@ class EditorScreen:
         return ft.Column(buttons, spacing=8)
 
     def _stage(self) -> ft.Control:
+        self._stage_host.height = 300
+        self._stage_host.bgcolor = t.CREMA_HONDO
+        self._stage_host.border = ft.Border.all(1, t.GRIS_CALIDO)
+        self._stage_host.border_radius = 24
+        self._stage_host.padding = 12
+        self._stage_host.alignment = ft.Alignment.CENTER
+        return self._stage_host
+
+    def _selected(self, key: str):
+        return catalog.get_option(key, self.state.configuration.get(key, ""))
+
+    def _render_stage(self) -> ft.Control:
+        """Previsualización provisional con los colores del catálogo.
+
+        No usa imágenes: cada pieza se representa con su color y etiqueta para
+        que el editor demuestre el cambio en tiempo real. Cuando la diseñadora
+        entregue los assets (P06/P08) esta capa se sustituirá por el render real.
+        """
+        fur = self._selected("fur")
+        eyes = self._selected("eyes")
+        hair = self._selected("hair")
+        top = self._selected("top")
+        bottom = self._selected("bottom")
+        accessory = self._selected("accessory")
+        if not all((fur, eyes, hair, top, bottom, accessory)):
+            return ft.Text("Configuración incompleta", style=t.caption())
+
+        eye_width = 22 if eyes.code == "round_green" else (26 if eyes.code == "big_blue" else 28)
+        eye_height = 22 if eyes.code != "almond_amber" else 15
+
+        def eye() -> ft.Container:
+            return ft.Container(
+                content=ft.Container(
+                    width=eye_width * 0.42,
+                    height=eye_width * 0.42,
+                    bgcolor=t.TINTA,
+                    border_radius=eye_width,
+                ),
+                width=eye_width,
+                height=eye_height,
+                bgcolor=eyes.swatch,
+                border=ft.Border.all(2, t.TINTA),
+                border_radius=eye_width,
+                alignment=ft.Alignment.CENTER,
+            )
+
+        ears = [
+            ft.Container(width=52, height=52, bgcolor=fur.swatch,
+                         border=ft.Border.all(3, t.TINTA), border_radius=18, left=32, top=16),
+            ft.Container(width=52, height=52, bgcolor=fur.swatch,
+                         border=ft.Border.all(3, t.TINTA), border_radius=18, right=32, top=16),
+        ]
+        face = ft.Stack(
+            [
+                *ears,
+                ft.Container(
+                    width=178, height=154, bgcolor=fur.swatch,
+                    border=ft.Border.all(3, t.TINTA), border_radius=82, left=26, top=34,
+                ),
+                ft.Container(
+                    width=128, height=36, bgcolor=hair.swatch,
+                    border=ft.Border.all(2, t.TINTA), border_radius=18, left=51, top=41,
+                ),
+                ft.Container(
+                    content=ft.Row([eye(), eye()], spacing=26, alignment=ft.MainAxisAlignment.CENTER),
+                    width=104, left=63, top=106,
+                ),
+                ft.Container(
+                    width=12, height=8, bgcolor=t.CORAL, border_radius=6, left=109, top=150,
+                ),
+                ft.Container(
+                    width=44, height=3, bgcolor=t.TINTA, border_radius=2, left=93, top=166,
+                ),
+                self._accessory_layer(accessory),
+            ],
+            width=230,
+            height=210,
+        )
+
+        def piece(label: str, option) -> ft.Container:
+            return ft.Container(
+                content=ft.Row(
+                    [
+                        ft.Container(width=14, height=14, bgcolor=option.swatch,
+                                     border=ft.Border.all(1, t.TINTA), border_radius=7),
+                        ft.Text(f"{label}: {option.name}", size=11, color=t.TINTA),
+                    ],
+                    spacing=5,
+                    tight=True,
+                ),
+                padding=ft.Padding.symmetric(horizontal=8, vertical=4),
+                bgcolor=t.SUPERFICIE,
+                border=ft.Border.all(1, t.GRIS_CALIDO),
+                border_radius=999,
+            )
+
+        return ft.Column(
+            [
+                c.chip("Vista previa con placeholders", bgcolor=t.SUPERFICIE, icon="brush"),
+                face,
+                ft.Row(
+                    [piece("Sup.", top), piece("Inf.", bottom), piece("Extra", accessory)],
+                    spacing=5,
+                    wrap=True,
+                    run_spacing=5,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                ),
+                ft.Text(
+                    "Sin assets finales: los colores representan cada pieza del catálogo.",
+                    size=11,
+                    color=t.TINTA_SUAVE,
+                    text_align=ft.TextAlign.CENTER,
+                ),
+            ],
+            spacing=6,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            alignment=ft.MainAxisAlignment.CENTER,
+        )
+
+    def _accessory_layer(self, accessory) -> ft.Control:
+        if accessory.code == "glasses":
+            lens = ft.Container(
+                width=34, height=30, border=ft.Border.all(3, t.TINTA), border_radius=10
+            )
+            return ft.Container(
+                content=ft.Row(
+                    [lens, ft.Container(width=12, height=3, bgcolor=t.TINTA), lens],
+                    spacing=0,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                ),
+                width=104,
+                left=63,
+                top=100,
+            )
+        if accessory.code == "bow":
+            return ft.Container(
+                content=ft.Icon("star", size=30, color=accessory.swatch),
+                left=158,
+                top=20,
+            )
         return ft.Container(
-            content=ft.Column(
-                [
-                    ft.Container(
-                        content=ft.Icon("pets", size=52, color=t.TINTA_SUAVE),
-                        width=92,
-                        height=92,
-                        bgcolor=t.CREMA_HONDO,
-                        border_radius=46,
-                        alignment=ft.Alignment.CENTER,
-                    ),
-                    ft.Text("Vista previa en camino", size=14, weight=ft.FontWeight.W_600,
-                            color=t.TINTA, text_align=ft.TextAlign.CENTER),
-                    ft.Text(
-                        "Cuando la diseñadora entregue las capas (P06), tu gato aparecerá "
-                        "aquí en tiempo real.",
-                        size=12,
-                        color=t.TINTA_SUAVE,
-                        text_align=ft.TextAlign.CENTER,
-                    ),
-                    c.chip("Esperando assets de diseño", bgcolor=t.CREMA_HONDO, icon="brush"),
-                ],
-                spacing=8,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                alignment=ft.MainAxisAlignment.CENTER,
-            ),
-            height=252,
-            bgcolor=t.CREMA_HONDO,
-            border=ft.Border.all(1, t.GRIS_CALIDO),
-            border_radius=24,
-            padding=12,
-            alignment=ft.Alignment.CENTER,
+            width=132, height=40, bgcolor=accessory.swatch,
+            border=ft.Border.all(2, t.TINTA), border_radius=20, left=49, top=18,
         )
 
     # --- partes dinámicas ------------------------------------------------
@@ -189,6 +304,7 @@ class EditorScreen:
             on_click=self._on_undo,
         )
         self._options_panel.controls = self._option_rows()
+        self._stage_host.content = self._render_stage()
         self._combo_panel.content = c.card(
             ft.Column(
                 [

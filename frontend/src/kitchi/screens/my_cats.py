@@ -12,24 +12,45 @@ from .. import theme as t
 
 def build(app) -> ft.Control:
     cats = app.cats
+    account = app.user is not None
     header = ft.Row(
         [
-            c.section_title("Mis gatos", "Tu colección en este dispositivo"),
+            c.section_title(
+                "Mis gatos",
+                f"Cuenta de {app.user.get('username')}" if account else "Tu colección en este dispositivo",
+            ),
             c.chip(f"{len(cats)}/{models.MAX_CATS}", bgcolor=t.CORAL_SUAVE, icon="pets"),
         ],
         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
         vertical_alignment=ft.CrossAxisAlignment.CENTER,
     )
 
-    controls: list[ft.Control] = [
-        header,
-        c.banner(
-            "Modo invitado: tus gatos viven en este navegador. Si borras sus datos, "
-            "se pierden. El guardado en cuenta llegará con el backend (P12).",
-            icon="cloud_off",
-            tone="warning",
-        ),
-    ]
+    controls: list[ft.Control] = [header]
+    if account:
+        controls.append(
+            c.banner(
+                "Tus gatos están guardados en la API. El límite de tres se valida en el backend.",
+                icon="cloud_done",
+                tone="success",
+            )
+        )
+        if not app.api_online:
+            controls.append(
+                c.banner(
+                    app.api_error or "La API no está disponible; no se pueden modificar tus gatos ahora.",
+                    icon="cloud_off",
+                    tone="warning",
+                )
+            )
+    else:
+        controls.append(
+            c.banner(
+                "Modo invitado: tus gatos viven en este navegador. Si borras sus datos, "
+                "se pierden. Regístrate para guardarlos en tu cuenta.",
+                icon="cloud_off",
+                tone="warning",
+            )
+        )
 
     if not cats:
         controls.append(

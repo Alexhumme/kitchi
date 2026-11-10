@@ -26,17 +26,17 @@ servido por la API y tiene prueba automatizada; no que la interfaz ya lo consuma
 
 | Método | Endpoint | Propósito | Autenticación | Estado |
 | --- | --- | --- | --- | --- |
-| `POST` | `/api/auth/register/` | Registrar un usuario | Pública | Implementado |
-| `POST` | `/api/auth/login/` | Iniciar sesión | Pública | Implementado |
-| `POST` | `/api/auth/logout/` | Cerrar sesión | Requerida | Implementado |
-| `GET` | `/api/auth/me/` | Consultar el usuario actual | Requerida | Implementado |
-| `GET` | `/api/catalog/` | Obtener opciones disponibles | Pública | Implementado (catálogo vacío hasta P08) |
-| `GET` | `/api/poses/` | Obtener las poses | Pública | Implementado (sin poses hasta P06) |
-| `GET` | `/api/cats/` | Listar gatos propios | Requerida* | Implementado |
-| `POST` | `/api/cats/` | Crear un gato | Requerida* | Implementado |
+| `POST` | `/api/auth/register/` | Registrar un usuario | Pública | Implementado y consumido por Flet |
+| `POST` | `/api/auth/login/` | Iniciar sesión | Pública | Implementado y consumido por Flet |
+| `POST` | `/api/auth/logout/` | Cerrar sesión | Requerida | Implementado y consumido por Flet |
+| `GET` | `/api/auth/me/` | Consultar el usuario actual | Requerida | Implementado y consumido por Flet |
+| `GET` | `/api/catalog/` | Obtener opciones disponibles | Pública | Implementado, sembrado provisional y consumido por Flet |
+| `GET` | `/api/poses/` | Obtener las poses | Pública | Implementado, sembrado provisional y consumido por Flet |
+| `GET` | `/api/cats/` | Listar gatos propios | Requerida* | Implementado y consumido por Flet |
+| `POST` | `/api/cats/` | Crear un gato | Requerida* | Implementado y consumido por Flet |
 | `GET` | `/api/cats/{id}/` | Consultar un gato | Dueño / pública si publicada | Implementado |
-| `PATCH` | `/api/cats/{id}/` | Actualizar su configuración | Solo dueño | Implementado |
-| `DELETE` | `/api/cats/{id}/` | Eliminar un gato propio | Solo dueño | Implementado |
+| `PATCH` | `/api/cats/{id}/` | Actualizar su configuración | Solo dueño | Implementado y consumido por Flet |
+| `DELETE` | `/api/cats/{id}/` | Eliminar un gato propio | Solo dueño | Implementado y consumido por Flet |
 | `POST` | `/api/sticker-packs/` | Solicitar generación de un paquete | Requerida* | Pendiente (P15) |
 | `GET` | `/api/sticker-packs/{id}/` | Consultar estado y resultado | Dueño | Pendiente (P15) |
 | `GET` | `/api/sticker-packs/{id}/download/` | Descargar el paquete completo o un sticker | Dueño | Pendiente (P14/P15) |
@@ -53,6 +53,24 @@ Los modelos de `sticker_packs`, `stickers`, `publications` y `generation_jobs` y
 con sus migraciones (P11); lo pendiente en esas filas son los endpoints.
 
 \* El modo invitado funciona con almacenamiento local del navegador; la API autoriza operaciones de cuenta solo para usuarios registrados. La persistencia en servidor de invitados es decisión pendiente ([01_MASTER_PLAN.md](01_MASTER_PLAN.md)).
+
+### Consumo desde Flet (9 de noviembre de 2026)
+
+El cliente [`frontend/src/kitchi/api.py`](../frontend/src/kitchi/api.py) resuelve la URL desde
+`KITCHI_API_URL`, `API_BASE_URL` o la `.env` de la raíz. Si no hay URL, queda en modo local
+sin llamar a la API. Los endpoints consumidos hoy son `health`, `catalog`, `poses`,
+`register`, `login`, `logout`, `me`, `list/create/update/delete` de gatos y
+`publications` (este último todavía responde 404 y la interfaz lo muestra como pendiente).
+
+- El cliente envía `Authorization: Token <clave>` y normaliza los errores del envoltorio
+  `{error: {code, message, details}}`; `ApiError.user_message()` extrae el primer mensaje de
+  campo para mostrarlo en la pantalla.
+- `/api/poses/` está paginado: el cliente lee `results`.
+- La configuración que envía Flet es la del contrato backend
+  (`{"schema_version": 1, "fur": "tabby", ...}`); al leer un gato, `cat_from_api()` aplana
+  bloques como `{"fur": {"code": "bicolor"}}` a `"bicolor"`.
+- El catálogo del backend es la autoridad de códigos; el frontend adapta su catálogo local y
+  conserva descripciones/swatches solo para la previsualización.
 
 ## Convenciones
 
@@ -158,9 +176,10 @@ interfaz siempre puede leer `error.code` y `error.message`.
 - [~] Definir esquemas de request/response por endpoint. Los endpoints implementados
   tienen su esquema generado por drf-spectacular y versionado en
   [`shared/contracts/openapi.yaml`](../shared/contracts/openapi.yaml).
-- [x] Acordar el mecanismo de autenticación entre Flet y Django: token de Django +
-  RBAC, registrado como [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md). Falta
-  probarlo desde el cliente Flet (tarea P02, comprobación 2).
+- [~] Acordar el mecanismo de autenticación entre Flet y Django: token de Django +
+  RBAC, registrado como [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md). El cliente
+  Flet ya lo implementa y lo cubre con pruebas; falta la prueba manual de extremo a
+  extremo en navegador (tarea P02, comprobación 2).
 - [x] Publicar los contratos compartidos en `shared/contracts/`.
 - [x] Verificar que `/api/docs/` muestra todos los endpoints y permite probarlos.
 - [ ] Añadir ejemplos de error y de respuestas paginadas al documento de contrato. El

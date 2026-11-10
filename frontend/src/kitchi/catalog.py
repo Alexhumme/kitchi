@@ -11,10 +11,12 @@ Cuando el backend esté disponible, /api/catalog/ será la fuente de verdad.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import zlib
+from dataclasses import dataclass, replace
 
 SCHEMA_VERSION = 1
 PROVISIONAL = True
+CATALOG_SOURCE = "bundled"
 
 
 @dataclass(frozen=True)
@@ -23,6 +25,8 @@ class Option:
     name: str
     description: str
     swatch: str  # color orientativo de la pieza (no es el asset final)
+    asset_path: str = ""  # ruta provisional; vacía mientras no haya assets
+    is_premium: bool = False
 
 
 @dataclass(frozen=True)
@@ -111,6 +115,102 @@ CATEGORIES: tuple[Category, ...] = (
 )
 
 CATEGORY_KEYS = tuple(c.key for c in CATEGORIES)
+_DEFAULT_CATEGORIES = CATEGORIES
+
+_FALLBACK_PALETTE = (
+    "#F2A15A", "#FFF0D8", "#5C5266", "#4DAD72", "#5AA7E8",
+    "#E8A13C", "#684632", "#3E3A4D", "#C98A4B", "#FFB997",
+    "#DBC6FF", "#9AD0C2", "#7B61FF", "#F7D7E8", "#4E4A5C",
+    "#302B3A", "#FF6B6B", "#FFD166",
+)
+
+
+def _bundled_option(category_key: str, code: str) -> Option | None:
+    for category in _DEFAULT_CATEGORIES:
+        if category.key == category_key:
+            return next((o for o in category.options if o.code == code), None)
+    return None
+
+
+def _fallback_swatch(category_key: str, code: str) -> str:
+    index = zlib.crc32(f"{category_key}:{code}".encode("utf-8")) % len(_FALLBACK_PALETTE)
+    return _FALLBACK_PALETTE[index]
+
+
+def apply_api_catalog(payload: dict) -> bool:
+    """Adopta el catálogo del backend conservando descripciones y colores locales.
+
+    Devuelve False si el backend aún no tiene las seis categorías activas; en
+    ese caso la interfaz mantiene el catálogo empaquetado y muestra el aviso
+    correspondiente. Los códigos del backend son la autoridad.
+    """
+    global CATEGORIES, CATALOG_SOURCE
+    if not isinstance(payload, dict):
+        return False
+    categories = payload.get("categories")
+    if not isinstance(categories, dict) or not categories:
+        return False
+
+    rebuilt: list[Category] = []
+    for base in _DEFAULT_CATEGORIES:
+        entries = categories.get(base.key)
+        if not isinstance(entries, list) or not entries:
+            return False
+        options: list[Option] = []
+        seen: set[str] = set()
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            code = entry.get("code")
+            if not isinstance(code, str) or not code or code in seen:
+                continue
+            seen.add(code)
+            bundled = _bundled_option(base.key, code)
+            options.append(
+                Option(
+                    code=code,
+                    name=entry.get("label") or (bundled.name if bundled else code),
+                    description=bundled.description if bundled else "Recurso provisional del catálogo.",
+                    swatch=bundled.swatch if bundled else _fallback_swatch(base.key, code),
+                    asset_path=entry.get("asset_path") or "",
+                    is_premium=bool(entry.get("is_premium")),
+                )
+            )
+        if not options:
+            return False
+        rebuilt.append(replace(base, options=tuple(options)))
+
+    CATEGORIES = tuple(rebuilt)
+    CATALOG_SOURCE = "api"
+    return True
+
+
+def reset_catalog() -> None:
+    global CATEGORIES, CATALOG_SOURCE
+    CATEGORIES = _DEFAULT_CATEGORIES
+    CATALOG_SOURCE = "bundled"
+
+
+def normalize_configuration(configuration: dict | None) -> dict:
+    """Convierte la configuración del backend (`{"code": ...}`) al formato del editor.
+
+    El backend normaliza cada categoría como objeto; la interfaz trabaja con el
+    código de la opción. Las opciones desconocidas caen en la primera válida.
+    """
+    source = configuration if isinstance(configuration, dict) else {}
+    normalized = {"schema_version": source.get("schema_version", SCHEMA_VERSION)}
+    for category in CATEGORIES:
+        block = source.get(category.key)
+        if isinstance(block, str):
+            code = block
+        elif isinstance(block, dict):
+            code = block.get("code") or block.get("style") or block.get("pattern")
+        else:
+            code = None
+        if not isinstance(code, str) or not is_valid_option(category.key, code):
+            code = category.options[0].code
+        normalized[category.key] = code
+    return normalized
 
 
 def get_category(key: str) -> Category | None:
