@@ -6,6 +6,7 @@ import flet as ft
 
 from .. import catalog
 from .. import components as c
+from .. import icons
 from .. import models
 from .. import theme as t
 
@@ -86,7 +87,7 @@ def _cat_card(app, cat: dict) -> ft.Control:
                 ft.Row(
                     [
                         ft.Container(
-                            content=ft.Icon("pets", size=24, color=t.CORAL),
+                            content=ft.Icon(icons.get("pets"), size=24, color=t.CORAL),
                             width=44,
                             height=44,
                             bgcolor=t.CORAL_SUAVE,
@@ -101,19 +102,17 @@ def _cat_card(app, cat: dict) -> ft.Control:
                             spacing=1,
                             expand=True,
                         ),
-                        ft.IconButton("edit", tooltip="Editar", icon_color=t.TINTA,
+                        ft.IconButton(icons.get("edit"), tooltip="Editar", icon_color=t.TINTA,
                                       on_click=lambda e, cid=cat["id"]: app.edit_cat(cid)),
-                        ft.IconButton("delete_outline", tooltip="Eliminar", icon_color=t.ERROR,
+                        ft.IconButton(icons.get("delete_outline"), tooltip="Eliminar", icon_color=t.ERROR,
                                       on_click=lambda e, cid=cat["id"]: app.ask_delete_cat(cid)),
                     ],
                     spacing=6,
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 ),
-                ft.Row(
-                    [c.chip(f"{label}: {name}", bgcolor=t.CREMA_HONDO) for label, name in summary],
-                    spacing=6,
-                    wrap=True,
-                    run_spacing=6,
+                ft.Text(
+                    "  ·  ".join(f"{label}: {name}" for label, name in summary),
+                    style=t.caption(),
                 ),
             ],
             spacing=10,

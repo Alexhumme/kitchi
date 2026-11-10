@@ -5,6 +5,7 @@ from __future__ import annotations
 import flet as ft
 
 from .. import components as c
+from .. import icons
 from .. import models
 from .. import theme as t
 
@@ -54,7 +55,7 @@ def _identity(app, user: dict | None) -> ft.Control:
         ft.Row(
             [
                 ft.Container(
-                    content=ft.Icon(icon, size=30, color=t.TINTA),
+                    content=ft.Icon(icons.get(icon), size=30, color=t.TINTA),
                     width=60,
                     height=60,
                     bgcolor=background,
@@ -94,7 +95,6 @@ def _guest_account(app) -> ft.Control:
                         ),
                     ],
                     spacing=10,
-                    wrap=True,
                 ),
             ],
             spacing=10,
@@ -118,7 +118,6 @@ def _account(app, user: dict) -> ft.Control:
                         c.secondary_button("Cerrar sesión", app.logout, icon="logout"),
                     ],
                     spacing=10,
-                    wrap=True,
                 ),
             ],
             spacing=10,
@@ -213,7 +212,6 @@ def _about(app) -> ft.Control:
                         c.chip(mode, bgcolor=t.CREMA_HONDO, icon="cable"),
                     ],
                     spacing=6,
-                    wrap=True,
                 ),
             ],
             spacing=8,

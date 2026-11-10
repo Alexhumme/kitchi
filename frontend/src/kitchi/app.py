@@ -8,11 +8,13 @@ almacenamiento del navegador (invitado); el editor es el mismo en ambos casos.
 from __future__ import annotations
 
 import asyncio
+import logging
 
 import flet as ft
 
 from . import catalog
 from . import components as c
+from . import icons
 from . import models
 from . import storage
 from . import theme as t
@@ -21,6 +23,8 @@ from .editor_state import EditorState
 from .screens import auth as auth_screen
 from .screens import editor as editor_screen
 from .screens import hub, my_cats, profile, stickers
+
+logger = logging.getLogger(__name__)
 
 SECTIONS = (
     ("Navegar", "explore_outlined"),
@@ -44,9 +48,17 @@ BUNDLED_POSES = [
 
 
 class KitchiApp:
-    def __init__(self, page: ft.Page, guest_storage=None, api: ApiClient | None = None):
+    def __init__(
+        self,
+        page: ft.Page,
+        guest_storage=None,
+        api: ApiClient | None = None,
+        storage_factory=None,
+    ):
         self.page = page
         self.storage = guest_storage or storage.MemoryStorage()
+        self.storage_factory = storage_factory
+        self.storage_notice: str | None = None
         self.api = api or ApiClient()
         self.token: str | None = None
         self.user: dict | None = None
@@ -74,12 +86,10 @@ class KitchiApp:
         page.padding = 0
         page.spacing = 0
 
-        await self._bootstrap()
-
         header = ft.Container(
             content=ft.Row(
                 [
-                    ft.Icon("pets", size=24, color=t.CORAL),
+                    ft.Icon(icons.get("pets"), size=24, color=t.CORAL),
                     ft.Text("kitchi.studio", size=20, weight=ft.FontWeight.W_700, color=t.TINTA),
                     ft.Container(expand=True),
                     self._identity_host,
@@ -101,7 +111,7 @@ class KitchiApp:
 
         self._nav = ft.NavigationBar(
             destinations=[
-                ft.NavigationBarDestination(icon=icon_name, label=label)
+                ft.NavigationBarDestination(icon=icons.get(icon_name), label=label)
                 for label, icon_name in SECTIONS
             ],
             selected_index=0,
@@ -113,8 +123,41 @@ class KitchiApp:
 
         page.add(ft.Column([header, body], spacing=0, expand=True))
         page.navigation_bar = self._nav
+        # El armazón se pinta antes de tocar el almacenamiento: si el navegador
+        # no responde, la app sigue siendo usable en modo invitado en memoria.
+        page.update()
         self.go(0)
         page.update()
+
+        await self._attach_storage()
+        try:
+            await self._bootstrap()
+        except Exception:  # noqa: BLE001 - la pantalla debe quedar usable igual
+            logger.exception("Fallo al cargar el estado inicial")
+            c.notify(self.page, "No se pudieron cargar los datos iniciales.", "error")
+        self.rebuild_current()
+        self._render_identity()
+        page.update()
+
+    async def _attach_storage(self) -> None:
+        """Conecta el almacenamiento del navegador ya con la página pintada."""
+        if self.storage_factory is None:
+            return
+        try:
+            store = await self.storage_factory()
+        except Exception:  # noqa: BLE001 - nunca debe tumbar el arranque
+            logger.exception("Fallo al abrir el almacenamiento del navegador")
+            store = None
+        if store is None:
+            self.storage = storage.MemoryStorage()
+            self.storage_notice = (
+                "No se pudo abrir el almacenamiento de este navegador. "
+                "Los gatos de invitado no se guardarán en esta sesión."
+            )
+            logger.warning("Almacenamiento del navegador no disponible; se usa memoria")
+            return
+        self.storage = store
+        self.storage_notice = None
 
     async def _bootstrap(self) -> None:
         self.token, self.user = await storage.load_session(self.storage)
@@ -220,11 +263,28 @@ class KitchiApp:
             screen = stickers.build(self)
         else:
             screen = profile.build(self)
-        self._content.controls = [screen]
+        self._content.controls = (
+            [self._storage_banner()] if self.storage_notice else []
+        ) + [screen]
         if self._nav is not None and c.mounted(self._nav):
             self._nav.update()
         if c.mounted(self._content):
             self._content.update()
+
+    def _storage_banner(self) -> ft.Control:
+        return ft.Container(
+            content=ft.Row(
+                [
+                    ft.Icon(icons.get("warning_amber"), size=18, color=t.ADVERTENCIA),
+                    ft.Text(self.storage_notice or "", size=13, color=t.TINTA, expand=True),
+                ],
+                spacing=8,
+            ),
+            padding=ft.Padding.symmetric(horizontal=12, vertical=10),
+            bgcolor=t.AMARILLO,
+            border_radius=12,
+            margin=ft.Margin.only(bottom=12),
+        )
 
     def _render_identity(self) -> None:
         if self.user:
@@ -445,6 +505,5 @@ class KitchiApp:
 
 
 async def main(page: ft.Page) -> None:
-    prefs = ft.SharedPreferences()
-    app = KitchiApp(page, storage.FletPrefsStorage(prefs))
+    app = KitchiApp(page, storage_factory=storage.open_browser_storage)
     await app.start()

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import flet as ft
 
+from . import icons
 from . import theme as t
 
 
@@ -31,7 +32,7 @@ def primary_button(text: str, on_click, icon: str | None = None,
                    disabled: bool = False, expand: bool = False) -> ft.FilledButton:
     return ft.FilledButton(
         content=ft.Row(
-            [ft.Icon(icon, size=20), ft.Text(text, style=t.button_text())],
+            [ft.Icon(icons.get(icon), size=20), ft.Text(text, style=t.button_text())],
             spacing=8,
             alignment=ft.MainAxisAlignment.CENTER,
             tight=True,
@@ -54,7 +55,7 @@ def secondary_button(text: str, on_click, icon: str | None = None,
                      disabled: bool = False) -> ft.OutlinedButton:
     return ft.OutlinedButton(
         content=ft.Row(
-            [ft.Icon(icon, size=18, color=t.TINTA), ft.Text(text, style=t.button_text(), color=t.TINTA)],
+            [ft.Icon(icons.get(icon), size=18, color=t.TINTA), ft.Text(text, style=t.button_text(), color=t.TINTA)],
             spacing=8,
             alignment=ft.MainAxisAlignment.CENTER,
             tight=True,
@@ -71,16 +72,32 @@ def secondary_button(text: str, on_click, icon: str | None = None,
 
 
 def chip(label: str, bgcolor: str = t.CREMA_HONDO, color: str = t.TINTA,
-         icon: str | None = None) -> ft.Container:
-    content = [ft.Text(label, size=12, weight=ft.FontWeight.W_500, color=color)]
+         icon: str | None = None, dense: bool = False) -> ft.Container:
+    text_size = 10 if dense else 12
+    content = [ft.Text(label, size=text_size, weight=ft.FontWeight.W_500, color=color)]
     if icon:
-        content.insert(0, ft.Icon(icon, size=14, color=color))
+        content.insert(0, ft.Icon(icons.get(icon), size=10 if dense else 14, color=color))
     return ft.Container(
-        content=ft.Row(content, spacing=5, tight=True),
-        padding=ft.Padding.symmetric(horizontal=10, vertical=5),
+        content=ft.Row(content, spacing=4 if dense else 5, tight=True),
+        padding=(
+            ft.Padding.symmetric(horizontal=8, vertical=3)
+            if dense
+            else ft.Padding.symmetric(horizontal=10, vertical=5)
+        ),
         bgcolor=bgcolor,
         border_radius=999,
     )
+
+
+def flow(items: list[ft.Control], *, per_row: int = 3, spacing: int = 6,
+         run_spacing: int = 6) -> ft.Column:
+    """Sustituto de `ft.Row(..., wrap=True)`.
+
+    El cliente web de Flet 1.1.2 no pinta el `Wrap` (la página queda en gris),
+    así que los elementos se agrupan en filas de a lo sumo `per_row`.
+    """
+    rows = [ft.Row(items[start:start + per_row], spacing=spacing) for start in range(0, len(items), per_row)]
+    return ft.Column(rows, spacing=run_spacing)
 
 
 def section_title(text: str, subtitle: str | None = None) -> ft.Column:
@@ -100,7 +117,7 @@ def banner(text: str, icon: str = "info_outline", tone: str = "info") -> ft.Cont
     bg, fg = tones.get(tone, tones["info"])
     return ft.Container(
         content=ft.Row(
-            [ft.Icon(icon, size=18, color=fg), ft.Text(text, size=13, color=fg, expand=True)],
+            [ft.Icon(icons.get(icon), size=18, color=fg), ft.Text(text, size=13, color=fg, expand=True)],
             spacing=10,
             vertical_alignment=ft.CrossAxisAlignment.START,
         ),
@@ -113,7 +130,7 @@ def banner(text: str, icon: str = "info_outline", tone: str = "info") -> ft.Cont
 def empty_state(icon: str, title: str, body: str, action: ft.Control | None = None) -> ft.Container:
     controls: list[ft.Control] = [
         ft.Container(
-            content=ft.Icon(icon, size=44, color=t.TINTA_SUAVE),
+            content=ft.Icon(icons.get(icon), size=44, color=t.TINTA_SUAVE),
             width=88,
             height=88,
             bgcolor=t.CREMA_HONDO,
@@ -134,11 +151,11 @@ def empty_state(icon: str, title: str, body: str, action: ft.Control | None = No
 
 def notify(page: ft.Page, text: str, tone: str = "info") -> None:
     colors = {"info": t.TINTA, "success": t.EXITO, "error": t.ERROR, "warning": t.ADVERTENCIA}
-    icons = {"info": "info_outline", "success": "check_circle", "error": "error_outline", "warning": "warning_amber"}
+    tone_icons = {"info": "info_outline", "success": "check_circle", "error": "error_outline", "warning": "warning_amber"}
     page.show_dialog(
         ft.SnackBar(
             content=ft.Row(
-                [ft.Icon(icons.get(tone, "info_outline"), size=18, color="#FFFFFF"),
+                [ft.Icon(icons.get(tone_icons.get(tone, "info_outline")), size=18, color="#FFFFFF"),
                  ft.Text(text, size=14, color="#FFFFFF", expand=True)],
                 spacing=8,
             ),

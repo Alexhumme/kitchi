@@ -13,6 +13,7 @@ import flet as ft
 
 from .. import catalog
 from .. import components as c
+from .. import icons
 from .. import models
 from .. import theme as t
 from ..editor_state import EditorState
@@ -44,11 +45,11 @@ class EditorScreen:
                     expand=True,
                 ),
                 self._undo_button,
-                ft.IconButton("restart_alt", tooltip="Reiniciar combinación", icon_color=t.TINTA_SUAVE,
+                ft.IconButton(icons.get("restart_alt"), tooltip="Reiniciar combinación", icon_color=t.TINTA_SUAVE,
                               on_click=self._on_reset),
-                ft.IconButton("casino", tooltip="Combinación al azar", icon_color=t.TINTA_SUAVE,
+                ft.IconButton(icons.get("casino"), tooltip="Combinación al azar", icon_color=t.TINTA_SUAVE,
                               on_click=self._on_random),
-                ft.IconButton("add", tooltip="Empezar un gato nuevo", icon_color=t.TINTA_SUAVE,
+                ft.IconButton(icons.get("add"), tooltip="Empezar un gato nuevo", icon_color=t.TINTA_SUAVE,
                               on_click=self._on_new),
             ],
             spacing=0,
@@ -110,7 +111,7 @@ class EditorScreen:
                         [
                             ft.Column(
                                 [
-                                    ft.Icon(cat.icon, size=22, color=t.CORAL if selected else t.TINTA_SUAVE),
+                                    ft.Icon(icons.get(cat.icon), size=22, color=t.CORAL if selected else t.TINTA_SUAVE),
                                     ft.Text(
                                         cat.short_label,
                                         size=11,
@@ -124,7 +125,7 @@ class EditorScreen:
                                 alignment=ft.MainAxisAlignment.CENTER,
                             ),
                             ft.Container(
-                                content=ft.Icon("check_circle", size=14, color=t.CORAL),
+                                content=ft.Icon(icons.get("check_circle"), size=14, color=t.CORAL),
                                 right=2,
                                 top=2,
                                 visible=selected,
@@ -223,13 +224,13 @@ class EditorScreen:
             height=210,
         )
 
-        def piece(label: str, option) -> ft.Container:
+        def piece(option) -> ft.Container:
             return ft.Container(
                 content=ft.Row(
                     [
-                        ft.Container(width=14, height=14, bgcolor=option.swatch,
+                        ft.Container(width=13, height=13, bgcolor=option.swatch,
                                      border=ft.Border.all(1, t.TINTA), border_radius=7),
-                        ft.Text(f"{label}: {option.name}", size=11, color=t.TINTA),
+                        ft.Text(option.name, size=11, color=t.TINTA),
                     ],
                     spacing=5,
                     tight=True,
@@ -245,10 +246,8 @@ class EditorScreen:
                 c.chip("Vista previa con placeholders", bgcolor=t.SUPERFICIE, icon="brush"),
                 face,
                 ft.Row(
-                    [piece("Sup.", top), piece("Inf.", bottom), piece("Extra", accessory)],
+                    [piece(top), piece(bottom), piece(accessory)],
                     spacing=5,
-                    wrap=True,
-                    run_spacing=5,
                     alignment=ft.MainAxisAlignment.CENTER,
                 ),
                 ft.Text(
@@ -280,7 +279,7 @@ class EditorScreen:
             )
         if accessory.code == "bow":
             return ft.Container(
-                content=ft.Icon("star", size=30, color=accessory.swatch),
+                content=ft.Icon(icons.get("star"), size=30, color=accessory.swatch),
                 left=158,
                 top=20,
             )
@@ -297,7 +296,7 @@ class EditorScreen:
             icon="fiber_manual_record" if self.state.dirty else "check_circle",
         )
         self._undo_button.content = ft.IconButton(
-            "undo",
+            icons.get("undo"),
             tooltip="Deshacer",
             icon_color=t.TINTA if self.state.history else t.GRIS_CALIDO,
             disabled=not self.state.history,
@@ -309,14 +308,12 @@ class EditorScreen:
             ft.Column(
                 [
                     c.section_title("Tu combinación", "Se actualiza al instante con cada elección"),
-                    ft.Row(
-                        [
-                            c.chip(f"{label}: {name}", bgcolor=t.CREMA_HONDO)
+                    ft.Text(
+                        "  ·  ".join(
+                            f"{label}: {name}"
                             for label, name in catalog.config_summary(self.state.configuration)
-                        ],
-                        spacing=6,
-                        wrap=True,
-                        run_spacing=6,
+                        ),
+                        style=t.caption(),
                     ),
                 ],
                 spacing=8,
@@ -329,7 +326,7 @@ class EditorScreen:
         rows: list[ft.Control] = [
             ft.Row(
                 [
-                    ft.Icon(cat.icon, size=18, color=t.CORAL),
+                    ft.Icon(icons.get(cat.icon), size=18, color=t.CORAL),
                     ft.Text(cat.label, size=15, weight=ft.FontWeight.W_600, color=t.TINTA),
                     ft.Text(cat.tagline, style=t.caption(), expand=True, text_align=ft.TextAlign.RIGHT),
                 ],
@@ -358,7 +355,7 @@ class EditorScreen:
                                 spacing=1,
                                 expand=True,
                             ),
-                            ft.Icon("check_circle" if selected else "radio_button_unchecked",
+                            ft.Icon(icons.get("check_circle" if selected else "radio_button_unchecked"),
                                     size=22, color=t.CORAL if selected else t.GRIS_CALIDO),
                         ],
                         spacing=12,

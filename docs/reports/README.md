@@ -10,6 +10,7 @@ Directorio de evidencias reproducibles exigidas por el plan maestro y por la rú
 | `academic-audit.md` | Auditoría final de README, repositorio, producto y sustentación | Criterios 2, 3 y 5 | P40 |
 | `week1-validation.md` | Validación de Flet, DRF, MySQL, Pillow y Swagger (versiones exactas fijadas) | Criterio 2 / AC-12 | P02 |
 | [`frontend-integration.md`](frontend-integration.md) | Integración Flet ↔ API, sembrado del catálogo provisional, 34 pruebas y smoke test de pantallas | Criterio 2 / AC-12 | P02, P08, P10, P12, P36, P39 |
+| [`frontend-flet-web-startup.md`](frontend-flet-web-startup.md) | Arranque estable del frontend: causas de la pantalla gris y la inyección de `SharedPreferences`, iconos `ft.Icons`, `c.flow()` y evidencia del recorrido por las cinco secciones con guardado y recarga | Criterio 2 / AC-12 | P10, P12, P36, P39 |
 | `ai-evaluation.md` | Prueba comparativa de IA: las 7 preguntas de [07_AI_INTEGRATION.md](../07_AI_INTEGRATION.md) | AC-08 | P05 |
 | `concurrency-logs.md` | Logs de la prueba concurrente con operaciones reales | AC-09 | P20 |
 | `multiprocessing-evidence.md` | Identificación de procesos trabajadores y resultados | AC-10 | P21 |

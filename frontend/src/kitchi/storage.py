@@ -8,13 +8,18 @@ lo aplica el backend.
 
 from __future__ import annotations
 
+import asyncio
 import copy
 import json
+import logging
 
 from .models import validate_cat_record
 
+logger = logging.getLogger(__name__)
+
 STORAGE_KEY = "kitchi.guest.cats.v1"
 SESSION_KEY = "kitchi.session.v1"
+PROBE_KEY = "kitchi.probe.v1"
 
 
 class MemoryStorage:
@@ -41,6 +46,46 @@ class FletPrefsStorage:
 
     async def set(self, key: str, value: str) -> None:
         await self._prefs.set(key, value)
+
+    async def probe(self, timeout: float = 1.2) -> bool:
+        """Comprueba que el cliente enlazó el servicio con una lectura trivial.
+
+        Una lectura normal tarda milisegundos; si el cliente no tiene listener
+        para este servicio la espera se iría a los 10 s por defecto, así que se
+        corta aquí con un plazo corto.
+        """
+        try:
+            await asyncio.wait_for(self._prefs.get(PROBE_KEY), timeout)
+        except Exception as exc:  # noqa: BLE001 - cualquier fallo = servicio inutilizable
+            logger.debug("SharedPreferences sin respuesta: %r", exc)
+            return False
+        return True
+
+
+async def open_browser_storage(
+    *, delays: tuple[float, ...] = (0.0, 0.3, 0.8), timeout: float = 1.2
+) -> FletPrefsStorage | None:
+    """Abre el almacenamiento del navegador tolerando la carrera de arranque.
+
+    Flet 1.1.x puede entregar el registro del servicio ``SharedPreferences``
+    antes de que el cliente web monte su ``ServiceRegistry``: el control existe
+    en el cliente pero nunca recibe listener y la primera lectura expira a los
+    10 s (ver ``docs/decisions/`` y flet-dev/flet#6412). Por eso se usa una
+    instancia nueva por intento, con esperas cortas entre intentos. Si ninguna
+    responde se devuelve ``None`` y la app continúa en memoria.
+    """
+    import flet as ft
+
+    for attempt, delay in enumerate(delays, start=1):
+        if delay:
+            await asyncio.sleep(delay)
+        adapter = FletPrefsStorage(ft.SharedPreferences())
+        if await adapter.probe(timeout):
+            logger.info("SharedPreferences enlazado en el intento %s", attempt)
+            return adapter
+        logger.warning("SharedPreferences sin listener (intento %s)", attempt)
+    return None
+
 
 
 async def load_cats(storage) -> list[dict]:

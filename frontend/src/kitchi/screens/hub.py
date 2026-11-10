@@ -5,6 +5,7 @@ from __future__ import annotations
 import flet as ft
 
 from .. import components as c
+from .. import icons
 from .. import theme as t
 
 
@@ -33,7 +34,6 @@ def build(app) -> ft.Control:
                         c.secondary_button("Mis gatos", lambda e: app.go(1), icon="pets"),
                     ],
                     spacing=8,
-                    wrap=True,
                 ),
             ],
             spacing=10,
@@ -69,7 +69,7 @@ def _community(app) -> ft.Control:
     body: list[ft.Control] = [
         ft.Row(
             [
-                ft.Icon("explore_outlined", size=22, color=t.VIOLETA),
+                ft.Icon(icons.get("explore_outlined"), size=22, color=t.VIOLETA),
                 ft.Text("Hub comunitario", style=t.section()),
                 c.chip("P18" if not app.publications else f"{len(app.publications)}", bgcolor=t.LAVANDA),
             ],
@@ -96,7 +96,6 @@ def _community(app) -> ft.Control:
                     c.chip("Copiar", icon="copy_all"),
                 ],
                 spacing=8,
-                wrap=True,
             )
         )
         if not app.api_online:
@@ -157,7 +156,7 @@ def _step(number: str, title: str, body: str, icon: str) -> ft.Container:
                     spacing=2,
                     expand=True,
                 ),
-                ft.Icon(icon, size=22, color=t.TINTA_SUAVE),
+                ft.Icon(icons.get(icon), size=22, color=t.TINTA_SUAVE),
             ],
             spacing=12,
             vertical_alignment=ft.CrossAxisAlignment.START,

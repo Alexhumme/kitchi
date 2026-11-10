@@ -1,6 +1,6 @@
 # 12 · Guía viva de la plataforma — Kitchi Studio
 
-Documento de estudio para la sustentación · Versión 0.4 · 9 de noviembre de 2026
+Documento de estudio para la sustentación · Versión 0.5 · 10 de noviembre de 2026
 
 > **Estado:** documento vivo, casi vacío a propósito. Se completará **por incrementos** a medida que la aplicación se implemente. No describe funcionalidades que aún no existen.
 >
@@ -28,12 +28,14 @@ Kitchi Studio es una aplicación web móvil con la que una persona que no sabe d
 compone un gato chibi combinando recursos 2D por capas, guarda hasta tres personajes,
 pide un paquete de seis stickers PNG transparentes y comparte sus creaciones en un hub.
 
-**Estado a 9 de noviembre:** el backend (API, datos, cuentas, permisos y documentación
+**Estado a 10 de noviembre:** el backend (API, datos, cuentas, permisos y documentación
 OpenAPI) está implementado y en uso. La interfaz Flet Web existe y consume la API para
 catálogo, poses, cuentas y gatos; el editor ya permite crear, previsualizar con
-placeholders de color, guardar y editar hasta tres gatos. El motor de composición y los
-endpoints de stickers, publicaciones e IA siguen pendientes, así que el flujo completo de
-usuario todavía no puede recorrerse de principio a fin.
+placeholders de color, guardar y editar hasta tres gatos. Las cinco pantallas se
+verificaron recorriendo la navegación en un navegador real (crear y guardar un gato
+como invitado sobrevive a una recarga). El motor de composición y los endpoints de
+stickers, publicaciones e IA siguen pendientes, así que el flujo completo de usuario
+todavía no puede recorrerse de principio a fin.
 
 ## 2. Problema, usuario y propuesta de valor
 
@@ -128,7 +130,7 @@ Cómo se arranca y cómo se comprueba:
 | Crear una cuenta de consola | `python manage.py createsuperuser` | Usuario con `is_staff` para entrar en `/admin/` |
 | Consola de administración | `http://127.0.0.1:8000/admin/` | Gestión de cuentas, catálogo, poses, gatos, paquetes, publicaciones y trabajos |
 | Pruebas del backend | `python -m pytest` (en `backend/`) | 47 pruebas sobre SQLite en memoria |
-| Pruebas del frontend | `python -m pytest -q frontend/tests` | 34 pruebas del cliente HTTP, catálogo, sesión, almacenamiento y modelos |
+| Pruebas del frontend | `python -m pytest -q` (en `frontend/`) | 42 pruebas del cliente HTTP, catálogo, sesión, almacenamiento, modelos y arranque |
 | Verificación en vivo | `python scripts/check_backend.py` | 19 comprobaciones contra el servidor en marcha y MySQL real; autolimpia sus datos |
 
 Puntos de diseño que conviene saber explicar:
@@ -147,9 +149,20 @@ Puntos de diseño que conviene saber explicar:
   opciones locales con las de `/api/catalog/` y adapta la configuración normalizada
   (`{"fur": {"code": "tabby"}}` → `"tabby"`). Si la API no responde, conserva el catálogo
   empaquetado y el modo invitado.
-- **La sesión decide dónde viven los gatos.** `frontend/src/kitchi/app.py` carga el token de
-  `SharedPreferences`; con token usa `/api/cats/`, sin token usa el almacenamiento local. Al
-  iniciar sesión, los gatos de invitado se migran a la cuenta si hay espacio.
+- **La sesión decide dónde viven los gatos.** `frontend/src/kitchi/app.py` pinta el
+  armazón (cabecera, contenido y barra inferior) antes de tocar el almacenamiento.
+  Después crea `SharedPreferences` con reintentos cortos y un plazo de comprobación por
+  lectura (`kitchi/storage.open_browser_storage()`); si el cliente web no enlaza el
+  servicio, la app sigue en memoria con un aviso visible en la pantalla en vez de caerse.
+  Con token usa `/api/cats/`, sin token usa el almacenamiento local. Al iniciar sesión,
+  los gatos de invitado se migran a la cuenta si hay espacio. En Flet 1.1.2 el arranque
+  era inestable (ver [ADR-006](decisions/ADR-006-flet-1-1-2-web-issues.md)); si al subir
+  de versión ya no hace falta este rodeo, hay que quitarlo.
+- **Los iconos se pasan como `ft.Icons`, nunca como cadenas.** Flet 1.x exige `IconData`;
+  una cadena rompe la construcción de la página y solo se ve el fondo gris. Los datos que
+  guardan nombres legibles (catálogo, poses, tonos) pasan por `kitchi/icons.get()`.
+- **`ft.Row(wrap=True)` está roto en el cliente web 1.1.2.** Las filas de chips usan
+  `c.flow()` (filas de a lo sumo N elementos) o filas simples.
 - **La previsualización es honesta.** El editor dibuja cada pieza con el color del catálogo y
   la etiqueta “Vista previa con placeholders”; no finge que existen los PNG finales.
 
@@ -252,13 +265,18 @@ Implementado y en uso:
   invitado y CRUD de gatos; el catálogo y las poses se leen de la API.
 - Editor con seis categorías, tres opciones cada una y previsualización de color en tiempo real.
 - Migración automática de gatos de invitado a la cuenta al iniciar sesión, si hay espacio.
+- Arranque tolerante a fallos: la app pinta el armazón antes de persistir y, si el
+  almacenamiento del navegador no responde, sigue en memoria con un aviso visible
+  (Flet 1.1.2 + SharedPreferences, [ADR-006](decisions/ADR-006-flet-1-1-2-web-issues.md)).
+- Recorrido en navegador real: las cinco secciones, navegación, guardar un gato como
+  invitado y verlo persistido tras recargar la página.
 - Manejo visible de errores en login/registro, guardado, perfil, hub y Mis gatos.
 - Documentación OpenAPI/Swagger servida y versionada en `shared/contracts/openapi.yaml`.
 - Esquema de datos completo con migraciones aplicadas sobre MySQL 8.
 - Permisos RBAC por rol y por recurso; manejo de errores con formato único.
 - Consola `/admin/` con las nueve entidades, validación de catálogo en el formulario de gatos y
   acciones de estado que usan la máquina de estados.
-- Pruebas: 47 del backend, 34 del frontend y verificación en vivo contra MySQL.
+- Pruebas: 47 del backend, 42 del frontend y verificación en vivo contra MySQL.
 
 Pendiente de implementar (existe solo el modelo de datos o ni eso):
 
@@ -272,8 +290,10 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 - **Hub:** la pantalla explica el flujo, pero `/api/publications/` aún no existe; no hay
   publicar ni copiar (P18/P19).
 - **Concurrencia y paralelismo:** nada implementado (P20–P22).
-- **Prueba manual en navegador:** las pantallas se construyen en pruebas y smoke test, pero
-  falta recorrer el flujo completo con backend real y verificar la sesión de extremo a extremo.
+- **Prueba manual con cuenta:** el recorrido como invitado (crear, guardar, recargar y
+  verlo en Mis gatos) y las cinco secciones se verificaron en navegador real; falta
+  repetirlo manualmente con una cuenta, incluidos el caso de token expirado y el login
+  con usuario/contraseña desde la interfaz (P12).
 - **Tokens que no caducan:** el token de Django no tiene expiración; aceptable para un
   prototipo local y registrado como riesgo en [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md).
 - **Suscripciones premium:** el campo `premium` y el flag `is_premium` existen y se validan, pero
@@ -304,3 +324,4 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 | 2026-11-04 | Base del backend (P02, P11, P12, P32, P33) | Arquitectura real con las siete apps, modelo de datos aplicado en MySQL, autenticación por token, permisos RBAC, errores normalizados, Swagger y cómo arrancar y verificar cada pieza; limitaciones del lado frontend, motor e IA | Alex Valdelamar |
 | 2026-11-04 | Consola de administración (`/admin/`) | Sección 5.1: las nueve entidades registradas, validación de catálogo compartida con la API, acciones de estado sobre la máquina de estados, protección de las poses en uso y el alta de la cuenta de consola con `createsuperuser` | Alex Valdelamar |
 | 2026-11-09 | Interfaz Flet e integración con la API (P02, P08, P10, P12, P36, P39) | Se actualizaron resumen, flujo, pantallas, arquitectura y limitaciones: cinco secciones, login/registro, sesión invitado/cuenta, CRUD de gatos, catálogo sembrado y editor con previsualización de placeholders. Se documentó lo que sigue pendiente (assets, Pillow, hub, IA) y se añadieron los comandos de instalación y prueba del frontend | Martin Solano |
+| 2026-11-10 | Arranque estable del frontend y recorrido verificado (P10, P12, P36, P39) | Nuevo ADR-006 (iconos `ft.Icons`, `Row(wrap=True)` roto en el cliente web 1.1.2, `SharedPreferences` al arrancar); la guía explica el orden de arranque (armazón → almacenamiento), los iconos y el sustituto `c.flow()`; se actualizó el estado, las pruebas (34 → 42) y la prueba manual en navegador; evidencia en `docs/reports/frontend-flet-web-startup.md` | Alex Valdelamar |
