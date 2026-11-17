@@ -1,6 +1,6 @@
 # 12 · Guía viva de la plataforma — Kitchi Studio
 
-Documento de estudio para la sustentación · Versión 0.8 · 16 de noviembre de 2026
+Documento de estudio para la sustentación · Versión 0.9 · 17 de noviembre de 2026
 
 > **Estado:** documento vivo, casi vacío a propósito. Se completará **por incrementos** a medida que la aplicación se implemente. No describe funcionalidades que aún no existen.
 >
@@ -347,13 +347,15 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 ## 14. Interfaz React (prototipo en paralelo a Flet)
 
 Desde el 16 de noviembre de 2026 existe una segunda implementación de la interfaz en
-[`frontend-react/`](../frontend-react/): **Vite + React 19 + TypeScript estricto**, con
-Tailwind CSS v4 como utilidades sobre un sistema de diseño propio en CSS (variables y
-clases bevel del estilo Wonder), `framer-motion` para resortes y transiciones de pantalla,
-`lucide-react` para iconos de trazo redondo, `react-router-dom` para las rutas y la misma
-API DRF de siempre. Nació como **prototipo de viabilidad** (ADR-009) porque los estilos
-deseados no eran alcanzables con Flet 1.1.2; **no sustituye aún a la versión Flet** en la
-entrega y ambas carpetas conviven.
+[`frontend-react/`](../frontend-react/): **Vite + React 19 + TypeScript estricto**, con un
+sistema de diseño propio en CSS atomizado (`src/styles/`: globals, layout, components/,
+screens/), `framer-motion` para resortes y transiciones de pantalla, `lucide-react` para
+iconos de trazo redondo, `react-router-dom` para las rutas y la misma API DRF de siempre.
+Nació como **prototipo de viabilidad** (ADR-009) porque los estilos deseados no eran
+alcanzables con Flet 1.1.2; **no sustituye aún a la versión Flet** en la entrega y ambas
+carpetas conviven. Inicialmente usaba Tailwind v4 como capa de utilidades; se eliminó el
+17 de noviembre porque la mezcla de utilidades y clases propias hacía muy difícil la edición
+manual de los estilos.
 
 **Para qué sirve hoy:** demostrar, con pantallas reales funcionando contra el backend, que la
 migración es viable — y como candidato de interfaz definitiva si el equipo lo decide antes
@@ -403,4 +405,5 @@ funcionó, o qué costó la migración. Toda la evidencia está en
 | 2026-11-10 | Arranque estable del frontend y recorrido verificado (P10, P12, P36, P39) | Nuevo ADR-006 (iconos `ft.Icons`, `Row(wrap=True)` roto en el cliente web 1.1.2, `SharedPreferences` al arrancar); la guía explica el nuevo orden de arranque (armazón → almacenamiento), los iconos y el sustituto `c.flow()`; se actualizó el estado, las pruebas (34 → 42) y la prueba manual en navegador; evidencia en `docs/reports/frontend-flet-web-startup.md` | Alex Valdelamar |
 | 2026-11-16 | Hub de publicaciones (P18) | Nuevo ADR-007; feed público con buscador, tarjetas con preview (cuadrícula de 2 columnas), publicación autenticada desde Mis gatos; `/api/publications/` + `/api/profiles/{username}/`; nuevo estilo juguetón global (bordes gruesos, sombras sólidas, rebotes); sonido pendiente de Flet 1.2; evidencia en `docs/reports/p18-hub-publicaciones.md` | Alex Valdelamar |
 | 2026-11-16 | Rediseño juguetón | Nuevo ADR-008; bevel asimétrico (libre arriba-izquierda, grueso abajo-derecha), barra de app dorada con separador zig-zag, NavigationBar oscura con indicador amarillo, patrones propios (dots/tiles vía Pillow), botones de plástico sobre `FilledButton`/`OutlinedButton` nativos; sonido pendiente de Flet 1.2 | Alex Valdelamar |
+| 2026-11-17 | CSS atomizado sin Tailwind | Se eliminó Tailwind v4 (mezclaba mal con las clases propias bevel); `src/index.css` dividido en `src/styles/` (globals, layout, components/, screens/); cada pantalla y componente tiene sus clases semánticas; misma apariencia 1:1 (verificada en capturas) | Alex Valdelamar |
 | 2026-11-16 | Interfaz React en paralelo (prototipo de viabilidad) | Nuevo ADR-009; `frontend-react/` con paridad funcional completa frente al Flet (feed, editor, mis gatos, auth, invitado→cuenta, perfil, configuración, stickers IA honesto, perfil público); gato SVG completo; iconos lucide; sonido Web Audio real; framer-motion; catálogo y API idénticos; CORS ampliado al puerto de Vite; evidencia en `docs/reports/frontend-react.md` | Alex Valdelamar |

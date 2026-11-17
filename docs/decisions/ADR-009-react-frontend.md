@@ -23,10 +23,12 @@ mantener el Flet hasta que el equipo decida la interfaz final.
 
 1. **Carpeta nueva `frontend-react/`**; `frontend/` (Flet) queda intacta como referencia y
    requisito académico (README declara Flet) hasta decisión explícita del equipo.
-2. **Stack:** Vite 8 + React 19 + TypeScript estricto, Tailwind CSS v4 (vía `@tailwindcss/vite`)
-   como capa de utilidades sobre un **sistema de diseño propio en CSS** (variables + clases
-   bevel del Wonder), `framer-motion` para animaciones de resorte y transiciones, `lucide-react`
-   para iconos de trazo redondo y consistente, `react-router-dom` para rutas.
+2. **Stack:** Vite 8 + React 19 + TypeScript estricto, con un **sistema de diseño propio en
+   CSS atomizado** (`src/styles/`: globals, layout, components/, screens/). El prototipo arrancó
+   con Tailwind v4 como utilidades sobre clases bevel propias; el 2026-11-17 se eliminó porque
+   la mezcla de utilidades y clases propias hacía muy difícil la edición manual. `framer-motion`
+   para animaciones de resorte y transiciones, `lucide-react` para iconos de trazo redondo y
+   consistente, `react-router-dom` para rutas.
 3. **Mismo backend y mismos contratos:** la app React consume la misma API DRF (`/api/auth/*`,
    `/api/catalog/`, `/api/poses/`, `/api/cats/`, `/api/publications/`, `/api/profiles/{username}/`)
    y respeta el mismo catálogo (`schema_version=1`). Ningún cambio de esquema ni de contratos.

@@ -13,8 +13,11 @@ registra qué se hizo, cómo se verificó y qué falta.
   deshacer eliminación en invitado), Stickers IA (poses reales, honestidad P13–P16), Perfil,
   Configuración (efectos reales: sonido Web Audio + vibración), registro/login contra
   `/api/auth/`, migración de gatos de invitado, perfil público `/publico/:username`.
-- Sistema de diseño propio en CSS (variables + clases bevel Wonder) sobre Tailwind v4;
-  `framer-motion` (resortes, transiciones, píldora activa); `lucide-react`; gato SVG completo.
+- ~~Tailwind~~ Sistema de diseño propio en CSS atomizado (`src/styles/`: globals.css, layout.css,
+  components/{bevels,toolbar,forms,cards,ui}.css, screens/{hub,editor,my-cats,stickers,profile,settings,auth,public-profile}.css,
+  y `src/styles/index.css` como hoja de imports. Tailwind v4 se eliminó el 2026-11-17 porque la
+  mezcla de utilidades y clases propias hacía muy difícil la edición manual de los estilos.
+- `framer-motion` (resortes, transiciones, píldora activa); `lucide-react`; gato SVG completo.
 - `CORS_ALLOWED_ORIGINS` incluye por defecto 5173/4173 (settings.py); una variable de entorno
   con ese nombre tiene prioridad (ver ADR-009).
 
