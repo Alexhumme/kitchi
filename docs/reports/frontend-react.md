@@ -33,6 +33,7 @@ registra qué se hizo, cómo se verificó y qué falta.
 | Pruebas backend | 58 en verde (sin tocar lógica de negocio) | 2026-11-16 |
 | Viewport 430×900 (emulación CDP) | Layout sin desbordes; barras y marco correctos | 2026-11-16 |
 | Mis gatos coleccionable (grid/list, filtros Todos/Publicados/Borradores, menú ⋯, hueco "Crear otro gato") | Verificado con 2 gatos de invitado por la UI real; "Borradores (2)" filtra bien; el flujo de crear → guardar → ver en Mis gatos sigue funcionando | 2026-11-17 |
+| Perfil rediseñado (credencial, Plan gratuito con barra de capacidad, accesos tiles) | Verificado con sesión real (6ª cuenta de prueba perfiledemo_e2e, luego borrada) y con invitado; métricas reales (Gatos/Publicados/Días aquí); "Límite alcanzado" solo aparece al 3/3; CTA de ilimitados deshabilitada como Pronto; Cerrar sesión intacto | 2026-11-17 |
 | Explorar rediseñado (post cards con hora relativa, stage tintado, chips, CTA al perfil público) | Verificado con las 2 publicaciones reales del hub (elena y KOKO, con hora relativa "Hace 38 min"); perfil público también usa el nuevo diseño; captura en `docs/reports/frontend-react/feed.png` | 2026-11-17 |
 
 Capturas (430×900): [`navegador.png`](frontend-react/navegador.png) ·

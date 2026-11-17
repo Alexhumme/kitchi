@@ -1,84 +1,161 @@
-// Perfil: identidad y sesión (cuenta o invitado).
+// Perfil: credencial con métricas reales, tarjeta de plan y capacidad,
+// y accesos (cuenta, configuración, sesión).
+// Estructura basada en testui/miperfil.html.
 import { useNavigate } from 'react-router-dom';
 import { useKitchi, MAX_GUEST_CATS } from '../state/AppContext';
 import Avatar from '../components/Avatar';
-import { SectionTitle } from '../components/ui';
-import { Cat, Crown, LogOut, Settings, ShieldCheck, ExternalLink } from 'lucide-react';
+import { Cat, Check, Crown, ExternalLink, LogOut, Settings, Sparkles, UserRoundPlus } from 'lucide-react';
+
+function daysSince(iso?: string): number | null {
+  if (!iso) return null;
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return null;
+  return Math.max(1, Math.floor((Date.now() - then) / 86400000) + 1);
+}
 
 export default function ProfileScreen() {
-  const { user, cats, logout } = useKitchi();
+  const { user, cats, logout, publishedCatIds } = useKitchi();
   const navigate = useNavigate();
+
+  const publishedCount = cats.filter((c) => publishedCatIds.has(String(c.id))).length;
+  const daysHere = user ? daysSince(user.date_joined) : null;
+  const count = Math.min(cats.length, MAX_GUEST_CATS);
+  const full = cats.length >= MAX_GUEST_CATS;
+  const premium = Boolean(user?.premium);
 
   return (
     <div className="screen-root">
-      {/* identidad */}
-      <section className="identity-panel">
-        <div className="identity-avatar-ring">
-          <Avatar name={user?.username ?? 'Invitado'} size={64} />
+      {/* 2. credencial */}
+      <section className="credential-panel">
+        <div className="credential-head">
+          <div className="credential-avatar">
+            <Avatar name={user?.username ?? 'Invitado'} size={64} />
+          </div>
+          <div className="credential-meta">
+            <div className="credential-name-row">
+              <h1 className="credential-name">{user?.username ?? 'Invitado'}</h1>
+              <span className="role-chip">
+                {user ? (user.role === 'admin' ? 'Admin' : 'Member') : 'Invitado'}
+              </span>
+            </div>
+            <p className="credential-email">{user?.email ?? 'Creando caos sin cuenta en este navegador'}</p>
+            <p className="credential-since">
+              {user?.date_joined
+                ? `En kitchi desde ${new Date(user.date_joined).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}`
+                : 'Los invitados crean hasta 3 gatos en el navegador'}
+            </p>
+          </div>
         </div>
-        <div className="identity-meta">
-          <SectionTitle title={user?.username ?? 'Invitado'} />
-          <p className="identity-email">
-            {user?.email ?? 'Creando caos sin cuenta en este navegador'}
-          </p>
-          <div className="identity-chips">
-            <span className="bevel-chip"><Cat size={14} strokeWidth={2.5} aria-hidden="true" /> {cats.length}{user ? '' : `/${MAX_GUEST_CATS}`} gatos</span>
-            {user?.role && <span className="bevel-chip"><ShieldCheck size={14} strokeWidth={2.5} aria-hidden="true" /> {user.role}</span>}
-            {user && <span className="bevel-chip"><Crown size={14} strokeWidth={2.5} aria-hidden="true" /> {user.premium ? 'Premium' : 'Plan gratuito'}</span>}
+
+        {/* mini métricas (solo datos reales: gatos, publicados, días) */}
+        <div className="metrics">
+          <div className="metric">
+            <span className="metric__num">{cats.length}</span>
+            <span className="metric__label">Gatos</span>
+          </div>
+          <div className="metric">
+            <span className="metric__num">{user ? publishedCount : '—'}</span>
+            <span className="metric__label">Publicados</span>
+          </div>
+          <div className="metric">
+            <span className="metric__num">{daysHere ?? '—'}</span>
+            <span className="metric__label">Días aquí</span>
           </div>
         </div>
       </section>
 
-      {user ? (
-        <section className="session-panel">
-          <SectionTitle title="Sesión activa" subtitle="Token de Django + permisos RBAC" />
-          <p className="session-body">
-            Sesión de {user.username}. Los gatos que guardes viajan a la API y el límite de
-            tres se aplica en el backend.
-          </p>
-          {user.date_joined && (
-            <p className="session-date">
-              Miembro desde {new Date(user.date_joined).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </p>
+      {/* 3. plan y capacidad */}
+      <section className="plan-panel" aria-label="Plan y capacidad">
+        <div className="plan-head">
+          <div className="plan-identity">
+            <span className="plan-icon" aria-hidden="true">
+              <Crown size={16} strokeWidth={2.5} />
+            </span>
+            <span>
+              <span className="plan-title">{premium ? 'Plan Premium' : 'Plan gratuito'}</span>
+              <span className="plan-sub">Almacenamiento de personajes</span>
+            </span>
+          </div>
+          {premium ? (
+            <span className="plan-chip plan-chip--premium">Premium</span>
+          ) : full ? (
+            <span className="plan-chip plan-chip--full">Límite alcanzado</span>
+          ) : (
+            <span className="plan-chip">{count}/{MAX_GUEST_CATS} espacios</span>
           )}
-          <button type="button" className="bevel-btn-coral btn-lg btn-block session-cta" onClick={() => void logout()}>
+        </div>
+
+        {!premium && (
+          <>
+            <div className="plan-bar-row">
+              <span>Gatos guardados</span>
+              <span>{count} / {MAX_GUEST_CATS} espacios</span>
+            </div>
+            <div className="plan-bar" role="progressbar" aria-valuenow={count} aria-valuemin={0} aria-valuemax={MAX_GUEST_CATS} aria-label="Gatos guardados">
+              <div className="plan-bar__fill" style={{ width: `${(count / MAX_GUEST_CATS) * 100}%`, background: full ? 'var(--coral)' : 'var(--panel)' }} />
+            </div>
+          </>
+        )}
+
+        <div className="plan-cta-row">
+          {premium ? (
+            <span className="plan-cta plan-cta--premium" aria-hidden="true">
+              <Check size={16} strokeWidth={3} /> Espacios ilimitados
+            </span>
+          ) : user ? (
+            <button type="button" className="plan-cta plan-cta--soon" disabled title="Muy pronto">
+              <Sparkles size={16} strokeWidth={2.4} /> Desbloquear espacios ilimitados <span className="filter-soon">Pronto</span>
+            </button>
+          ) : (
+            <button type="button" className="plan-cta" onClick={() => navigate('/auth/register')}>
+              <UserRoundPlus size={17} strokeWidth={2.4} /> Crear cuenta para sincronizar
+            </button>
+          )}
+        </div>
+      </section>
+
+      {/* 4. cuenta y accesos */}
+      <section className="access-section" aria-label="Cuenta y accesos">
+        <h2 className="access-title">Cuenta y accesos</h2>
+        <div className="tiles">
+          <button
+            type="button"
+            className="tile"
+            disabled={!user}
+            title={user ? 'Ver mi tarjeta pública' : 'Crea tu cuenta para ver tu perfil público'}
+            onClick={() => user && navigate(`/publico/${encodeURIComponent(user.username)}`)}
+          >
+            <span className="tile__icon tile__icon--public" aria-hidden="true">
+              <ExternalLink size={18} strokeWidth={2.3} />
+            </span>
+            <span className="tile__label">Perfil público</span>
+          </button>
+          <button
+            type="button"
+            className="tile"
+            onClick={() => navigate('/settings')}
+          >
+            <span className="tile__icon tile__icon--settings" aria-hidden="true">
+              <Settings size={18} strokeWidth={2.3} />
+            </span>
+            <span className="tile__label">Configuración</span>
+          </button>
+        </div>
+
+        {user ? (
+          <button type="button" className="logout-btn" onClick={() => void logout()}>
             <LogOut size={17} strokeWidth={2.5} /> Cerrar sesión
           </button>
-        </section>
-      ) : (
-        <section className="session-panel">
-          <SectionTitle title="Cuenta" subtitle="Registro e inicio de sesión" />
-          <p className="session-body">
-            Con una cuenta guardas tus gatos en el servidor, publicas en el hub y copias
-            creaciones de otras personas. Tus gatos de invitado se migran automáticamente al entrar.
-          </p>
-          <div className="session-actions">
-            <button type="button" className="bevel-btn-coral" onClick={() => navigate('/auth/register')}>
-              Registrarse
+        ) : (
+          <div className="auth-inline">
+            <button type="button" className="bevel-btn-coral btn-block" onClick={() => navigate('/auth/register')}>
+              <Cat size={16} strokeWidth={2.4} aria-hidden="true" /> Registrarse
             </button>
-            <button type="button" className="bevel-btn" onClick={() => navigate('/auth/login')}>
+            <button type="button" className="bevel-btn btn-block" onClick={() => navigate('/auth/login')}>
               Iniciar sesión
             </button>
           </div>
-        </section>
-      )}
-
-      <section className="shortcuts-panel">
-        <SectionTitle title="Atajos" />
-        <div className="shortcuts-grid">
-          <button
-            type="button"
-            className="bevel-btn"
-            disabled={!user}
-            title={user ? 'Ver mi tarjeta pública' : 'Inicia sesión para ver tu perfil público'}
-            onClick={() => user && navigate(`/publico/${encodeURIComponent(user.username)}`)}
-          >
-            <ExternalLink size={15} strokeWidth={2.5} /> Perfil público
-          </button>
-          <button type="button" className="bevel-btn" onClick={() => navigate('/settings')}>
-            <Settings size={15} strokeWidth={2.5} /> Configuración
-          </button>
-        </div>
+        )}
       </section>
     </div>
   );
