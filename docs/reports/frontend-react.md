@@ -23,6 +23,7 @@ registra qué se hizo, cómo se verificó y qué falta.
 | Comprobación | Resultado | Fecha |
 | --- | --- | --- |
 | `npm run build` (tsc + vite build) | Limpio (467 módulos, 148 kB gzip) | 2026-11-16 |
+| Fuente Fredoka cargando de verdad | La primera versión usaba `tech("variations")` dentro de `src`: Chromium descartaba la declaración (`document.fonts.size: 0`). Corregido a `format("truetype-variations")` con rango `300 700` (el real del archivo); `document.fonts.size: 1` y el TTF se descarga | 2026-11-16 |
 | `npm run lint` (oxlint) | Sin errores; 2 avisos `set-state-in-effect` aceptados | 2026-11-16 |
 | Registro → Crear → Guardar → Publicar → feed (E2E por CDP contra el backend real) | `["Diagatito","Lolopepe"]` en `/api/publications/`; datos de prueba borrados tras verificar (gato borrado ⇒ publicación borrada en cascada) | 2026-11-16 |
 | Pruebas Flet | 46 en verde (sin tocar `frontend/`) | 2026-11-16 |
