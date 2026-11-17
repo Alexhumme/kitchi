@@ -1,6 +1,6 @@
 # 12 · Guía viva de la plataforma — Kitchi Studio
 
-Documento de estudio para la sustentación · Versión 0.6 · 16 de noviembre de 2026
+Documento de estudio para la sustentación · Versión 0.7 · 16 de noviembre de 2026
 
 > **Estado:** documento vivo, casi vacío a propósito. Se completará **por incrementos** a medida que la aplicación se implemente. No describe funcionalidades que aún no existen.
 >
@@ -179,6 +179,10 @@ Puntos de diseño que conviene saber explicar:
   `c.flow()` (filas de a lo sumo N elementos) o filas simples.
 - **La previsualización es honesta.** El editor dibuja cada pieza con el color del catálogo y
   la etiqueta “Vista previa con placeholders”; no finge que existen los PNG finales.
+- **El estilo apunta a Wonder.** La firma visual del producto son: bordes asimétricos
+  (0 arriba y a la izquierda, canto grueso abajo y a la derecha), sombras duras sin
+  desenfoque, patrones propios del repositorio (`frontend/assets/ui/patterns/`) y
+  rebote elástico al tocar. `scripts/generate_ui_patterns.py` regenera los tiles PNG.
 
 ### 5.1 La consola de administración (`/admin/`)
 
@@ -348,3 +352,4 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 | 2026-11-09 | Interfaz Flet e integración con la API (P02, P08, P10, P12, P36, P39) | Se actualizaron resumen, flujo, pantallas, arquitectura y limitaciones: cinco secciones, login/registro, sesión invitado/cuenta, CRUD de gatos, catálogo sembrado y editor con previsualización de placeholders. Se documentó lo que sigue pendiente (assets, Pillow, hub, IA) y se añadieron los comandos de instalación y prueba del frontend | Martin Solano |
 | 2026-11-10 | Arranque estable del frontend y recorrido verificado (P10, P12, P36, P39) | Nuevo ADR-006 (iconos `ft.Icons`, `Row(wrap=True)` roto en el cliente web 1.1.2, `SharedPreferences` al arrancar); la guía explica el nuevo orden de arranque (armazón → almacenamiento), los iconos y el sustituto `c.flow()`; se actualizó el estado, las pruebas (34 → 42) y la prueba manual en navegador; evidencia en `docs/reports/frontend-flet-web-startup.md` | Alex Valdelamar |
 | 2026-11-16 | Hub de publicaciones (P18) | Nuevo ADR-007; feed público con buscador, tarjetas con preview (cuadrícula de 2 columnas), publicación autenticada desde Mis gatos; `/api/publications/` + `/api/profiles/{username}/`; nuevo estilo juguetón global (bordes gruesos, sombras sólidas, rebotes); sonido pendiente de Flet 1.2; evidencia en `docs/reports/p18-hub-publicaciones.md` | Alex Valdelamar |
+| 2026-11-16 | Rediseño juguetón | Nuevo ADR-008; bevel asimétrico (libre arriba-izquierda, grueso abajo-derecha), barra de app dorada con separador zig-zag, NavigationBar oscura con indicador amarillo, patrones propios (dots/tiles vía Pillow), botones de plástico sobre `FilledButton`/`OutlinedButton` nativos; sonido pendiente de Flet 1.2 | Alex Valdelamar |
