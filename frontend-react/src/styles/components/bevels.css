@@ -1,0 +1,151 @@
+/* ============================================================
+   Bisel "juguete": paneles, botones, chips, badges y toggles
+   ============================================================ */
+
+.bevel-panel {
+  position: relative;
+  background: var(--superficie);
+  border-radius: var(--radio-grande);
+  box-shadow:
+    inset -var(--bevel-right) -var(--bevel-bottom) 0 0 var(--ink);
+}
+.bevel-panel > * { position: relative; }
+
+.bevel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  background: var(--superficie);
+  border: none;
+  border-radius: var(--radio-medio);
+  box-shadow:
+    inset -4px -5px 0 0 var(--ink),
+    0 4px 0 0 rgba(33, 27, 38, 0.35);
+  transition: transform var(--bounce), box-shadow var(--bounce);
+  cursor: pointer;
+  color: var(--ink);
+  font-family: inherit;
+}
+.bevel-btn:hover { transform: translateY(-2px); box-shadow: inset -4px -5px 0 0 var(--ink), 0 6px 0 0 rgba(33, 27, 38, 0.35); }
+.bevel-btn:active { transform: translateY(2px) scale(0.97); box-shadow: inset -2px -2px 0 0 var(--ink), 0 2px 0 0 rgba(33, 27, 38, 0.35); }
+.bevel-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: inset -2px -2px 0 0 var(--ink), 0 2px 0 0 rgba(33, 27, 38, 0.35); }
+.bevel-btn--center { justify-content: center; }
+.bevel-btn--block { width: 100%; justify-content: center; }
+
+.bevel-btn-coral {
+  background: var(--coral);
+  border-radius: var(--radio-medio);
+  color: #ffffff;
+  box-shadow:
+    inset -5px -6px 0 0 var(--coral-hondo),
+    inset -5px -6px 0 0 var(--ink),
+    0 6px 0 0 rgba(33, 27, 38, 0.4);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 1.05rem;
+  padding: 0.5rem 1rem;
+  transition: transform var(--bounce), box-shadow var(--bounce), filter var(--bounce);
+}
+.bevel-btn-coral:hover { transform: translateY(-2px); filter: brightness(1.03); box-shadow: inset -5px -6px 0 0 var(--coral-hondo), inset -5px -6px 0 0 var(--ink), 0 8px 0 0 rgba(33, 27, 38, 0.4); }
+.bevel-btn-coral:active { transform: translateY(2px) scale(0.97); box-shadow: inset -2px -2px 0 0 var(--coral-hondo), inset -2px -2px 0 0 var(--ink), 0 2px 0 0 rgba(33, 27, 38, 0.4); }
+.bevel-btn-coral:disabled { opacity: 0.55; cursor: not-allowed; }
+.bevel-btn-coral--center { justify-content: center; display: flex; align-items: center; gap: 0.5rem; }
+
+.bevel-btn-yellow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: var(--radio-medio);
+  box-shadow:
+    inset -5px -6px 0 0 var(--advertencia),
+    inset -5px -6px 0 0 var(--ink),
+    0 6px 0 0 rgba(33, 27, 38, 0.4);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 800;
+  transition: transform var(--bounce), box-shadow var(--bounce);
+}
+.bevel-btn-yellow:hover { transform: translateY(-2px); }
+.bevel-btn-yellow:active { transform: translateY(2px) scale(0.97); }
+
+.bevel-chip {
+  background: var(--crema-hondo);
+  border-radius: var(--radio-pastilla);
+  box-shadow:
+    inset -3px -3px 0 0 var(--ink),
+    0 3px 0 0 rgba(33, 27, 38, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--ink);
+  border: none;
+  white-space: nowrap;
+}
+.bevel-chip[data-selected="true"] {
+  background: var(--panel);
+  outline: 3px solid var(--advertencia);
+  outline-offset: 1px;
+}
+.bevel-chip--flat { box-shadow: none; }
+
+.bevel-toggle {
+  width: 56px;
+  height: 32px;
+  border-radius: var(--radio-pastilla);
+  background: var(--crema-hondo);
+  box-shadow: inset -3px -3px 0 0 var(--ink), inset 3px 3px 0 0 rgba(255,255,255,0.55), 0 2px 0 0 rgba(33, 27, 38, 0.3);
+  position: relative;
+  cursor: pointer;
+  border: none;
+  transition: background 0.3s ease;
+}
+.bevel-toggle__thumb {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 24px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--superficie);
+  box-shadow: inset -2px -3px 0 0 var(--ink), 0 2px 0 0 rgba(33, 27, 38, 0.15);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+}
+.bevel-toggle[data-checked="true"] { background: var(--coral); }
+.bevel-toggle[data-checked="true"] .bevel-toggle__thumb { transform: translateX(22px); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 800;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radio-pastilla);
+  font-size: 0.75rem;
+  box-shadow: inset -2px -3px 0 0 var(--ink);
+  border: none;
+}
+.badge--ok { background: var(--menta); color: #0a3a20; }
+.badge--error { background: var(--error); color: #fff; }
+.badge--warn { background: var(--panel-claro); color: var(--ink); }
+.badge--pink { background: var(--rosa); color: var(--ink); }
+.badge--flat { box-shadow: none; }
+.badge--interactive { cursor: pointer; }
+.badge--interactive:hover { filter: brightness(0.96); }
+
+/* ---------- Modificadores de tamaño (válidos para bevel-btn*) ---------- */
+.btn-xs { padding: 0.35rem 0.7rem; font-size: 0.72rem; gap: 0.35rem; }
+.btn-sm { padding: 0.45rem 0.9rem; font-size: 0.82rem; }
+.btn-lg { padding: 0.8rem 1.25rem; font-size: 1.02rem; }
+.btn-block { display: flex; width: 100%; justify-content: center; }
+.btn-grow { flex: 1; }

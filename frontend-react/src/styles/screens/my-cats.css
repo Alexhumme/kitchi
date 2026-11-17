@@ -1,0 +1,114 @@
+/* ============================================================
+   Mis gatos: banner invitado, tarjetas, publicar, deshacer
+   ============================================================ */
+
+.guest-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: 16px;
+  border: 2px dashed rgba(107, 100, 120, 0.4);
+  background: rgba(255, 251, 242, 0.6);
+}
+.guest-banner__text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--tinta-suave);
+}
+
+.cat-list { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+
+.cat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: var(--radio-medio);
+  background: var(--superficie);
+  box-shadow: inset -var(--bevel-right) -var(--bevel-bottom) 0 0 var(--ink);
+}
+.cat-card__thumb {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 64px;
+  height: 72px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--crema);
+}
+.cat-card__body { flex: 1; min-width: 0; }
+.cat-card__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.cat-card__meta { margin-top: 1px; font-size: 0.68rem; font-weight: 600; color: var(--tinta-suave); }
+.cat-card__published { display: inline-flex; align-items: center; gap: 2px; font-weight: 800; color: var(--menta-honda); }
+.cat-card__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+/* ---------- Publicar (hoja inferior) ---------- */
+.publish-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+}
+.publish-panel {
+  width: 100%;
+  border-radius: var(--radio-grande) var(--radio-grande) 0 0;
+  background: var(--superficie);
+  box-shadow: inset -var(--bevel-right) -var(--bevel-bottom) 0 0 var(--ink);
+  padding: 20px 20px 28px;
+}
+.publish-head { display: flex; align-items: center; gap: 12px; }
+.publish-head-text { min-width: 0; }
+.publish-title { font-size: 1.0rem; font-weight: 800; color: var(--ink); }
+.publish-subtitle { font-size: 0.7rem; font-weight: 600; color: var(--tinta-suave); }
+.publish-form { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+.publish-visibility { border: none; margin: 4px 0 0; padding: 0; }
+.publish-legend { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--tinta-suave); }
+.publish-visibility-row { display: flex; gap: 8px; margin-top: 6px; }
+.publish-visibility-row .bevel-chip { flex: 1; justify-content: center; padding-top: 8px; padding-bottom: 8px; }
+.publish-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+/* ---------- Barra "deshacer eliminación" ---------- */
+.undo-bar {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 96px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--ink);
+  color: #fff;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+}
+.undo-bar__text { font-size: 0.82rem; font-weight: 600; }
+.undo-bar__action {
+  border: none;
+  border-radius: 999px;
+  background: var(--panel);
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--ink);
+  cursor: pointer;
+}

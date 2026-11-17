@@ -15,7 +15,7 @@ const TONE_ICON: Record<Toast['tone'], ReactNode> = {
 export function ToastViewport() {
   const { toasts, dismissToast } = useKitchi();
   return (
-    <div className="absolute left-0 right-0 top-3 z-50 flex flex-col items-center gap-2 px-6" aria-live="polite">
+    <div className="toast-viewport" aria-live="polite">
       <AnimatePresence>
         {toasts.map((toast) => (
           <motion.div
@@ -66,23 +66,22 @@ export function ConfirmDialog({
 
   if (!open) return null;
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/45 p-6 backdrop-blur-[2px]"
-      role="alertdialog" aria-modal="true" aria-label={title}>
+    <div className="confirm-overlay" role="alertdialog" aria-modal="true" aria-label={title}>
       <motion.div
         initial={{ opacity: 0, scale: 0.85, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 480, damping: 30 }}
-        className="bevel-panel w-full max-w-sm p-5"
+        className="bevel-panel confirm-panel"
       >
-        <h2 className="text-lg font-extrabold text-[var(--ink)]">{title}</h2>
-        <p className="mt-2 text-[0.95rem] font-medium text-[var(--ink-soft)]">{body}</p>
-        <div className="mt-5 flex justify-end gap-2">
-          <button type="button" className="bevel-btn px-4 py-2 text-sm font-extrabold" onClick={onCancel}>
+        <h2 className="confirm-title">{title}</h2>
+        <p className="confirm-body">{body}</p>
+        <div className="confirm-actions">
+          <button type="button" className="bevel-btn" onClick={onCancel}>
             Cancelar
           </button>
           <button
             type="button"
-            className={danger ? 'bevel-btn-coral px-4 py-2 text-sm' : 'bevel-btn-yellow px-4 py-2 text-sm'}
+            className={danger ? 'bevel-btn-coral' : 'bevel-btn-yellow'}
             onClick={onConfirm}
             autoFocus
           >
@@ -101,24 +100,20 @@ export function EmptyState({ icon, title, body, action }: {
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-[var(--radio-grande)] px-6 py-10 text-center">
-      <div className="grid h-16 w-16 place-items-center rounded-[var(--radio-grande)] bg-[var(--crema-hondo)] text-[var(--ink)] shadow-[inset_-4px_-5px_0_0_var(--ink)]" aria-hidden="true">{icon}</div>
-      <h3 className="text-lg font-extrabold text-[var(--ink)]">{title}</h3>
-      <p className="max-w-xs text-sm font-medium leading-snug text-[var(--tinta-suave)]">{body}</p>
-      {action && <div className="mt-2">{action}</div>}
+    <div className="empty-state">
+      <div className="empty-state__icon" aria-hidden="true">{icon}</div>
+      <h3 className="empty-state__title">{title}</h3>
+      <p className="empty-state__body">{body}</p>
+      {action && <div className="empty-state__action">{action}</div>}
     </div>
   );
 }
 
 export function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <div className="mb-1 shrink-0">
-      <h1 className="inline-block rounded-xl bg-[var(--superficie)]/75 px-1.5 text-[1.55rem] font-extrabold leading-tight text-[var(--ink)] backdrop-blur-[1px]">{title}</h1>
-      {subtitle && (
-        <p className="mt-1 inline-block rounded-full bg-[var(--superficie)]/85 px-2.5 py-0.5 text-[0.78rem] font-bold text-[var(--ink-soft)] backdrop-blur-[1px]">
-          {subtitle}
-        </p>
-      )}
+    <div className="section-title">
+      <h1 className="section-title__heading">{title}</h1>
+      {subtitle && <p className="section-title__subtitle">{subtitle}</p>}
     </div>
   );
 }

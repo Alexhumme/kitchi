@@ -1,15 +1,23 @@
 // Crear / Editar: editor del gato chibi con vista previa en vivo.
+// Estructura basada en el mockup testui/index.html: título + badge de modo,
+// lienzo ámbar con estrellas y controles flotantes, input con lápiz,
+// carrusel de categorías y rejilla de opciones; guardar abajo.
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import {
+  Check, Dices, Eye, Layers, Palette, Pencil, RotateCcw, Scissors, Shirt, Sparkles, Undo2, type LucideIcon,
+} from 'lucide-react';
 import { useKitchi } from '../state/AppContext';
 import { CATALOG, defaultConfig, normalizeConfiguration, type CatConfiguration } from '../lib/catalog';
 import CatSVG from '../components/CatSVG';
-import { SectionTitle } from '../components/ui';
-import { Dices, Check, Eye, Layers, Palette, RotateCcw, Scissors, Shirt, Sparkles, Undo2, type LucideIcon } from 'lucide-react';
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   fur: Palette, eyes: Eye, hair: Scissors, top: Shirt, bottom: Layers, accessory: Sparkles,
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  fur: 'Pelaje', eyes: 'Ojos', hair: 'Cabello', top: 'Superior', bottom: 'Inferior', accessory: 'Extras',
 };
 
 const MAX_HISTORY = 60;
@@ -28,7 +36,6 @@ export default function EditorScreen() {
     editingCat ? normalizeConfiguration(editingCat.configuration) : defaultConfig(),
   );
   const [history, setHistory] = useState<CatConfiguration[]>([]);
-  const [dirty, setDirty] = useState(false);
   const [catId, setCatId] = useState<string | null>(editingCat ? String(editingCat.id) : null);
   const [name, setName] = useState(editingCat?.name ?? '');
   const [selectedCategory, setSelectedCategory] = useState(CATALOG[0].key);
@@ -54,7 +61,6 @@ export default function EditorScreen() {
     if (configuration[category as keyof CatConfiguration] === code) return;
     pushHistory(configuration);
     setConfiguration({ ...configuration, [category]: code });
-    setDirty(true);
   };
 
   const undo = () => {
@@ -62,7 +68,6 @@ export default function EditorScreen() {
       if (prev.length === 0) return prev;
       const next = [...prev];
       setConfiguration(next.pop() as CatConfiguration);
-      setDirty(true);
       return next;
     });
   };
@@ -70,7 +75,6 @@ export default function EditorScreen() {
   const reset = () => {
     pushHistory(configuration);
     setConfiguration(defaultConfig());
-    setDirty(true);
   };
 
   const randomize = () => {
@@ -80,7 +84,6 @@ export default function EditorScreen() {
       next[cat.key] = cat.options[Math.floor(Math.random() * cat.options.length)].code;
     }
     setConfiguration(next as unknown as CatConfiguration);
-    setDirty(true);
   };
 
   const handleSave = async () => {
@@ -93,7 +96,6 @@ export default function EditorScreen() {
     setSaving(false);
     if (saved) {
       setCatId(String(saved.id));
-      setDirty(false);
       if (editingId) navigate('/mis-gatos');
     }
   };
@@ -101,66 +103,97 @@ export default function EditorScreen() {
   const nameInvalid = name.trim().length === 0;
 
   return (
-    <div className="app-scroll flex h-full flex-col gap-3 overflow-y-auto pr-1">
-      <div className="flex items-start justify-between gap-3">
-        <SectionTitle
-          title={editingId ? 'Editar gato' : 'Crear gato'}
-          subtitle={user ? 'Se guarda en tu cuenta' : 'Se guarda en este navegador (modo invitado)'}
-        />
-        {dirty && <span className="badge badge--warn shrink-0">Sin guardar</span>}
+    <div className="screen-root screen-root--tight">
+      {/* 1. fila de título + badge de modo */}
+      <div className="editor-head">
+        <h1 className="editor-title">
+          {editingId ? 'Editar gato' : 'Crear gato'}
+        </h1>
+        <span className="mode-badge">
+          {user ? 'En tu cuenta' : 'Modo invitado'}
+        </span>
       </div>
 
-      {/* vista previa */}
-      <div className="bevel-panel relative shrink-0 overflow-hidden !rounded-[var(--radio-grande)]">
-        <div className="preview-stage">
-          <div className="preview-stage__pattern" aria-hidden="true" />
-          <motion.div
-            animate={animationsEnabled ? { y: [0, -8, 0] } : undefined}
-            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
-            className="relative"
+      {/* 2. lienzo de previsualización con controles flotantes */}
+      <section className="canvas-stage" aria-label="Vista previa del gato">
+        <div className="canvas-stage__stars" aria-hidden="true" />
+
+        {/* deshacer / reiniciar */}
+        <div className="canvas-stage__tools">
+          <button
+            type="button"
+            className="canvas-btn"
+            onClick={undo}
+            disabled={history.length === 0}
+            title="Deshacer"
+            aria-label="Deshacer"
           >
-            <CatSVG configuration={configuration} size={132} />
-          </motion.div>
+            <Undo2 size={17} strokeWidth={2.4} />
+          </button>
+          <button type="button" className="canvas-btn" onClick={reset} title="Reiniciar" aria-label="Reiniciar">
+            <RotateCcw size={17} strokeWidth={2.4} />
+          </button>
         </div>
-      </div>
 
-      {/* nombre */}
-      <label className="field-shell shrink-0 !rounded-[var(--radio-pastilla)] px-4 py-1">
+        {/* aleatorio */}
+        <button
+          type="button"
+          className="canvas-btn-amber canvas-stage__random"
+          onClick={randomize}
+          title="Combinación aleatoria"
+        >
+          <Dices size={16} strokeWidth={2.4} /> Aleatorio
+        </button>
+
+        <motion.div
+          animate={animationsEnabled ? { y: [0, -7, 0] } : undefined}
+          transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+          className="canvas-stage__cat"
+        >
+          <CatSVG configuration={configuration} size={148} />
+        </motion.div>
+      </section>
+
+      {/* 3. nombre con lápiz */}
+      <label className="name-field">
         <span className="sr-only">Nombre del gato</span>
         <input
-          className="field-shell__input"
-          placeholder="Nombre del gato…"
+          className="name-field__input"
+          placeholder="Nombre de tu gato..."
           value={name}
           maxLength={40}
           onChange={(e) => setName(e.target.value)}
           aria-label="Nombre del gato"
         />
+        <span className="name-field__icon">
+          <Pencil size={17} strokeWidth={2.2} />
+        </span>
       </label>
 
-      {/* selector de categoría */}
-      <div className="grid shrink-0 grid-cols-6 gap-1.5">
+      {/* 4. carrusel de categorías */}
+      <div className="cat-carousel no-scrollbar" role="tablist" aria-label="Categorías">
         {CATALOG.map((cat) => {
+          const Icon = CATEGORY_ICONS[cat.key];
           const active = cat.key === selectedCategory;
           return (
             <button
               key={cat.key}
               type="button"
-              className="cat-tab"
+              role="tab"
+              aria-selected={active}
+              className="cat-chip"
               data-active={active}
               onClick={() => setSelectedCategory(cat.key)}
-              aria-pressed={active}
             >
-              <span aria-hidden="true" className="cat-tab__icon">
-                {(() => { const Icon = CATEGORY_ICONS[cat.key]; return <Icon size={19} strokeWidth={2.3} />; })()}
-              </span>
-              <span className="cat-tab__label">{cat.label}</span>
+              <Icon size={20} strokeWidth={2.2} aria-hidden="true" />
+              <span className="cat-chip__label">{CATEGORY_LABELS[cat.key]}</span>
             </button>
           );
         })}
       </div>
 
-      {/* opciones */}
-      <div className="grid shrink-0 grid-cols-3 gap-2" role="listbox" aria-label={`Opciones de ${selectedCategory}`}>
+      {/* 5. opciones de la categoría */}
+      <div className="options-grid" role="listbox" aria-label={`Opciones de ${selectedCategory}`}>
         {activeOptions.map((opt) => {
           const selected = configuration[selectedCategory as keyof CatConfiguration] === opt.code;
           return (
@@ -185,28 +218,14 @@ export default function EditorScreen() {
         })}
       </div>
 
-      {/* historial / aleatorio */}
-      <div className="flex shrink-0 items-center justify-between gap-2">
-        <div className="flex gap-2">
-          <button type="button" className="bevel-btn flex items-center gap-1.5 px-3 py-2 text-xs font-extrabold disabled:opacity-40" onClick={undo} disabled={history.length === 0}>
-            <Undo2 size={15} strokeWidth={2.6} /> Deshacer
-          </button>
-          <button type="button" className="bevel-btn flex items-center gap-1.5 px-3 py-2 text-xs font-extrabold" onClick={reset}>
-            <RotateCcw size={15} strokeWidth={2.6} /> Reiniciar
-          </button>
-        </div>
-        <button type="button" className="bevel-btn-yellow flex items-center gap-1.5 px-4 py-2 text-xs" onClick={randomize}>
-          <Dices size={16} strokeWidth={2.4} /> Aleatorio
-        </button>
-      </div>
-
-      {/* guardar */}
+      {/* 6. botón principal */}
       <button
         type="button"
-        className="bevel-btn-coral mb-1 w-full shrink-0 py-3.5 text-base disabled:opacity-50"
+        className="save-btn"
         disabled={nameInvalid || saving}
         onClick={() => void handleSave()}
       >
+        <Check size={22} strokeWidth={2.8} aria-hidden="true" />
         {saving ? 'Guardando…' : catId ? 'Guardar cambios' : 'Guardar gato'}
       </button>
     </div>

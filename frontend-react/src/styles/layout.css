@@ -1,0 +1,125 @@
+/* ============================================================
+   Layout de la app: marco, columnas raíz y áreas de scroll
+   ============================================================ */
+
+.app-shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--crema);
+}
+
+.phone {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 100%;
+  max-height: 900px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(33, 27, 38, 0.35);
+  border-radius: 28px;
+}
+@media (max-width: 480px) {
+  .phone { max-height: 100%; border-radius: 0; box-shadow: none; }
+}
+
+.app-bg {
+  position: relative;
+  background-color: var(--crema);
+  background-image: url("../assets/ui/patterns/dots_soft.png");
+  background-size: 240px;
+  background-position: 0 0;
+  background-repeat: repeat;
+}
+
+.shell-main {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  padding: 0 14px 8px;
+}
+
+.separator {
+  display: block;
+  height: 24px;
+  background-image: url("../assets/ui/separators/waves.svg");
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+}
+
+/* ---------- Página animada (transición de ruta) ---------- */
+.page-motion { height: 100%; }
+
+/* ---------- Raíz de pantalla: columna con scroll ---------- */
+.screen-root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 4px 4px;
+  padding-right: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.screen-root::-webkit-scrollbar { display: none; }
+.screen-root--tight { gap: 10px; padding-right: 2px; }
+.screen-root--center {
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* ---------- Aviso de almacenamiento no disponible ---------- */
+.offline-banner {
+  flex-shrink: 0;
+  margin-bottom: 8px;
+  border-radius: 14px;
+  background: var(--panel-claro);
+  padding: 8px 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--advertencia);
+}
+
+/* ---------- Splash de arranque ---------- */
+.splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 100%;
+}
+.splash__icon {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radio-grande);
+  background: var(--coral);
+  color: #fff;
+  box-shadow: inset -6px -7px 0 0 var(--coral-hondo), 0 8px 0 0 rgba(33, 27, 38, 0.35);
+}
+.splash__brand {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.splash__hint {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+}
+
+/* ---------- Scrollbar oculto en carruseles ---------- */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }

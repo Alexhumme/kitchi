@@ -1,0 +1,42 @@
+/* ============================================================
+   Navegar (hub): buscador, meta, rejilla, esqueletos y vacío
+   ============================================================ */
+
+.feed-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.feed-count { font-size: 0.72rem; font-weight: 600; color: var(--tinta-suave); }
+.feed-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  flex-shrink: 0;
+}
+.load-more-row { display: flex; justify-content: center; flex-shrink: 0; padding-bottom: 8px; }
+.load-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+/* ---------- Esqueleto de carga ---------- */
+.feed-skeleton {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  flex-shrink: 0;
+}
+.feed-skeleton__cell {
+  height: 176px;
+  border-radius: var(--radio-medio);
+  background: var(--crema-hondo);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse { 50% { opacity: 0.55; } }

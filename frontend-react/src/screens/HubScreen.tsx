@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, CloudOff, Search, SearchX, Sparkles, X } from 'lucide-react';
 import { useKitchi } from '../state/AppContext';
 import FeedCard from '../components/FeedCard';
-import { EmptyState } from '../components/ui';
+import { EmptyState, SectionTitle } from '../components/ui';
 
 export default function HubScreen() {
   const {
@@ -14,47 +14,48 @@ export default function HubScreen() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex h-full flex-col gap-3 overflow-y-auto pr-1 app-scroll">
+    <div className="screen-root">
+      {/* encabezado */}
+      <SectionTitle title="Explorar" subtitle="Creaciones de nuestra comunidad" />
+
       {/* buscador */}
-      <label className="field-shell flex shrink-0 items-center gap-2 !rounded-[var(--radio-pastilla)] px-4 py-1.5">
-        <Search size={20} strokeWidth={2.4} className="shrink-0 text-[var(--tinta-suave)]" aria-hidden="true" />
+      <label className="search-shell">
+        <Search size={20} strokeWidth={2.4} className="search-shell__icon" aria-hidden="true" />
         <input
           type="search"
-          className="field-shell__input !py-2"
+          className="search-shell__input"
           placeholder="Buscar creación o usuario…"
           value={feedQuery}
           onChange={(e) => setFeedQuery(e.target.value)}
           aria-label="Buscar en el hub"
         />
         {feedQuery && (
-          <button type="button" className="rounded-full p-1 text-[var(--tinta-suave)] hover:bg-black/5" onClick={() => setFeedQuery('')} aria-label="Limpiar búsqueda">
+          <button type="button" className="search-shell__clear" onClick={() => setFeedQuery('')} aria-label="Limpiar búsqueda">
             <X size={18} strokeWidth={2.4} aria-hidden="true" />
           </button>
         )}
       </label>
 
       {/* contador + estado */}
-      <div className="flex shrink-0 items-center justify-between gap-2">
-        <p className="text-[0.72rem] font-semibold text-[var(--tinta-suave)]">
+      <div className="feed-meta">
+        <p className="feed-count">
           {apiOnline
             ? `${feedTotal} publicación${feedTotal === 1 ? '' : 'es'} pública${feedTotal === 1 ? '' : 's'}`
             : 'Modo local: el hub necesita la API'}
         </p>
-        <span className="badge badge--pink !shadow-none">
+        <span className="badge badge--pink badge--flat">
           {feedSearching ? 'Actualizando…' : 'Actualizado'}
         </span>
       </div>
 
       {/* contenido */}
       {feedSearching && publications.length === 0 ? (
-        <div className="grid shrink-0 grid-cols-2 gap-3">
-          {[0, 1, 2, 3, 4, 5].map((n) => (
-            <div key={n} className="h-44 animate-pulse rounded-[var(--radio-medio)] bg-[var(--crema-hondo)]" />
-          ))}
+        <div className="feed-skeleton" aria-hidden="true">
+          {[0, 1, 2, 3, 4, 5].map((n) => <div key={n} className="feed-skeleton__cell" />)}
         </div>
       ) : publications.length > 0 ? (
         <>
-          <motion.div layout className="grid shrink-0 grid-cols-2 gap-3">
+          <motion.div layout className="feed-grid">
             <AnimatePresence>
               {publications.map((pub, i) => (
                 <FeedCard key={pub.id} publication={pub} index={i} />
@@ -62,8 +63,8 @@ export default function HubScreen() {
             </AnimatePresence>
           </motion.div>
           {feedHasMore && (
-            <div className="flex shrink-0 justify-center pb-2">
-              <button type="button" className="bevel-btn px-5 py-2.5 text-sm font-extrabold" onClick={() => void loadMoreFeed()} disabled={feedSearching}>
+            <div className="load-more-row">
+              <button type="button" className="bevel-btn load-more-btn" onClick={() => void loadMoreFeed()} disabled={feedSearching}>
                 {feedSearching ? 'Cargando…' : 'Cargar más ↓'}
               </button>
             </div>
@@ -83,7 +84,7 @@ export default function HubScreen() {
               : 'Todavía no hay creaciones públicas. Crea un gato e inicia sesión para publicarlo.'
           }
           action={
-            <button type="button" className="bevel-btn-coral flex items-center gap-2 px-5 py-2.5 text-sm" onClick={() => navigate('/crear')}>
+            <button type="button" className="bevel-btn-coral" onClick={() => navigate('/crear')}>
               Crear mi gato <ArrowRight size={17} strokeWidth={2.6} />
             </button>
           }

@@ -1,6 +1,7 @@
 // Perfil público de un usuario (P18): gatos y publicaciones visibles.
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
 import { useKitchi } from '../state/AppContext';
 import { api, ApiError } from '../lib/api';
 import type { ProfileRecord } from '../lib/types';
@@ -33,19 +34,19 @@ export default function PublicProfileScreen() {
   }, [username]);
 
   return (
-    <div className="app-scroll flex h-full flex-col gap-3 overflow-y-auto pr-1">
-      <header className="flex shrink-0 items-center gap-2 pt-1">
-        <button type="button" className="grid h-10 w-10 place-items-center rounded-full text-[var(--ink)] hover:bg-black/5" onClick={() => navigate(-1)} aria-label="Volver">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+    <div className="screen-root">
+      <header className="back-header">
+        <button type="button" className="back-header__btn" onClick={() => navigate(-1)} aria-label="Volver">
+          <ChevronLeft size={22} strokeWidth={2.4} />
         </button>
         <SectionTitle title="Perfil público" subtitle="Su huella pública en kitchi.studio" />
       </header>
 
       {loading ? (
-        <div className="flex shrink-0 flex-col gap-3">
-          <div className="h-24 animate-pulse rounded-[var(--radio-grande)] bg-[var(--crema-hondo)]" />
-          <div className="grid grid-cols-2 gap-3">
-            {[0, 1, 2, 3].map((n) => <div key={n} className="h-40 animate-pulse rounded-[var(--radio-medio)] bg-[var(--crema-hondo)]" />)}
+        <div className="public-skeleton" aria-hidden="true">
+          <div className="public-skeleton__header" />
+          <div className="feed-skeleton">
+            {[0, 1, 2, 3].map((n) => <div key={n} className="public-skeleton__cell" />)}
           </div>
         </div>
       ) : error ? (
@@ -53,26 +54,26 @@ export default function PublicProfileScreen() {
       ) : profile ? (
         <>
           {/* cabecera */}
-          <section className="bevel-panel flex shrink-0 items-center gap-4 p-4">
+          <section className="public-header">
             <Avatar name={profile.username} size={64} />
-            <div className="min-w-0">
-              <h2 className="truncate text-xl font-extrabold text-[var(--ink)]">{profile.username}</h2>
-              <p className="text-[0.72rem] font-semibold text-[var(--tinta-suave)]">
+            <div className="identity-meta">
+              <h2 className="public-name">{profile.username}</h2>
+              <p className="public-joined">
                 {profile.joined_at ? `Miembro desde ${new Date(profile.joined_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}` : 'Miembro'}
               </p>
-              <span className="bevel-chip mt-1">{profile.publication_count} publicación{profile.publication_count === 1 ? '' : 'es'} pública{profile.publication_count === 1 ? '' : 's'}</span>
+              <span className="bevel-chip public-chip">{profile.publication_count} publicación{profile.publication_count === 1 ? '' : 'es'} pública{profile.publication_count === 1 ? '' : 's'}</span>
             </div>
           </section>
 
           {/* gatos publicados */}
           {profile.cats.length > 0 && (
-            <section className="bevel-panel shrink-0 p-4">
+            <section className="stickers-panel">
               <SectionTitle title="Gatos publicados" subtitle="Los que esta persona ha publicado en el hub" />
-              <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+              <div className="public-cats-row">
                 {profile.cats.map((cat) => (
-                  <div key={cat.id} className="flex w-20 shrink-0 flex-col items-center gap-1 rounded-2xl bg-[var(--crema)] p-1.5" title={cat.name}>
+                  <div key={cat.id} className="public-cat" title={cat.name}>
                     <CatSVG configuration={cat.configuration} size={56} />
-                    <span className="w-full truncate text-center text-[0.6rem] font-bold text-[var(--ink)]">{cat.name}</span>
+                    <span className="public-cat__name">{cat.name}</span>
                   </div>
                 ))}
               </div>
@@ -80,12 +81,12 @@ export default function PublicProfileScreen() {
           )}
 
           {/* publicaciones */}
-          <section className="shrink-0 pb-1">
+          <section className="public-pubs">
             <SectionTitle title="Publicaciones" subtitle={`${profile.publications.length} pública${profile.publications.length === 1 ? '' : 's'}`} />
             {profile.publications.length === 0 ? (
-              <p className="mt-2 text-[0.82rem] font-semibold text-[var(--tinta-suave)]">Sin publicaciones públicas todavía.</p>
+              <p className="public-count">Sin publicaciones públicas todavía.</p>
             ) : (
-              <div className="mt-2 grid grid-cols-2 gap-3">
+              <div className="public-pubs-grid">
                 {profile.publications.map((pub, i) => (
                   <FeedCard key={pub.id} publication={pub} index={i} />
                 ))}
@@ -95,7 +96,7 @@ export default function PublicProfileScreen() {
         </>
       ) : null}
       {!apiOnline && (
-        <p className="shrink-0 text-center text-[0.7rem] font-semibold text-[var(--tinta-suave)]">La API no responde; los perfiles públicos necesitan conexión.</p>
+        <p className="public-offline">La API no responde; los perfiles públicos necesitan conexión.</p>
       )}
     </div>
   );

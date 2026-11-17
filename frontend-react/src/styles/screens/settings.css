@@ -1,0 +1,94 @@
+/* ============================================================
+   Configuración: cabecera, acerca de, pasos, efectos, datos
+   ============================================================ */
+
+.back-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+.back-header__btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.back-header__btn:hover { background: rgba(0, 0, 0, 0.05); }
+.settings-test-sound { margin-top: 10px; }
+.settings-danger { color: var(--error); }
+.back-header__trailing { margin-left: auto; }
+
+.settings-section {
+  flex-shrink: 0;
+  padding: 16px;
+  border-radius: var(--radio-grande);
+  background: var(--superficie);
+  box-shadow: inset -var(--bevel-right) -var(--bevel-bottom) 0 0 var(--ink);
+}
+.settings-about {
+  flex-shrink: 0;
+  margin-top: 12px;
+  padding: 22px;
+  border-radius: var(--radio-grande);
+  background-color: var(--superficie);
+  background-image: url("../../assets/ui/patterns/checker_soft.png");
+  background-size: 120px;
+  text-align: center;
+  box-shadow: inset -var(--bevel-right) -var(--bevel-bottom) 0 0 var(--ink);
+}
+.settings-brand { display: flex; justify-content: center; color: var(--ink); }
+.settings-title { margin-top: 4px; font-size: 1.5rem; font-weight: 800; color: var(--ink); }
+.settings-tagline { font-size: 0.85rem; font-weight: 700; color: var(--tinta-suave); }
+.settings-blurb {
+  margin: 8px auto 0;
+  max-width: 30ch;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+.settings-tech { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 12px; }
+
+.settings-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.settings-steps__item { display: flex; align-items: flex-start; gap: 12px; }
+.settings-steps__num {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--panel);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--ink);
+  box-shadow: inset -2px -2px 0 0 var(--advertencia);
+}
+.settings-steps__title { font-size: 0.85rem; font-weight: 800; color: var(--ink); }
+.settings-steps__desc { font-size: 0.75rem; font-weight: 500; line-height: 1.35; color: var(--ink-soft); }
+
+.toggle-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+.toggle-row__icon { display: grid; place-items: center; width: 28px; color: var(--ink); }
+.toggle-row__text { flex: 1; min-width: 0; }
+.toggle-row__title { font-size: 0.88rem; font-weight: 700; line-height: 1.25; color: var(--ink); }
+.toggle-row__caption { font-size: 0.7rem; font-weight: 500; line-height: 1.3; color: var(--tinta-suave); }
+.toggle-rows { display: flex; flex-direction: column; margin-top: 6px; }
+.toggle-rows > .toggle-row + .toggle-row { border-top: 2px solid var(--crema-hondo); }
+
+.settings-data-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; font-size: 0.78rem; font-weight: 600; }
+.settings-error { margin-top: 8px; font-size: 0.75rem; font-weight: 600; color: var(--error); }
+.settings-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.settings-footer { flex-shrink: 0; padding: 12px 0; text-align: center; font-size: 0.68rem; font-weight: 600; color: var(--tinta-suave); }
+.settings-footer a { text-decoration: underline; text-underline-offset: 2px; }

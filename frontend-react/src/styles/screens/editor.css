@@ -1,0 +1,152 @@
+/* ============================================================
+   Crear / Editar gato: lienzo, chips de categoría y guardado
+   ============================================================ */
+
+.editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+.editor-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+/* ---------- Lienzo de previsualización ---------- */
+.canvas-stage {
+  position: relative;
+  flex-shrink: 0;
+  height: 228px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 2.5px solid var(--ink);
+  background: #fbe5a2;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.canvas-stage__stars {
+  position: absolute;
+  inset: 0;
+  background-image: url("../../assets/ui/patterns/stars_spark.png");
+  background-size: 92px;
+  opacity: 0.24;
+}
+.canvas-stage__tools {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+}
+.canvas-stage__random { position: absolute; top: 10px; right: 10px; z-index: 10; }
+.canvas-stage__cat { position: relative; z-index: 1; }
+
+.canvas-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 13px;
+  border: 2px solid var(--ink);
+  background: rgba(255, 253, 249, 0.92);
+  color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.canvas-btn:hover { background: #fff7e2; }
+.canvas-btn:active { transform: translateY(2px); box-shadow: 0 0.5px 0 var(--ink); }
+.canvas-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.canvas-btn-amber {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 13px;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  box-shadow: 0 2px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+.canvas-btn-amber:hover { background: var(--ambar); }
+.canvas-btn-amber:active { transform: translateY(2px); box-shadow: 0 0.5px 0 var(--ink); }
+
+/* ---------- Carrusel de categorías ---------- */
+.cat-carousel {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+.cat-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 56px;
+  padding: 8px 6px 9px;
+  border-radius: 18px;
+  border: 2px solid var(--ink);
+  background: var(--superficie);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--ink);
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+.cat-chip:hover { background: #fff7e2; }
+.cat-chip:active { transform: translateY(2px); box-shadow: 0 0.5px 0 var(--ink); }
+.cat-chip__label { font-size: 0.66rem; font-weight: 800; line-height: 1; }
+.cat-chip[data-active="true"] {
+  background: var(--panel);
+  box-shadow: 0 3px 0 var(--ink);
+  transform: translateY(-2px);
+}
+
+/* ---------- Rejilla de opciones ---------- */
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ---------- Botón principal ---------- */
+.save-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 52px;
+  border-radius: 18px;
+  border: 2.5px solid var(--ink);
+  background: var(--coral);
+  color: #fff;
+  font-size: 1.12rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+.save-btn:hover { background: #eb5b5b; }
+.save-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.save-btn:disabled { opacity: 0.5; cursor: not-allowed; }

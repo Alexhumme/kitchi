@@ -1,0 +1,45 @@
+/* ============================================================
+   Perfil público: cabecera, gatos y publicaciones
+   ============================================================ */
+
+.public-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  padding: 16px;
+  border-radius: var(--radio-grande);
+  background: var(--superficie);
+  box-shadow: inset -var(--bevel-right) -var(--bevel-bottom) 0 0 var(--ink);
+}
+.public-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.2rem; font-weight: 800; color: var(--ink); }
+.public-joined { font-size: 0.72rem; font-weight: 600; color: var(--tinta-suave); }
+
+.public-cats-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-top: 10px;
+}
+.public-cat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  width: 80px;
+  padding: 6px;
+  border-radius: 16px;
+  background: var(--crema);
+}
+.public-cat__name { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 0.6rem; font-weight: 700; color: var(--ink); }
+
+.public-pubs { flex-shrink: 0; padding-bottom: 4px; }
+.public-count { margin-top: 8px; font-size: 0.82rem; font-weight: 600; color: var(--tinta-suave); }
+.public-pubs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
+.public-offline { flex-shrink: 0; padding-top: 8px; text-align: center; font-size: 0.7rem; font-weight: 600; color: var(--tinta-suave); }
+.public-chip { margin-top: 4px; }
+.public-skeleton { display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
+.public-skeleton__header { height: 96px; border-radius: var(--radio-grande); background: var(--crema-hondo); animation: pulse 1.6s ease-in-out infinite; }
+.public-skeleton__cell { height: 160px; border-radius: var(--radio-medio); background: var(--crema-hondo); animation: pulse 1.6s ease-in-out infinite; }

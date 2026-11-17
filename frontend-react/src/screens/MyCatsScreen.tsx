@@ -66,21 +66,21 @@ export default function MyCatsScreen() {
   );
 
   return (
-    <div className="app-scroll flex h-full flex-col gap-3 overflow-y-auto pr-1">
-      <div className="flex items-start justify-between gap-2">
+    <div className="screen-root">
+      <div className="editor-head">
         <SectionTitle
           title="Mis gatos"
           subtitle={user ? 'Guardados en tu cuenta' : `Guardados en este navegador · ${guestCount}/${MAX_GUEST_CATS}`}
         />
-        {isGuestFull && <span className="badge badge--warn shrink-0">Lleno</span>}
+        {isGuestFull && <span className="badge badge--warn">Lleno</span>}
       </div>
 
       {!user && (
-        <div className="flex shrink-0 items-center justify-between gap-3 rounded-2xl border-2 border-dashed border-[var(--tinta-suave)]/40 bg-[var(--superficie)]/60 px-4 py-2.5">
-          <p className="text-[0.78rem] font-semibold leading-snug text-[var(--tinta-suave)]">
+        <div className="guest-banner">
+          <p className="guest-banner__text">
             Inicia sesión para publicar y sincronizar tus gatos.
           </p>
-          <button type="button" className="bevel-btn-yellow shrink-0 px-3 py-1.5 text-xs" onClick={() => navigate('/auth/login')}>
+          <button type="button" className="bevel-btn-yellow btn-xs" onClick={() => navigate('/auth/login')}>
             Entrar
           </button>
         </div>
@@ -92,13 +92,13 @@ export default function MyCatsScreen() {
           title="Aún no tienes gatos"
           body="Entra en Crear, compón tu gato pieza por pieza y guárdalo. Después podrás publicarlo en el hub."
           action={
-            <button type="button" className="bevel-btn-coral flex items-center gap-2 px-5 py-2.5 text-sm" onClick={() => navigate('/crear')}>
+            <button type="button" className="bevel-btn-coral" onClick={() => navigate('/crear')}>
               Crear mi primer gato <ArrowRight size={17} strokeWidth={2.6} />
             </button>
           }
         />
       ) : (
-        <div className="flex shrink-0 flex-col gap-2">
+        <div className="cat-list">
           <AnimatePresence>
             {sorted.map((cat) => {
               const published = publishedCatIds.has(String(cat.id));
@@ -110,32 +110,32 @@ export default function MyCatsScreen() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 40, transition: { duration: 0.18 } }}
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                  className="bevel-panel !rounded-[var(--radio-medio)] flex items-center gap-3 p-2.5"
+                  className="cat-card"
                 >
-                  <div className="flex h-[72px] w-[64px] shrink-0 items-end justify-center overflow-hidden rounded-2xl bg-[var(--crema)]">
+                  <div className="cat-card__thumb">
                     <CatSVG configuration={cat.configuration} size={54} />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[0.95rem] font-extrabold text-[var(--ink)]">{cat.name}</p>
-                    <p className="text-[0.68rem] font-semibold text-[var(--tinta-suave)]">
+                  <div className="cat-card__body">
+                    <p className="cat-card__name">{cat.name}</p>
+                    <p className="cat-card__meta">
                       {cat.updated_at ? new Date(cat.updated_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) : ''}
                       {published && ' · '}
                       {published && (
-                        <span className="inline-flex items-center gap-0.5 font-extrabold text-[var(--menta-honda)]">
+                        <span className="cat-card__published">
                           <Check size={12} strokeWidth={3.5} aria-hidden="true" /> Publicado
                         </span>
                       )}
                     </p>
-                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    <div className="cat-card__actions">
                       {user && !published && (
-                        <button type="button" className="badge badge--pink !shadow-none hover:brightness-95" onClick={() => openPublish(cat)}>
+                        <button type="button" className="badge badge--pink badge--flat badge--interactive" onClick={() => openPublish(cat)}>
                           <Megaphone size={13} strokeWidth={2.6} aria-hidden="true" /> Publicar
                         </button>
                       )}
-                      <button type="button" className="badge badge--warn !shadow-none hover:brightness-95" onClick={() => navigate(`/crear?cat=${encodeURIComponent(String(cat.id))}`)}>
+                      <button type="button" className="badge badge--warn badge--flat badge--interactive" onClick={() => navigate(`/crear?cat=${encodeURIComponent(String(cat.id))}`)}>
                         <Pencil size={13} strokeWidth={2.6} aria-hidden="true" /> Editar
                       </button>
-                      <button type="button" className="badge badge--error !shadow-none hover:brightness-95" onClick={() => setPendingDelete(cat)}>
+                      <button type="button" className="badge badge--error badge--flat badge--interactive" onClick={() => setPendingDelete(cat)}>
                         <Trash size={13} strokeWidth={2.6} aria-hidden="true" /> Eliminar
                       </button>
                     </div>
@@ -149,9 +149,9 @@ export default function MyCatsScreen() {
 
       {/* deshacer eliminación (invitado) */}
       {lastDeleted && (
-        <div className="fixed inset-x-4 bottom-24 z-30 flex items-center justify-between gap-3 rounded-2xl bg-[var(--ink)] px-4 py-3 text-[#fff] shadow-lg">
-          <p className="text-[0.82rem] font-semibold">‘{lastDeleted.name}’ eliminado.</p>
-          <button type="button" className="rounded-full bg-[var(--panel)] px-3 py-1.5 text-xs font-extrabold text-[var(--ink)]" onClick={() => { restoreGuestCat(lastDeleted); setLastDeleted(null); }}>
+        <div className="undo-bar">
+          <p className="undo-bar__text">‘{lastDeleted.name}’ eliminado.</p>
+          <button type="button" className="undo-bar__action" onClick={() => { restoreGuestCat(lastDeleted); setLastDeleted(null); }}>
             Deshacer
           </button>
         </div>
@@ -159,56 +159,58 @@ export default function MyCatsScreen() {
 
       {/* diálogo de publicación */}
       {publishTarget && (
-        <div className="absolute inset-0 z-40 flex items-end justify-center bg-black/45 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="Publicar gato">
+        <div className="publish-overlay" role="dialog" aria-modal="true" aria-label="Publicar gato">
           <motion.form
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-            className="bevel-panel w-full !rounded-b-none p-5 pb-7"
+            className="publish-panel"
             onSubmit={(e) => { e.preventDefault(); void submitPublish(); }}
           >
-            <div className="flex items-center gap-3">
+            <div className="publish-head">
               <Avatar name={user?.username ?? '?'} size={40} />
-              <div>
-                <h2 className="text-base font-extrabold text-[var(--ink)]">Publicar a {user?.username}</h2>
-                <p className="text-[0.7rem] font-semibold text-[var(--tinta-suave)]">Aparecerá en el feed público del hub</p>
+              <div className="publish-head-text">
+                <h2 className="publish-title">Publicar a {user?.username}</h2>
+                <p className="publish-subtitle">Aparecerá en el feed público del hub</p>
               </div>
             </div>
-            <label className="field-shell mt-4 block !rounded-[var(--radio-medio)] px-4 py-1">
-              <span className="sr-only">Título</span>
-              <input className="field-shell__input" value={pubTitle} onChange={(e) => setPubTitle(e.target.value)} maxLength={120} placeholder="Título de la publicación" autoFocus />
-            </label>
-            <label className="field-shell mt-2 block !rounded-[var(--radio-medio)] px-4 py-1">
-              <span className="sr-only">Descripción</span>
-              <textarea className="field-shell__input min-h-[64px] resize-none" value={pubDescription} onChange={(e) => setPubDescription(e.target.value)} maxLength={500} placeholder="Descripción breve (opcional)" />
-            </label>
-            <fieldset className="mt-3">
-              <legend className="text-[0.72rem] font-extrabold uppercase tracking-wide text-[var(--tinta-suave)]">Visibilidad</legend>
-              <div className="mt-1.5 flex gap-2">
-                {(['public', 'private'] as const).map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    className="bevel-chip flex-1 justify-center !py-2"
-                    data-selected={pubVisibility === v}
-                    onClick={() => setPubVisibility(v)}
-                  >
-                    {v === 'public' ? (
-                      <><Globe size={15} strokeWidth={2.4} aria-hidden="true" /> Pública</>
-                    ) : (
-                      <><Lock size={15} strokeWidth={2.4} aria-hidden="true" /> Privada</>
-                    )}
-                  </button>
-                ))}
+            <div className="publish-form">
+              <label className="field-shell">
+                <span className="sr-only">Título</span>
+                <input className="field-shell__input" value={pubTitle} onChange={(e) => setPubTitle(e.target.value)} maxLength={120} placeholder="Título de la publicación" autoFocus />
+              </label>
+              <label className="field-shell">
+                <span className="sr-only">Descripción</span>
+                <textarea className="field-shell__input field-shell__input--area" value={pubDescription} onChange={(e) => setPubDescription(e.target.value)} maxLength={500} placeholder="Descripción breve (opcional)" />
+              </label>
+              <fieldset className="publish-visibility">
+                <legend className="publish-legend">Visibilidad</legend>
+                <div className="publish-visibility-row">
+                  {(['public', 'private'] as const).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      className="bevel-chip"
+                      data-selected={pubVisibility === v}
+                      onClick={() => setPubVisibility(v)}
+                    >
+                      {v === 'public' ? (
+                        <><Globe size={15} strokeWidth={2.4} aria-hidden="true" /> Pública</>
+                      ) : (
+                        <><Lock size={15} strokeWidth={2.4} aria-hidden="true" /> Privada</>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+              <div className="publish-actions">
+                <button type="button" className="bevel-btn" onClick={() => setPublishTarget(null)}>
+                  Cancelar
+                </button>
+                <button type="submit" className="bevel-btn-coral" disabled={!pubTitle.trim() || publishing}>
+                  {publishing ? 'Publicando…' : 'Publicar'}
+                </button>
               </div>
-            </fieldset>
-            <div className="mt-4 flex justify-end gap-2">
-              <button type="button" className="bevel-btn px-4 py-2 text-sm font-extrabold" onClick={() => setPublishTarget(null)}>
-                Cancelar
-              </button>
-              <button type="submit" className="bevel-btn-coral px-5 py-2 text-sm disabled:opacity-50" disabled={!pubTitle.trim() || publishing}>
-                {publishing ? 'Publicando…' : 'Publicar'}
-              </button>
             </div>
           </motion.form>
         </div>

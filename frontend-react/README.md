@@ -1,8 +1,9 @@
 # kitchi.studio — frontend-react (prototipo)
 
-Interfaz web de Kitchi Studio reconstruida con **React 19 + TypeScript + Vite + Tailwind CSS v4**,
-con la misma API Django REST Framework que la versión Flet (`frontend/`). Nace como **prototipo de
-viabilidad** tras los límites encontrados en Flet 1.1.2 (ver [`docs/decisions/ADR-006-flet-1-1-2-web-issues.md`](../docs/decisions/ADR-006-flet-1-1-2-web-issues.md)
+Interfaz web de Kitchi Studio reconstruida con **React 19 + TypeScript + Vite** y un sistema de
+**diseño propio en CSS atomizado** (sin Tailwind), con la misma API Django REST Framework que
+la versión Flet (`frontend/`). Nace como **prototipo de viabilidad** tras los límites encontrados
+en Flet 1.1.2 (ver [`docs/decisions/ADR-006-flet-1-1-2-web-issues.md`](../docs/decisions/ADR-006-flet-1-1-2-web-issues.md)
 y [`docs/decisions/ADR-009-react-frontend.md`](../docs/decisions/ADR-009-react-frontend.md)).
 
 > La versión Flet (`frontend/`) sigue siendo la referencia de paridad y no se ha eliminado.
@@ -76,10 +77,11 @@ Diferencias con la versión Flet:
 
 ```
 src/
-  lib/catalog.ts    # catálogo empaquetado (fallback offline + validación)
-  lib/api.ts        # cliente HTTP tipado a la API DRF
-  lib/fx.ts         # sonido Web Audio + vibración
-  state/AppContext.tsx  # sesión, gatos (cuenta o invitado), feed, preferencias
-  components/       # CatSVG, FeedCard, Avatar, ui (toasts, diálogo, toggles)
-  screens/          # Hub, Editor, Mis gatos, Stickers IA, Perfil, Configuración, Auth, Perfil público
+  lib/catalog.ts       # catálogo empaquetado (fallback offline + validación)
+  lib/api.ts           # cliente HTTP tipado a la API DRF
+  lib/fx.ts            # sonido Web Audio + vibración
+  state/AppContext.tsx # sesión, gatos (cuenta o invitado), feed, preferencias
+  components/          # CatSVG, FeedCard, Avatar, ui (toasts, diálogo, toggles)
+  screens/             # Hub, Editor, Mis gatos, Stickers IA, Perfil, Configuración, Auth, Perfil público
+  styles/              # CSS atomizado (globals, layout, components/, screens/)
 ```

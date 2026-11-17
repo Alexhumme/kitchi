@@ -37,26 +37,25 @@ export default function AuthScreen() {
   };
 
   return (
-    <div className="app-scroll flex h-full flex-col items-center justify-center gap-4 overflow-y-auto py-4">
+    <div className="screen-root screen-root--center">
       <motion.div
         initial={{ scale: 0.6, opacity: 0, rotate: -8 }}
         animate={{ scale: 1, opacity: 1, rotate: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-        className="grid h-20 w-20 place-items-center rounded-[var(--radio-grande)] bg-[var(--coral)] text-[#fff] shadow-[inset_-5px_-6px_0_0_var(--coral-hondo)]"
+        className="auth-hero"
         aria-hidden="true"
       >
         <Cat size={42} strokeWidth={2.2} />
       </motion.div>
       <SectionTitle
         title={isRegister ? 'Crear cuenta' : 'Iniciar sesión'}
-        subtitle={isRegister ? 'Sincroniza tus gatos y publica en el hub' : 'Tu cuenta guarda tus gatos en la nube'}
       />
 
-      <form onSubmit={(e) => void submit(e)} className="bevel-panel w-full max-w-xs space-y-3 p-5" noValidate>
-        <label className="field-shell block !rounded-[var(--radio-medio)] px-4 py-1">
-          <span className="text-[0.68rem] font-extrabold uppercase tracking-wide text-[var(--tinta-suave)]">Usuario</span>
+      <form onSubmit={(e) => void submit(e)} className="auth-form" noValidate>
+        <label className="auth-field">
+          <span className="field-label">Usuario</span>
           <input
-            className="field-shell__input"
+            className="auth-field__input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             autoComplete="username"
@@ -66,10 +65,10 @@ export default function AuthScreen() {
           />
         </label>
         {isRegister && (
-          <label className="field-shell block !rounded-[var(--radio-medio)] px-4 py-1">
-            <span className="text-[0.68rem] font-extrabold uppercase tracking-wide text-[var(--tinta-suave)]">Correo</span>
+          <label className="auth-field">
+            <span className="field-label">Correo</span>
             <input
-              className="field-shell__input"
+              className="auth-field__input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -78,10 +77,10 @@ export default function AuthScreen() {
             />
           </label>
         )}
-        <label className="field-shell relative block !rounded-[var(--radio-medio)] px-4 py-1">
-          <span className="text-[0.68rem] font-extrabold uppercase tracking-wide text-[var(--tinta-suave)]">Contraseña</span>
+        <label className="auth-field">
+          <span className="field-label">Contraseña</span>
           <input
-            className="field-shell__input pr-10"
+            className="auth-field__input auth-field__input--with-toggle"
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -91,7 +90,7 @@ export default function AuthScreen() {
           />
           <button
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--tinta-suave)] hover:text-[var(--ink)]"
+            className="auth-field__toggle"
             onClick={() => setShowPassword((v) => !v)}
             aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           >
@@ -100,31 +99,31 @@ export default function AuthScreen() {
         </label>
 
         {error && (
-          <p role="alert" className="rounded-xl bg-[var(--coral-suave)] px-3 py-2 text-[0.8rem] font-semibold text-[var(--error)]">
+          <p role="alert" className="auth-error">
             {error}
           </p>
         )}
 
-        <button type="submit" className="bevel-btn-coral w-full py-3 text-base disabled:opacity-60" disabled={submitting}>
+        <button type="submit" className="bevel-btn-coral btn-lg btn-block" disabled={submitting}>
           {submitting ? 'Un momento…' : isRegister ? 'Crear cuenta' : 'Entrar'}
         </button>
       </form>
 
-      <div className="flex flex-col items-center gap-1.5 text-[0.82rem] font-semibold text-[var(--tinta-suave)]">
+      <div className="auth-foot">
         {isRegister ? (
           <p>¿Ya tienes cuenta?{' '}
-            <button type="button" className="font-extrabold text-[var(--coral)] underline underline-offset-2" onClick={() => navigate('/auth/login')}>
+            <button type="button" className="auth-link" onClick={() => navigate('/auth/login')}>
               Inicia sesión
             </button>
           </p>
         ) : (
           <p>¿Primera vez aquí?{' '}
-            <button type="button" className="font-extrabold text-[var(--coral)] underline underline-offset-2" onClick={() => navigate('/auth/register')}>
+            <button type="button" className="auth-link" onClick={() => navigate('/auth/register')}>
               Crea tu cuenta
             </button>
           </p>
         )}
-        <button type="button" className="text-[0.78rem] underline underline-offset-2 opacity-80 hover:opacity-100" onClick={() => navigate('/')}>
+        <button type="button" className="auth-link auth-link--subtle" onClick={() => navigate('/')}>
           Seguir como invitado →
         </button>
       </div>

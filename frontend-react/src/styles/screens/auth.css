@@ -1,0 +1,91 @@
+/* ============================================================
+   Acceso: registro e inicio de sesión
+   ============================================================ */
+
+.auth-hero {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radio-grande);
+  background: var(--coral);
+  color: #fff;
+  box-shadow: inset -5px -6px 0 0 var(--coral-hondo);
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  padding: 20px;
+}
+.auth-field {
+  display: block;
+  position: relative;
+  border-radius: var(--radio-medio);
+  border: 2px solid var(--tinta-suave);
+  box-shadow: inset -5px -6px 0 0 var(--tinta-suave);
+  background: var(--superficie);
+  padding: 4px 16px;
+}
+.auth-field__input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 8px 0;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.auth-field__input::placeholder { color: var(--tinta-suave); font-weight: 500; }
+.auth-field__toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--tinta-suave);
+  cursor: pointer;
+  padding: 4px;
+}
+.auth-field__toggle:hover { color: var(--ink); }
+.auth-field__input--with-toggle { padding-right: 40px; }
+
+.auth-error {
+  border-radius: 14px;
+  background: var(--coral-suave);
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--error);
+}
+
+.auth-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+}
+.auth-link {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  color: var(--coral);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.auth-link--subtle {
+  font-size: 0.78rem;
+  color: var(--tinta-suave);
+  opacity: 0.85;
+}
+.auth-link--subtle:hover { opacity: 1; }
