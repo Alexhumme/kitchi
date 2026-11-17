@@ -46,6 +46,7 @@ media/
 *.png
 !assets/**/*.png
 !frontend/assets/**/*.png
+!frontend-react/src/assets/**/*.png
 !docs/**/*.png
 
 # Herramientas
@@ -54,3 +55,6 @@ media/
 *.swp
 .DS_Store
 Thumbs.db
+
+# Capturas y sondas de diagnóstico locales (nunca en Git)
+.diag*/
