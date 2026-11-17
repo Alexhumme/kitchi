@@ -4,7 +4,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useKitchi, MAX_GUEST_CATS } from '../state/AppContext';
 import Avatar from '../components/Avatar';
-import { Cat, Check, Crown, ExternalLink, LogOut, Settings, Sparkles, UserRoundPlus } from 'lucide-react';
+import { Cat, Check, Crown, ExternalLink, LogOut, Settings, ShieldCheck, Sparkles, UserRoundPlus } from 'lucide-react';
 
 function daysSince(iso?: string): number | null {
   if (!iso) return null;
@@ -19,9 +19,12 @@ export default function ProfileScreen() {
 
   const publishedCount = cats.filter((c) => publishedCatIds.has(String(c.id))).length;
   const daysHere = user ? daysSince(user.date_joined) : null;
+  const isAdmin = user?.role === 'admin';
   const count = Math.min(cats.length, MAX_GUEST_CATS);
-  const full = cats.length >= MAX_GUEST_CATS;
+  const full = !isAdmin && cats.length >= MAX_GUEST_CATS;
   const premium = Boolean(user?.premium);
+  const planName = isAdmin ? 'Plan Admin' : premium ? 'Plan Premium' : 'Plan gratuito';
+  const unlimited = isAdmin || premium;
 
   return (
     <div className="screen-root">
@@ -69,14 +72,16 @@ export default function ProfileScreen() {
         <div className="plan-head">
           <div className="plan-identity">
             <span className="plan-icon" aria-hidden="true">
-              <Crown size={16} strokeWidth={2.5} />
+              {isAdmin ? <ShieldCheck size={16} strokeWidth={2.5} /> : <Crown size={16} strokeWidth={2.5} />}
             </span>
             <span>
-              <span className="plan-title">{premium ? 'Plan Premium' : 'Plan gratuito'}</span>
-              <span className="plan-sub">Almacenamiento de personajes</span>
+              <span className="plan-title">{planName}</span>
+              <span className="plan-sub">{isAdmin ? 'Cuenta administrativa · sin límites' : 'Almacenamiento de personajes'}</span>
             </span>
           </div>
-          {premium ? (
+          {isAdmin ? (
+            <span className="plan-chip plan-chip--admin"><ShieldCheck size={13} strokeWidth={2.6} aria-hidden="true" /> Admin</span>
+          ) : premium ? (
             <span className="plan-chip plan-chip--premium">Premium</span>
           ) : full ? (
             <span className="plan-chip plan-chip--full">Límite alcanzado</span>
@@ -85,7 +90,7 @@ export default function ProfileScreen() {
           )}
         </div>
 
-        {!premium && (
+        {!unlimited && (
           <>
             <div className="plan-bar-row">
               <span>Gatos guardados</span>
@@ -98,7 +103,7 @@ export default function ProfileScreen() {
         )}
 
         <div className="plan-cta-row">
-          {premium ? (
+          {unlimited ? (
             <span className="plan-cta plan-cta--premium" aria-hidden="true">
               <Check size={16} strokeWidth={3} /> Espacios ilimitados
             </span>

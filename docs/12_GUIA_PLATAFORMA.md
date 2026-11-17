@@ -1,6 +1,6 @@
 # 12 · Guía viva de la plataforma — Kitchi Studio
 
-Documento de estudio para la sustentación · Versión 0.13 · 17 de noviembre de 2026
+Documento de estudio para la sustentación · Versión 0.14 · 17 de noviembre de 2026
 
 > **Estado:** documento vivo, casi vacío a propósito. Se completará **por incrementos** a medida que la aplicación se implemente. No describe funcionalidades que aún no existen.
 >
@@ -160,7 +160,8 @@ Puntos de diseño que conviene saber explicar:
   `{error: {code, message, details}}` (`apps/core/exceptions.py`), con códigos de negocio como
   `CAT_LIMIT_REACHED` o `INVALID_CONFIGURATION`.
 - **El límite de tres gatos se aplica en el backend** con `select_for_update` sobre la fila del
-  usuario, para que dos peticiones simultáneas no lo excedan.
+  usuario, para que dos peticiones simultáneas no lo excedan. **El rol `admin` no tiene tope**
+  (ADR-005 aplicado a planes): `create_cat` omite el tope cuando el rol del usuario es `admin`.
 - **El cliente usa los códigos del backend.** `frontend/src/kitchi/catalog.py` reemplaza las
   opciones locales con las de `/api/catalog/` y adapta la configuración normalizada
   (`{"fur": {"code": "tabby"}}` → `"tabby"`). Si la API no responde, conserva el catálogo
@@ -280,7 +281,7 @@ _Pendiente. Añadir preguntas reales de los ensayos y respuestas breves._
 
 Implementado y en uso:
 
-- API REST con cuentas por token, catálogo, poses y CRUD de gatos con límite de tres.
+- API REST con cuentas por token, catálogo, poses y CRUD de gatos con límite de tres (sin tope para el rol `admin`).
 - Hub: publicación autenticada desde **Mis gatos**, feed público paginado con buscador
   (`q=` por título, descripción y autor), perfil público de usuario con sus gatos y
   publicaciones, y “Gato publicado” como estado en Mis gatos.
@@ -406,6 +407,7 @@ funcionó, o qué costó la migración. Toda la evidencia está en
 | 2026-11-16 | Hub de publicaciones (P18) | Nuevo ADR-007; feed público con buscador, tarjetas con preview (cuadrícula de 2 columnas), publicación autenticada desde Mis gatos; `/api/publications/` + `/api/profiles/{username}/`; nuevo estilo juguetón global (bordes gruesos, sombras sólidas, rebotes); sonido pendiente de Flet 1.2; evidencia en `docs/reports/p18-hub-publicaciones.md` | Alex Valdelamar |
 | 2026-11-16 | Rediseño juguetón | Nuevo ADR-008; bevel asimétrico (libre arriba-izquierda, grueso abajo-derecha), barra de app dorada con separador zig-zag, NavigationBar oscura con indicador amarillo, patrones propios (dots/tiles vía Pillow), botones de plástico sobre `FilledButton`/`OutlinedButton` nativos; sonido pendiente de Flet 1.2 | Alex Valdelamar |
 | 2026-11-17 | CSS atomizado sin Tailwind | Se eliminó Tailwind v4 (mezclaba mal con las clases propias bevel); `src/index.css` dividido en `src/styles/` (globals, layout, components/, screens/); cada pantalla y componente tiene sus clases semánticas; misma apariencia 1:1 (verificada en capturas) | Alex Valdelamar |
+| 2026-11-17 | Admin sin límite de gatos (RBAC) | El rol `admin` (ADR-005) ya no se ve afectado por el límite del plan gratuito: `create_cat` omite el tope de 3 para admins (backend). El perfil muestra "Plan Admin · Cuenta administrativa · sin límites" con chip Admin y "Espacios ilimitados"; barrera y tope solo para miembro/invitado. Verificado por test backend (admin crea 5 gatos) y por CDP con cuenta admin de prueba (creados 4 gatos por la UI superando 3/3) | Alex Valdelamar |
 | 2026-11-17 | Rediseño brutalista de Perfil público, Settings y Acceso | Perfil público: credencial con métricas reales (Gatos, Publicados, Días aquí) sin exponer email y sin rol inventado; tarjetas con borde 2.5px ink y sombra dura; cotización de gatos y de publicaciones en formato PostCard. Settings: cabecera con chevron plano y chip de versión lila; secciones con borde ink y sombra dura; chips de tecnología coloreados por stack (React/Django/MySQL/Fredoka); toggles con iconos en cajas de color. Acceso: sol miel detrás del gato coral, chip KITCHI.STUDIO con pata, campos con borde ink y anillo miel al enfocar, CTA coral con flecha y "Seguir como invitado" como botón blanco brutalista | Alex Valdelamar |
 | 2026-11-17 | Perfil como credencial | La vista de Perfil sigue testui/miperfil.html: credencial con avatar, rol (Member/Admin/Invitado), email y alta en kitchi; mini métricas reales (Gatos, Publicados, Días aquí); tarjeta Plan gratuito con barra de capacidad y badge Límite alcanzado al 3/3 (o Pronto para el CTA de ilimitados — nada se simula); accesos Perfil público y Configuración como tiles; para invitados: CTA "Crear cuenta para sincronizar" y Perfil público bloqueado; para cuenta: Cerrar sesión seguro | Alex Valdelamar |
 | 2026-11-17 | Explorar como río de publicaciones | El feed sigue testui/feed.html: cabecera con autor, hora relativa ("Hace 37 min") y badge de tipo, escenario grande tintado rotando, título + descripción, pie con pelaje y CTA "Ver gato" al perfil público; buscador pulido; chips (Todo/Gatos funcionando; Packs/Stickers/Creadores deshabilitados como "Pronto", no simulados); el diseño vale también para el perfil público. Nick: like/follows/packs ausentes en el backend — se ocultan en lugar de simularse | Alex Valdelamar |
