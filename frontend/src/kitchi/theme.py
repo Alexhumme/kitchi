@@ -43,6 +43,45 @@ INFO = VIOLETA
 FONT = "Fredoka"
 
 
+# --- Estética "juguete" (chunks): bordes gruesos, esquinas grandes ---------
+BORDE = 3
+"""Ancho de los bordes sólidos del estilo juguetón."""
+
+RADIO_GRANDE = 22
+"""Radio de tarjetas y diálogos."""
+
+RADIO_MEDIO = 16
+"""Radio de botones y campos."""
+
+RADIO_PASTILLA = 999
+"""Radio de chips y etiquetas."""
+
+SOMBRA = ft.BoxShadow(
+    spread_radius=0,
+    blur_radius=0,
+    offset=(0, 4),
+    color="#302B3A2E",
+)
+"""Sombra dura desplazada (sin desenfoque) para el volumen "juguete"."""
+
+SOMBRA_PRESS = ft.BoxShadow(
+    spread_radius=0,
+    blur_radius=0,
+    offset=(0, 2),
+    color="#302B3A2E",
+)
+"""Variante para el estado pulsado."""
+
+ANIMACION_CORTA = ft.Animation(150, ft.AnimationCurve.LINEAR)
+"""Respuesta rápida para toques."""
+
+ANIMACION_REBOTE = ft.Animation(420, ft.AnimationCurve.EASE_OUT_BACK)
+"""Aparición con rebote (sobreimpulso) como si el control fuera físico."""
+
+ANIMACION_ELASTICA = ft.Animation(600, ft.AnimationCurve.ELASTIC_OUT)
+"""Desaceleración elástica para celebraciones."""
+
+
 def build_theme() -> ft.Theme:
     """Tema Material claro con la identidad Kitchi."""
     scheme = ft.ColorScheme(

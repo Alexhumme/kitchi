@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -204,7 +205,36 @@ class ApiClient:
         self._request("DELETE", f"/api/cats/{cat_id}/")
 
     # --- comunidad -------------------------------------------------------
-    def get_publications(self, page: int = 1, page_size: int = 12) -> dict:
+    def get_publications(self, page: int = 1, page_size: int = 12,
+                         q: str | None = None, username: str | None = None) -> dict:
         if self.mode == "local":
             return {"count": 0, "results": [], "pending_backend": True}
-        return self._get(f"/api/publications/?page={page}&page_size={page_size}")
+        query = f"page={int(page)}&page_size={int(page_size)}"
+        if q:
+            query += f"&q={urllib.parse.quote(q)}"
+        if username:
+            query += f"&user={urllib.parse.quote(username)}"
+        return self._get(f"/api/publications/?{query}")
+
+    def get_publication(self, publication_id) -> dict:
+        if self.mode == "local":
+            raise ApiError("PENDING_BACKEND", "Publicar creaciones requiere conexión con la API.", 400)
+        return self._get(f"/api/publications/{int(publication_id)}/")
+
+    def publish_cat(self, cat_id, title: str, description: str = "",
+                    visibility: str = "public") -> dict:
+        """Publica un gato propio en el hub (P18)."""
+        return self._request(
+            "POST",
+            "/api/publications/",
+            {
+                "cat_id": cat_id,
+                "title": title,
+                "description": description,
+                "visibility": visibility,
+            },
+        )
+
+    def get_public_profile(self, username: str) -> dict:
+        """Tarjeta pública de un usuario: gatos y publicaciones públicas (P18)."""
+        return self._get(f"/api/profiles/{urllib.parse.quote(username)}/")

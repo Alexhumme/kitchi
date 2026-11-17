@@ -38,7 +38,7 @@ Tablero de seguimiento del proyecto · Versión 1.1 · 28 de octubre de 2026
 - [ ] **P15** — Implementar seguimiento de trabajos. *Responsable: B + C · Dependencia: P11, P13 · Criterio: ciclo `pending → running → completed/failed` consultable por polling.*
 - [ ] **P16** — Integrar y probar el flujo de IA. *Responsable: C · Dependencia: P05 · Criterio: AC-08 o contingencia documentada.*
 - [ ] **P17** — Añadir gestión de errores y reintentos. *Responsable: B + A · Dependencia: P15, P16 · Criterio: códigos de error de [05_API_CONTRACTS.md](05_API_CONTRACTS.md) y reintentos de IA funcionales.*
-- [ ] **P18** — Implementar publicación y galería. *Responsable: A + B · Dependencia: P12 · Criterio: AC-07 (primera parte).*
+- [x] **P18** — Implementar publicación y galería. *Responsable: A + B · Dependencia: P12 · Criterio: AC-07 (primera parte).* Hecha el 16 nov: backend `GET/POST /api/publications/` + `GET /api/profiles/{username}/` público; frontend: publicación desde Mis gatos, feed público con buscador (`q=`, `user=`) y perfiles públicos navegables. Verificado en vivo contra MySQL e interfaz Flet. Extra en [`reports/p18-hub-publicaciones.md`](reports/p18-hub-publicaciones.md), ADR-007.
 - [ ] **P19** — Implementar copia de creaciones. *Responsable: A + B · Dependencia: P18 · Criterio: AC-07 completo; la copia no altera el original.*
 - [ ] **P20** — Demostrar concurrencia. *Responsable: C · Dependencia: P16 · Criterio: AC-09 con operaciones reales (no `sleep` artificial).*
 - [ ] **P21** — Demostrar multiprocesamiento. *Responsable: C · Dependencia: P13 · Criterio: AC-10; procesos identificados en logs.*

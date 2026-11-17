@@ -1,14 +1,16 @@
-"""Mis gatos: colección local del invitado con abrir, editar y eliminar."""
+"""Mis gatos: colección con abrir, editar, eliminar y publicar (P18)."""
 
 from __future__ import annotations
 
 import flet as ft
 
 from .. import catalog
+from .. import cat_view
 from .. import components as c
 from .. import icons
 from .. import models
 from .. import theme as t
+from ..api import ApiError
 
 
 def build(app) -> ft.Control:
@@ -81,6 +83,24 @@ def build(app) -> ft.Control:
 def _cat_card(app, cat: dict) -> ft.Control:
     summary = catalog.config_summary(cat["configuration"])
     updated = cat["updated_at"][:10]
+
+    def share_widget():
+        if not app.user:
+            return ft.IconButton(
+                icons.get("share"),
+                tooltip="Crea una cuenta o inicia sesión para publicar",
+                icon_color=t.TINTA_SUAVE,
+                on_click=lambda e: app.open_auth("login"),
+            )
+        if str(cat.get("id")) in app.published_cat_ids:
+            return c.chip("Publicado", icon="check_circle", dense=True, bgcolor=t.MENTA, color=t.TINTA)
+        return ft.IconButton(
+            icons.get("share"),
+            tooltip="Publicar en el hub",
+            icon_color=t.TINTA,
+            on_click=lambda e: _open_publish_dialog(app, cat),
+        )
+
     return c.card(
         ft.Column(
             [
@@ -104,6 +124,7 @@ def _cat_card(app, cat: dict) -> ft.Control:
                         ),
                         ft.IconButton(icons.get("edit"), tooltip="Editar", icon_color=t.TINTA,
                                       on_click=lambda e, cid=cat["id"]: app.edit_cat(cid)),
+                        share_widget(),
                         ft.IconButton(icons.get("delete_outline"), tooltip="Eliminar", icon_color=t.ERROR,
                                       on_click=lambda e, cid=cat["id"]: app.ask_delete_cat(cid)),
                     ],
@@ -119,3 +140,109 @@ def _cat_card(app, cat: dict) -> ft.Control:
         ),
         padding=14,
     )
+
+def _open_publish_dialog(app, cat: dict) -> None:
+    """Diálogo para publicar un gato propio en el hub (P18)."""
+    page = app.page
+
+    title_field = ft.TextField(
+        label="Título",
+        value=cat.get("name") or "",
+        max_length=120,
+        autofocus=True,
+        filled=True,
+        bgcolor=t.SUPERFICIE,
+        border=ft.OutlineInputBorder(
+            border_radius=t.RADIO_MEDIO,
+            side=ft.BorderSide(t.BORDE, t.TINTA),
+        ),
+    )
+    description_field = ft.TextField(
+        label="Descripción",
+        hint_text="Cuenta un poquito de tu gato…",
+        max_length=500,
+        min_lines=2,
+        max_lines=4,
+        filled=True,
+        bgcolor=t.SUPERFICIE,
+        border=ft.OutlineInputBorder(
+            border_radius=t.RADIO_MEDIO,
+            side=ft.BorderSide(t.BORDE, t.TINTA),
+        ),
+    )
+    visibility_toggle = ft.Switch(
+        label="Pública — cualquier persona puede verla",
+        value=True,
+        active_color=t.CORAL,
+    )
+
+    async def do_publish(_event) -> None:
+        title = (title_field.value or "").strip()
+        if not title:
+            c.notify(page, "Ponle un título a la publicación.", "error")
+            return
+        visibility = "public" if visibility_toggle.value else "private"
+        description = (description_field.value or "").strip()
+        page.pop_dialog()
+        try:
+            import asyncio
+
+            await asyncio.to_thread(
+                app.api.publish_cat, cat["id"], title, description, visibility
+            )
+        except ApiError as exc:
+            if getattr(exc, "code", "") == "PUBLICATION_ALREADY_EXISTS":
+                app.published_cat_ids.add(str(cat.get("id")))
+                c.notify(page, "Este gato ya está publicado en el hub.", "info")
+            else:
+                c.notify(page, exc.user_message(), "error")
+            app.rebuild_current()
+            return
+        app.published_cat_ids.add(str(cat.get("id")))
+        c.notify(page, f"«{title}» publicada en el hub.", "success")
+        await app.refresh_feed(append=False)
+        app.rebuild_current()
+
+    dialog = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("Publicar en el hub", style=t.section()),
+        bgcolor=t.SUPERFICIE,
+        shape=ft.RoundedRectangleBorder(radius=t.RADIO_GRANDE),
+        content=ft.Column(
+            [
+                ft.Row(
+                    [
+                        cat_view.cat_face(cat.get("configuration") or {}, 96),
+                        ft.Column(
+                            [
+                                ft.Text(
+                                    cat.get("name") or "Sin nombre",
+                                    weight=ft.FontWeight.W_700,
+                                    color=t.TINTA,
+                                ),
+                                ft.Text(
+                                    "Así se verá en las tarjetas del feed.",
+                                    style=t.caption(),
+                                ),
+                            ],
+                            spacing=2,
+                            expand=True,
+                        ),
+                    ],
+                    spacing=12,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                ),
+                title_field,
+                description_field,
+                visibility_toggle,
+            ],
+            tight=True,
+            spacing=10,
+        ),
+        actions=[
+            ft.TextButton("Cancelar", on_click=lambda e: page.pop_dialog()),
+            c.primary_button("Publicar", do_publish, icon="share"),
+        ],
+    )
+    page.show_dialog(dialog)
+

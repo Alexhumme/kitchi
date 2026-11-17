@@ -22,7 +22,8 @@ from .api import ApiClient, ApiError
 from .editor_state import EditorState
 from .screens import auth as auth_screen
 from .screens import editor as editor_screen
-from .screens import hub, my_cats, profile, stickers
+from .screens import hub, my_cats, profile, settings as settings_screen, stickers
+from .screens import public_profile as public_profile_screen
 
 logger = logging.getLogger(__name__)
 
@@ -65,12 +66,24 @@ class KitchiApp:
         self.cats: list[dict] = []
         self.poses: list[dict] = list(BUNDLED_POSES)
         self.publications: list[dict] = []
-        self.publications_error: str | None = None
+        self.feed_page: int = 1
+        self.feed_total: int = 0
+        self.feed_query: str = ""
+        self.feed_has_more: bool = False
+        self.feed_searching: bool = False
+        self.feed_error: str | None = None
+        self.published_cat_ids: set[str] = set()
         self.api_online = False
         self.api_error: str | None = None
         self.catalog_source = catalog.CATALOG_SOURCE
         self.auth_mode: str | None = None
         self.section = 0
+        self.show_settings = False
+        self.public_profile: str | None = None
+        self._search_field: ft.TextField | None = None
+        self.sound_enabled = True
+        self.animations_enabled = True
+        self.haptic_enabled = True
         self._editor: editor_screen.EditorScreen | None = None
         self._content = ft.Column(expand=True, spacing=0)
         self._nav: ft.NavigationBar | None = None
@@ -89,17 +102,23 @@ class KitchiApp:
         header = ft.Container(
             content=ft.Row(
                 [
-                    ft.Icon(icons.get("pets"), size=24, color=t.CORAL),
+                    ft.Icon(icons.get("pets"), size=26, color=t.CORAL),
                     ft.Text("kitchi.studio", size=20, weight=ft.FontWeight.W_700, color=t.TINTA),
                     ft.Container(expand=True),
+                    ft.IconButton(
+                        icons.get("settings"),
+                        tooltip="Configuración de la app",
+                        icon_color=t.TINTA,
+                        on_click=lambda e: self.toggle_settings(),
+                    ),
                     self._identity_host,
                 ],
-                spacing=8,
+                spacing=6,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            padding=ft.Padding.symmetric(horizontal=16, vertical=12),
+            padding=ft.Padding.symmetric(horizontal=16, vertical=10),
             bgcolor=t.CREMA,
-            border=ft.Border(bottom=ft.BorderSide(1, t.GRIS_CALIDO)),
+            border=ft.Border(bottom=ft.BorderSide(t.BORDE, t.TINTA)),
         )
         self._render_identity()
 
@@ -171,9 +190,63 @@ class KitchiApp:
                 self.api.set_token(None)
                 await storage.clear_session(self.storage)
                 self.api_error = exc.user_message()
+        await self._load_settings()
         await self._load_backend_catalog()
         await self._load_cats()
-        await self._load_publications()
+        await self.refresh_feed(append=False)
+        await self._load_own_publications()
+
+    async def _load_settings(self) -> None:
+        """Preferencias de la experiencia: sonido, animaciones y vibración."""
+        try:
+            sound_raw = await self.storage.get("kitchi.ui.sound")
+            anim_raw = await self.storage.get("kitchi.ui.animations")
+            haptic_raw = await self.storage.get("kitchi.ui.haptic")
+            self.sound_enabled = (sound_raw or "on") != "off"
+            self.animations_enabled = (anim_raw or "on") != "off"
+            self.haptic_enabled = (haptic_raw or "on") != "off"
+            c.set_haptics_enabled(self.haptic_enabled)
+        except Exception:  # noqa: BLE001 - preferencias no deben tumbar el arranque
+            logger.warning("sin preferencias de UI; se usan valores activados", exc_info=True)
+
+    async def set_sound_enabled(self, enabled: bool) -> None:
+        self.sound_enabled = enabled
+        await self._persist_setting("kitchi.ui.sound", "on" if enabled else "off")
+
+    async def set_animations_enabled(self, enabled: bool) -> None:
+        self.animations_enabled = enabled
+        await self._persist_setting("kitchi.ui.animations", "on" if enabled else "off")
+
+    async def set_haptic_enabled(self, enabled: bool) -> None:
+        self.haptic_enabled = enabled
+        c.set_haptics_enabled(enabled)
+        await self._persist_setting("kitchi.ui.haptic", "on" if enabled else "off")
+
+    async def _persist_setting(self, key: str, value: str) -> None:
+        try:
+            await self.storage.set(key, value)
+        except Exception:  # noqa: BLE001
+            logger.warning("no se pudo guardar la preferencia %s", key, exc_info=True)
+
+    async def _load_own_publications(self) -> None:
+        """Mapa gato → publicado para la pantalla de Mis gatos (P18)."""
+        self.published_cat_ids = set()
+        if not self.user or self.api.mode != "http":
+            return
+        try:
+            payload = await asyncio.to_thread(
+                self.api.get_publications, 1, 50, None, self.user.get("username")
+            )
+        except ApiError as exc:
+            logger.info("no se pudieron listar las publicaciones propias: %s", exc)
+            return
+        results = payload.get("results", payload) if isinstance(payload, dict) else payload
+        if isinstance(results, list):
+            for item in results:
+                cat = item.get("cat") or {}
+                cid = cat.get("id")
+                if cid is not None:
+                    self.published_cat_ids.add(str(cid))
 
     async def _load_backend_catalog(self) -> None:
         if self.api.mode != "http":
@@ -207,37 +280,87 @@ class KitchiApp:
             return
         self.cats = [models.cat_from_api(record) for record in records]
 
-    async def _load_publications(self) -> None:
-        self.publications = []
-        self.publications_error = None
-        if not self.api_online:
+    async def refresh_feed(self, append: bool = False) -> None:
+        """Carga el feed público del hub (P18), reemplazando o añadiendo al final."""
+        if self.api.mode != "http":
+            self.publications = []
+            self.feed_has_more = False
+            self.feed_searching = False
+            self.feed_error = None
             return
+        page = self.feed_page + 1 if append else 1
         try:
-            data = await asyncio.to_thread(self.api.get_publications)
-        except ApiError as exc:
-            self.publications_error = (
-                exc.user_message() if exc.status != 404 else "El endpoint /api/publications/ aún no existe (P18)."
+            data = await asyncio.to_thread(
+                self.api.get_publications, page, 12, self.feed_query or None, None
             )
+        except ApiError as exc:
+            self.feed_error = (
+                exc.user_message()
+                if exc.status not in (404, 401)
+                else "El hub de publicaciones no está disponible en este momento."
+            )
+            self.feed_searching = False
             return
         results = data.get("results", data) if isinstance(data, dict) else data
-        self.publications = results if isinstance(results, list) else []
+        results = results if isinstance(results, list) else []
+        if append:
+            self.publications.extend(results)
+            self.feed_page = page
+        else:
+            self.publications = results
+            self.feed_page = page
+        self.feed_total = (
+            int(data.get("count", len(self.publications))) if isinstance(data, dict) else len(self.publications)
+        )
+        self.feed_has_more = bool(data.get("next")) if isinstance(data, dict) else False
+        self.feed_searching = False
+        self.feed_error = None
+
+    async def load_more_feed(self, _event=None) -> None:
+        if not self.feed_has_more:
+            return
+        self.feed_searching = True
+        await self.refresh_feed(append=True)
+        self.rebuild_current()
 
     async def refresh(self, _event=None) -> None:
         await self._load_backend_catalog()
         await self._load_cats()
-        await self._load_publications()
+        await self.refresh_feed(append=False)
+        await self._load_own_publications()
         self.rebuild_current()
         c.notify(self.page, "Datos de la API actualizados.", "success")
 
     # --- navegación ------------------------------------------------------
     def _on_nav_change(self, e) -> None:
+        c.haptic("light")
         self.go(int(e.control.selected_index))
 
     def go(self, index: int) -> None:
         self.section = index
         self.auth_mode = None
+        self.show_settings = False
+        self.public_profile = None
         if self._nav is not None and self._nav.selected_index != index:
             self._nav.selected_index = index
+        self.rebuild_current()
+
+    def toggle_settings(self) -> None:
+        self.show_settings = not self.show_settings
+        self.public_profile = None
+        self.rebuild_current()
+
+    def close_settings(self) -> None:
+        self.show_settings = False
+        self.rebuild_current()
+
+    def open_public_profile(self, username: str) -> None:
+        self.public_profile = username
+        self.show_settings = False
+        self.rebuild_current()
+
+    def close_public_profile(self) -> None:
+        self.public_profile = None
         self.rebuild_current()
 
     def open_auth(self, mode: str) -> None:
@@ -249,7 +372,11 @@ class KitchiApp:
         self.rebuild_current()
 
     def rebuild_current(self) -> None:
-        if self.auth_mode:
+        if self.show_settings:
+            screen = settings_screen.build(self)
+        elif self.public_profile:
+            screen = public_profile_screen.build(self, self.public_profile)
+        elif self.auth_mode:
             screen = auth_screen.build(self, self.auth_mode)
         elif self.section == 0:
             screen = hub.build(self)
@@ -328,7 +455,8 @@ class KitchiApp:
         self.api_online = True
         self.api_error = None
         await self._load_cats()
-        await self._load_publications()
+        await self.refresh_feed(append=False)
+        await self._load_own_publications()
         self.auth_mode = None
         self._render_identity()
         if guest_cats:
