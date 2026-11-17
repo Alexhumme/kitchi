@@ -1,0 +1,211 @@
+/* ============================================================
+   Perfil: credencial, plan y capacidad, y accesos
+   ============================================================ */
+
+/* ---------- Credencial ---------- */
+.credential-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex-shrink: 0;
+  padding: 16px;
+  border: 2.5px solid var(--ink);
+  border-radius: 26px;
+  background: var(--leche);
+  box-shadow: 0 4px 0 var(--ink);
+}
+.credential-head { display: flex; align-items: center; gap: 14px; }
+.credential-avatar .avatar {
+  border: 2.5px solid var(--ink);
+  box-shadow: 0 3px 0 var(--ink), inset -4px -5px 0 0 rgba(0, 0, 0, 0.28);
+}
+.credential-meta { min-width: 0; }
+.credential-name-row { display: flex; align-items: center; gap: 6px; }
+.credential-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.credential-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.75rem; font-weight: 600; color: var(--tinta-suave); }
+.credential-since { margin-top: 2px; font-size: 0.66rem; font-weight: 700; color: #9a9082; }
+
+.role-chip {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: var(--lavanda);
+  color: #5b46b8;
+  font-size: 0.6rem;
+  font-weight: 800;
+}
+
+/* ---------- Mini métricas ---------- */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 2px solid var(--crema-hondo);
+  text-align: center;
+}
+.metric {
+  padding: 8px 6px;
+  border-radius: 16px;
+  background: var(--crema);
+  border: 2px solid #e4dac6;
+}
+.metric__num { display: block; font-size: 1.05rem; font-weight: 800; line-height: 1.1; color: var(--ink); }
+.metric__label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--tinta-suave); }
+
+/* ---------- Tarjeta de plan y capacidad ---------- */
+.plan-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 16px;
+  border: 2.5px solid var(--ink);
+  border-radius: 26px;
+  background: var(--leche);
+  box-shadow: 0 4px 0 var(--ink);
+}
+.plan-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.plan-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.plan-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+  color: var(--ink);
+}
+.plan-title { display: block; font-size: 0.95rem; font-weight: 800; line-height: 1.15; color: var(--ink); }
+.plan-sub { font-size: 0.66rem; font-weight: 600; color: var(--tinta-suave); }
+
+.plan-chip {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: var(--crema-hondo);
+  color: var(--tinta-suave);
+  font-size: 0.62rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.plan-chip--full { background: #ffe2e2; color: #c83e3e; border-color: var(--ink); }
+.plan-chip--premium { background: var(--lavanda); color: #5b46b8; }
+.plan-chip--admin { display: inline-flex; align-items: center; gap: 4px; background: #d8f8e8; color: #177a4d; }
+
+.plan-bar-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.plan-bar {
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: #efe7d6;
+  padding: 2px;
+}
+.plan-bar__fill { height: 100%; border-radius: 999px; background: var(--panel); transition: width 0.4s ease; }
+
+.plan-cta-row { display: flex; }
+.plan-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 18px;
+  border: 2.5px solid var(--ink);
+  background: var(--panel);
+  box-shadow: 0 2px 0 var(--ink);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+.plan-cta:hover { background: var(--ambar); }
+.plan-cta:active { transform: translateY(2px); box-shadow: 0 0.5px 0 var(--ink); }
+.plan-cta--soon,
+.plan-cta--soon:hover { background: #efe7d6; cursor: not-allowed; color: var(--tinta-suave); }
+.plan-cta--premium { cursor: default; background: #d8f8e8; color: #177a4d; }
+
+/* ---------- Cuenta y accesos ---------- */
+.access-section { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; padding-bottom: 4px; }
+.access-title {
+  padding: 0 4px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--tinta-suave);
+}
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 2px solid var(--ink);
+  background: var(--leche);
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+.tile:hover { background: #fff8e7; }
+.tile:active { transform: translateY(2px); box-shadow: 0 0.5px 0 var(--ink); }
+.tile:disabled { opacity: 0.45; cursor: not-allowed; }
+.tile__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  border: 2px solid var(--ink);
+}
+.tile__icon--public { background: var(--lavanda); color: #5b46b8; }
+.tile__icon--settings { background: #d8f8e8; color: #177a4d; }
+.tile__label { font-size: 0.75rem; font-weight: 800; color: var(--ink); }
+
+/* ---------- Salida / invitado ---------- */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 46px;
+  border-radius: 18px;
+  border: 2px solid var(--ink);
+  background: var(--leche);
+  box-shadow: 0 3px 0 var(--ink);
+  color: #d93838;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.logout-btn:hover { background: #ffe8e8; }
+.auth-inline { display: flex; gap: 10px; }
+.auth-inline > .bevel-btn,
+.auth-inline > .bevel-btn-coral { flex: 1; justify-content: center; }

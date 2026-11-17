@@ -10,6 +10,7 @@ from __future__ import annotations
 import flet as ft
 
 from .. import components as c
+from .. import icons
 from .. import theme as t
 
 
@@ -34,7 +35,7 @@ def build(app) -> ft.Control:
         ft.Column(
             [
                 c.section_title("El paquete", "Seis stickers PNG con fondo transparente"),
-                ft.Row(pose_chips, spacing=6, wrap=True, run_spacing=6) if pose_chips
+                c.flow(pose_chips, per_row=3) if pose_chips
                 else c.banner("La API no devolvió poses activas. Ejecuta scripts/seed_catalog.py.",
                               icon="warning_amber", tone="warning"),
                 ft.Text(
@@ -58,7 +59,7 @@ def build(app) -> ft.Control:
             [
                 ft.Row(
                     [
-                        ft.Icon("auto_awesome", size=22, color=t.VIOLETA),
+                        ft.Icon(icons.get("auto_awesome"), size=22, color=t.VIOLETA),
                         ft.Text("Generación pendiente (semana 3)", style=t.section()),
                         c.chip("P13–P16", bgcolor=t.LAVANDA),
                     ],

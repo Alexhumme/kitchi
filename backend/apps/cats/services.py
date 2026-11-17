@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import transaction
 
+from apps.accounts.permissions import ROLE_ADMIN, role_of
 from apps.catalog.services import validate_configuration
 from apps.core.errors import APIError
 
@@ -11,14 +12,19 @@ from .models import Cat
 
 
 def create_cat(user, name: str, configuration: dict) -> Cat:
-    """Crea un gato validando catálogo y límite de tres en una sola transacción.
+    """Crea un gato validando catálogo y límite en una sola transacción.
 
     El `select_for_update` sobre la fila del usuario serializa las creaciones
     simultáneas para que dos peticiones paralelas no excedan el límite.
+
+    Los usuarios con rol `admin` (RBAC de ADR-005) no tienen tope de gatos:
+    el sistema de planes no les aplica.
     """
     normalized = validate_configuration(configuration, user=user)
     with transaction.atomic():
         locked_user = User.objects.select_for_update().get(pk=user.pk)
+        if role_of(locked_user) == ROLE_ADMIN:
+            return Cat.objects.create(user=locked_user, name=name, configuration=normalized)
         current = Cat.objects.filter(user=locked_user).count()
         if current >= settings.MAX_CATS_PER_USER:
             raise APIError(

@@ -44,6 +44,46 @@ def test_http_mode_against_mock(mock_server):
     assert client.get_publications()["results"] == []
 
 
+def test_get_publications_envia_paginacion_y_consulta(mock_server):
+    client = ApiClient(mock_server)
+    client.set_token("token-falso")
+    payload = client.get_publications(page=2, page_size=10, q="Michi", username="alex")
+    query = payload["query"]
+    assert query["page"] == ["2"]
+    assert query["page_size"] == ["10"]
+    assert query["q"] == ["Michi"]
+    assert query["user"] == ["alex"]
+
+
+def test_publish_cat_envia_payload_limpio_y_recibido_por_el_mock(mock_server):
+    client = ApiClient(mock_server)
+    client.set_token("token-falso")
+    publication = client.publish_cat(42, "Poco Michi", "El más arisco", "public")
+    assert publication["id"] == 1
+    assert publication["title"] == "Poco Michi"
+    assert publication["description"] == "El más arisco"
+    assert publication["visibility"] == "public"
+    assert publication["author"] == "demo"
+    assert publication["cat"]["id"] == 42
+
+
+def test_get_public_profile_parses_response(mock_server):
+    client = ApiClient(mock_server)
+    profile = client.get_public_profile("alex")
+    assert profile["username"] == "alex"
+    assert profile["joined_at"] == "2026-11-01"
+    assert profile["publication_count"] == 0
+    assert profile["cats"] == []
+    assert profile["publications"] == []
+
+
+def test_get_publication_detalle_valida_int(mock_server):
+    client = ApiClient(mock_server)
+    publication = client.get_publication(7)
+    assert publication["id"] == 7
+    assert publication["author"] == "demo"
+
+
 def test_http_error_contract(mock_server):
     client = ApiClient(mock_server)
     with pytest.raises(ApiError) as exc:

@@ -13,6 +13,7 @@ import flet as ft
 
 from .. import catalog
 from .. import components as c
+from .. import icons
 from .. import models
 from .. import theme as t
 from ..editor_state import EditorState
@@ -44,11 +45,11 @@ class EditorScreen:
                     expand=True,
                 ),
                 self._undo_button,
-                ft.IconButton("restart_alt", tooltip="Reiniciar combinación", icon_color=t.TINTA_SUAVE,
+                ft.IconButton(icons.get("restart_alt"), tooltip="Reiniciar combinación", icon_color=t.TINTA_SUAVE,
                               on_click=self._on_reset),
-                ft.IconButton("casino", tooltip="Combinación al azar", icon_color=t.TINTA_SUAVE,
+                ft.IconButton(icons.get("casino"), tooltip="Combinación al azar", icon_color=t.TINTA_SUAVE,
                               on_click=self._on_random),
-                ft.IconButton("add", tooltip="Empezar un gato nuevo", icon_color=t.TINTA_SUAVE,
+                ft.IconButton(icons.get("add"), tooltip="Empezar un gato nuevo", icon_color=t.TINTA_SUAVE,
                               on_click=self._on_new),
             ],
             spacing=0,
@@ -110,7 +111,7 @@ class EditorScreen:
                         [
                             ft.Column(
                                 [
-                                    ft.Icon(cat.icon, size=22, color=t.CORAL if selected else t.TINTA_SUAVE),
+                                    ft.Icon(icons.get(cat.icon), size=22, color=t.CORAL if selected else t.TINTA_SUAVE),
                                     ft.Text(
                                         cat.short_label,
                                         size=11,
@@ -124,7 +125,7 @@ class EditorScreen:
                                 alignment=ft.MainAxisAlignment.CENTER,
                             ),
                             ft.Container(
-                                content=ft.Icon("check_circle", size=14, color=t.CORAL),
+                                content=ft.Icon(icons.get("check_circle"), size=14, color=t.CORAL),
                                 right=2,
                                 top=2,
                                 visible=selected,
@@ -134,7 +135,7 @@ class EditorScreen:
                     width=74,
                     height=72,
                     bgcolor=t.CORAL_SUAVE if selected else t.SUPERFICIE,
-                    border=ft.Border.all(2 if selected else 1, t.CORAL if selected else t.GRIS_CALIDO),
+                    border=t.bevel(t.INK if selected else t.GRIS_CALIDO, right=3 if selected else 2, bottom=4 if selected else 2),
                     border_radius=18,
                     alignment=ft.Alignment.CENTER,
                     on_click=lambda e, k=key: self._on_category(k),
@@ -146,7 +147,7 @@ class EditorScreen:
     def _stage(self) -> ft.Control:
         self._stage_host.height = 300
         self._stage_host.bgcolor = t.CREMA_HONDO
-        self._stage_host.border = ft.Border.all(1, t.GRIS_CALIDO)
+        self._stage_host.border = t.bevel(t.GRIS_CALIDO, right=3, bottom=4)
         self._stage_host.border_radius = 24
         self._stage_host.padding = 12
         self._stage_host.alignment = ft.Alignment.CENTER
@@ -192,20 +193,20 @@ class EditorScreen:
 
         ears = [
             ft.Container(width=52, height=52, bgcolor=fur.swatch,
-                         border=ft.Border.all(3, t.TINTA), border_radius=18, left=32, top=16),
+                         border=t.bevel(t.INK, right=4, bottom=5), border_radius=18, left=32, top=16),
             ft.Container(width=52, height=52, bgcolor=fur.swatch,
-                         border=ft.Border.all(3, t.TINTA), border_radius=18, right=32, top=16),
+                         border=t.bevel(t.INK, right=4, bottom=5), border_radius=18, right=32, top=16),
         ]
         face = ft.Stack(
             [
                 *ears,
                 ft.Container(
                     width=178, height=154, bgcolor=fur.swatch,
-                    border=ft.Border.all(3, t.TINTA), border_radius=82, left=26, top=34,
+                    border=t.bevel(t.INK, right=5, bottom=6), border_radius=82, left=26, top=34,
                 ),
                 ft.Container(
                     width=128, height=36, bgcolor=hair.swatch,
-                    border=ft.Border.all(2, t.TINTA), border_radius=18, left=51, top=41,
+                    border=t.bevel(t.INK, right=3, bottom=4), border_radius=18, left=51, top=41,
                 ),
                 ft.Container(
                     content=ft.Row([eye(), eye()], spacing=26, alignment=ft.MainAxisAlignment.CENTER),
@@ -223,20 +224,20 @@ class EditorScreen:
             height=210,
         )
 
-        def piece(label: str, option) -> ft.Container:
+        def piece(option) -> ft.Container:
             return ft.Container(
                 content=ft.Row(
                     [
-                        ft.Container(width=14, height=14, bgcolor=option.swatch,
-                                     border=ft.Border.all(1, t.TINTA), border_radius=7),
-                        ft.Text(f"{label}: {option.name}", size=11, color=t.TINTA),
+                        ft.Container(width=13, height=13, bgcolor=option.swatch,
+                                     border=t.bevel(t.INK, right=2, bottom=3), border_radius=7),
+                        ft.Text(option.name, size=11, color=t.TINTA),
                     ],
                     spacing=5,
                     tight=True,
                 ),
                 padding=ft.Padding.symmetric(horizontal=8, vertical=4),
                 bgcolor=t.SUPERFICIE,
-                border=ft.Border.all(1, t.GRIS_CALIDO),
+                border=t.bevel(t.GRIS_CALIDO, right=3, bottom=4),
                 border_radius=999,
             )
 
@@ -245,10 +246,8 @@ class EditorScreen:
                 c.chip("Vista previa con placeholders", bgcolor=t.SUPERFICIE, icon="brush"),
                 face,
                 ft.Row(
-                    [piece("Sup.", top), piece("Inf.", bottom), piece("Extra", accessory)],
+                    [piece(top), piece(bottom), piece(accessory)],
                     spacing=5,
-                    wrap=True,
-                    run_spacing=5,
                     alignment=ft.MainAxisAlignment.CENTER,
                 ),
                 ft.Text(
@@ -266,7 +265,7 @@ class EditorScreen:
     def _accessory_layer(self, accessory) -> ft.Control:
         if accessory.code == "glasses":
             lens = ft.Container(
-                width=34, height=30, border=ft.Border.all(3, t.TINTA), border_radius=10
+                width=34, height=30, border=t.bevel(t.INK, right=4, bottom=5), border_radius=10
             )
             return ft.Container(
                 content=ft.Row(
@@ -280,13 +279,13 @@ class EditorScreen:
             )
         if accessory.code == "bow":
             return ft.Container(
-                content=ft.Icon("star", size=30, color=accessory.swatch),
+                content=ft.Icon(icons.get("star"), size=30, color=accessory.swatch),
                 left=158,
                 top=20,
             )
         return ft.Container(
             width=132, height=40, bgcolor=accessory.swatch,
-            border=ft.Border.all(2, t.TINTA), border_radius=20, left=49, top=18,
+            border=t.bevel(t.INK, right=3, bottom=4), border_radius=20, left=49, top=18,
         )
 
     # --- partes dinámicas ------------------------------------------------
@@ -297,7 +296,7 @@ class EditorScreen:
             icon="fiber_manual_record" if self.state.dirty else "check_circle",
         )
         self._undo_button.content = ft.IconButton(
-            "undo",
+            icons.get("undo"),
             tooltip="Deshacer",
             icon_color=t.TINTA if self.state.history else t.GRIS_CALIDO,
             disabled=not self.state.history,
@@ -309,14 +308,12 @@ class EditorScreen:
             ft.Column(
                 [
                     c.section_title("Tu combinación", "Se actualiza al instante con cada elección"),
-                    ft.Row(
-                        [
-                            c.chip(f"{label}: {name}", bgcolor=t.CREMA_HONDO)
+                    ft.Text(
+                        "  ·  ".join(
+                            f"{label}: {name}"
                             for label, name in catalog.config_summary(self.state.configuration)
-                        ],
-                        spacing=6,
-                        wrap=True,
-                        run_spacing=6,
+                        ),
+                        style=t.caption(),
                     ),
                 ],
                 spacing=8,
@@ -329,7 +326,7 @@ class EditorScreen:
         rows: list[ft.Control] = [
             ft.Row(
                 [
-                    ft.Icon(cat.icon, size=18, color=t.CORAL),
+                    ft.Icon(icons.get(cat.icon), size=18, color=t.CORAL),
                     ft.Text(cat.label, size=15, weight=ft.FontWeight.W_600, color=t.TINTA),
                     ft.Text(cat.tagline, style=t.caption(), expand=True, text_align=ft.TextAlign.RIGHT),
                 ],
@@ -347,7 +344,7 @@ class EditorScreen:
                                 width=34,
                                 height=34,
                                 bgcolor=opt.swatch,
-                                border=ft.Border.all(2, t.TINTA if selected else t.GRIS_CALIDO),
+                                border=t.bevel(t.INK if selected else t.GRIS_CALIDO, right=3 if selected else 2, bottom=4 if selected else 2),
                                 border_radius=17,
                             ),
                             ft.Column(
@@ -358,7 +355,7 @@ class EditorScreen:
                                 spacing=1,
                                 expand=True,
                             ),
-                            ft.Icon("check_circle" if selected else "radio_button_unchecked",
+                            ft.Icon(icons.get("check_circle" if selected else "radio_button_unchecked"),
                                     size=22, color=t.CORAL if selected else t.GRIS_CALIDO),
                         ],
                         spacing=12,
@@ -366,7 +363,7 @@ class EditorScreen:
                     ),
                     padding=12,
                     bgcolor=t.CORAL_SUAVE if selected else t.SUPERFICIE,
-                    border=ft.Border.all(2 if selected else 1, t.CORAL if selected else t.GRIS_CALIDO),
+                    border=t.bevel(t.INK if selected else t.GRIS_CALIDO, right=3 if selected else 2, bottom=4 if selected else 2),
                     border_radius=16,
                     on_click=lambda e, k=cat.key, code=opt.code: self._on_option(k, code),
                     ink=True,
@@ -462,7 +459,7 @@ class EditorScreen:
             shape=ft.RoundedRectangleBorder(radius=20),
             bgcolor=t.SUPERFICIE,
             actions=[
-                ft.TextButton("Cancelar", on_click=lambda e: page.pop_dialog()),
+                ft.TextButton("Cancelar", tooltip="Cancelar", on_click=lambda e: page.pop_dialog()),
                 c.primary_button("Guardar", do_save, icon="save_outlined"),
             ],
         )

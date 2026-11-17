@@ -68,6 +68,14 @@ def test_limite_tres_gatos_con_error_409(member_client, catalog, db, settings):
     assert error["details"]["limite"] == 3
 
 
+def test_admin_no_tiene_limite_de_gatos(admin_client, catalog, db, settings):
+    """El rol admin (ADR-005) no se ve afectado por el sistema de planes."""
+    settings.MAX_CATS_PER_USER = 3
+    for index in range(5):
+        created = admin_client.post("/api/cats/", _payload(name=f"Admin{index}"), format="json")
+        assert created.status_code == 201
+
+
 def test_configuracion_fuera_de_catalogo_es_400(member_client, catalog, db):
     bad = {**FULL_CONFIGURATION, "top": "armadura_inexistente"}
     response = member_client.post("/api/cats/", _payload(configuration=bad), format="json")

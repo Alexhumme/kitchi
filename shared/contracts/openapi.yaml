@@ -279,6 +279,112 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedPoseList'
           description: ''
+  /api/publications/:
+    get:
+      operationId: publications_list
+      description: 'Feed público del hub (P18): publicaciones públicas, o las propias si eres el autor. Búsqueda por `q=` (título, descripción y autor) y filtro por autor con `user=`.'
+      parameters:
+      - name: q
+        required: false
+        in: query
+        description: Texto para buscar en título, descripción o nombre de autor.
+        schema:
+          type: string
+      - name: user
+        required: false
+        in: query
+        description: Filtra por nombre de usuario del autor.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - community
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPublicationList'
+          description: ''
+    post:
+      operationId: publications_create
+      description: 'Publica un gato propio en el hub (P18). Un gato ya publicado responde 409.'
+      tags:
+      - community
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cat_id:
+                  type: integer
+                  description: Id del gato (del autor) a publicar.
+                title:
+                  type: string
+                  maxLength: 120
+                description:
+                  type: string
+                  maxLength: 500
+                  default: ''
+                visibility:
+                  type: string
+                  enum:
+                  - public
+                  - private
+                  default: public
+              required:
+              - cat_id
+              - title
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
+  /api/publications/{id}/:
+    get:
+      operationId: publications_retrieve
+      description: 'Una publicación concreta (pública; o privada si eres el autor).'
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+      tags:
+      - community
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
+  /api/profiles/{username}/:
+    get:
+      operationId: profiles_retrieve
+      description: 'Tarjeta pública de un usuario: dato de alta, sus gatos publicados y sus publicaciones. No requiere sesión.'
+      parameters:
+      - in: path
+        name: username
+        required: true
+        schema:
+          type: string
+      tags:
+      - community
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicProfile'
 components:
   schemas:
     AuthResponse:

@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from apps.community.views import PublicProfileView
 from apps.core.views import health
 
 urlpatterns = [
@@ -16,6 +17,8 @@ urlpatterns = [
     path("api/auth/", include("apps.accounts.urls")),
     path("api/", include("apps.catalog.urls")),
     path("api/cats/", include("apps.cats.urls")),
+    path("api/publications/", include("apps.community.urls")),
+    path("api/profiles/<str:username>/", PublicProfileView.as_view(), name="public-profile"),
 ]
 
 if settings.DEBUG:

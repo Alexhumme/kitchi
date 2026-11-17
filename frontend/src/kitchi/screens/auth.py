@@ -5,6 +5,7 @@ from __future__ import annotations
 import flet as ft
 
 from .. import components as c
+from .. import icons
 from .. import theme as t
 
 
@@ -87,7 +88,7 @@ class AuthScreen:
             ft.Row(
                 [
                     ft.IconButton(
-                        "arrow_back",
+                        icons.get("arrow_back"),
                         tooltip="Volver",
                         icon_color=t.TINTA,
                         on_click=lambda e: self.app.close_auth(),
@@ -123,6 +124,7 @@ class AuthScreen:
                 self.submit_button,
                 ft.TextButton(
                     switch_label,
+                    tooltip=switch_label,
                     on_click=lambda e: self.app.open_auth(switch_mode),
                 ),
             ]

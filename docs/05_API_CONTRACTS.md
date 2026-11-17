@@ -42,11 +42,12 @@ servido por la API y tiene prueba automatizada; no que la interfaz ya lo consuma
 | `GET` | `/api/sticker-packs/{id}/download/` | Descargar el paquete completo o un sticker | Dueño | Pendiente (P14/P15) |
 | `POST` | `/api/ai-jobs/` | Solicitar una transformación por IA | Requerida | Pendiente (P16) |
 | `GET` | `/api/ai-jobs/{id}/` | Consultar el resultado de IA | Dueño | Pendiente (P16) |
-| `GET` | `/api/publications/` | Explorar el hub (paginado) | Pública | Pendiente (P18) |
-| `POST` | `/api/publications/` | Publicar una creación | Requerida | Pendiente (P18) |
-| `GET` | `/api/publications/{id}/` | Ver una publicación | Pública | Pendiente (P18) |
+| `GET` | `/api/publications/` | Explorar el hub (paginado, `q=` por título/descripción/autor; `user=` por autor) | Pública | Implementado (P18) |
+| `POST` | `/api/publications/` | Publicar un gato propio (409 `PUBLICATION_ALREADY_EXISTS` si ya está publicado) | Requerida | Implementado (P18) |
+| `GET` | `/api/publications/{id}/` | Ver una publicación | Pública | Implementado (P18) |
 | `PATCH` | `/api/publications/{id}/` | Editar una publicación propia | Solo dueño | Pendiente (P18) |
 | `DELETE` | `/api/publications/{id}/` | Retirar una publicación propia | Solo dueño | Pendiente (P18) |
+| `GET` | `/api/profiles/{username}/` | Tarjeta pública: alta, `publication_count`, gatos publicados y sus publicaciones públicas | Pública | Implementado (P18) |
 | `POST` | `/api/publications/{id}/copy/` | Copiar una creación pública | Requerida | Pendiente (P19) |
 
 Los modelos de `sticker_packs`, `stickers`, `publications` y `generation_jobs` ya existen
@@ -54,18 +55,19 @@ con sus migraciones (P11); lo pendiente en esas filas son los endpoints.
 
 \* El modo invitado funciona con almacenamiento local del navegador; la API autoriza operaciones de cuenta solo para usuarios registrados. La persistencia en servidor de invitados es decisión pendiente ([01_MASTER_PLAN.md](01_MASTER_PLAN.md)).
 
-### Consumo desde Flet (9 de noviembre de 2026)
+### Consumo desde Flet (16 de noviembre de 2026)
 
 El cliente [`frontend/src/kitchi/api.py`](../frontend/src/kitchi/api.py) resuelve la URL desde
 `KITCHI_API_URL`, `API_BASE_URL` o la `.env` de la raíz. Si no hay URL, queda en modo local
 sin llamar a la API. Los endpoints consumidos hoy son `health`, `catalog`, `poses`,
-`register`, `login`, `logout`, `me`, `list/create/update/delete` de gatos y
-`publications` (este último todavía responde 404 y la interfaz lo muestra como pendiente).
+`register`, `login`, `logout`, `me`, `list/create/update/delete` de gatos,
+`publications` (listar con `q=`/`user=`, crear y ver) y `profiles/<username>/` público.
 
 - El cliente envía `Authorization: Token <clave>` y normaliza los errores del envoltorio
   `{error: {code, message, details}}`; `ApiError.user_message()` extrae el primer mensaje de
   campo para mostrarlo en la pantalla.
-- `/api/poses/` está paginado: el cliente lee `results`.
+- `/api/poses/` y el feed de `/api/publications/` están paginados: el cliente lee
+  `results`. El feed además acepta `q=` (título/descripción/autor) y `user=`.
 - La configuración que envía Flet es la del contrato backend
   (`{"schema_version": 1, "fur": "tabby", ...}`); al leer un gato, `cat_from_api()` aplana
   bloques como `{"fur": {"code": "bicolor"}}` a `"bicolor"`.

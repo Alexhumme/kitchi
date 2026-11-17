@@ -18,7 +18,7 @@ import json
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "frontend" / "src"))
 
@@ -45,7 +45,9 @@ class MockHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self) -> None:
-        path = urlparse(self.path).path
+        parsed = urlparse(self.path)
+        path = parsed.path
+        query = parse_qs(parsed.query)
         if path == "/api/health/":
             self._send(200, {"status": "ok", "simulated": True})
         elif path == "/api/catalog/":
@@ -55,13 +57,65 @@ class MockHandler(BaseHTTPRequestHandler):
         elif path == "/api/poses/":
             self._send(200, {"simulated": True, "results": POSES})
         elif path == "/api/publications/":
-            self._send(200, {"simulated": True, "count": 0, "results": [],
+            self._send(200, {"simulated": True, "count": 0, "query": query, "results": [],
                              "note": "Sin publicaciones simuladas: el hub real llega con P18."})
+        elif path.startswith("/api/publications/") and path.endswith("/"):
+            pk = path.split("/")[-2]
+            self._send(200, {
+                "simulated": True,
+                "id": int(pk),
+                "title": "Gato simulado",
+                "description": "Descripción simulada.",
+                "visibility": "public",
+                "author": "demo",
+                "cat": {"id": int(pk), "name": "Gato simulado", "configuration": {},
+                        "created_at": "2026-11-16T00:00:00Z"},
+                "created_at": "2026-11-16T00:00:00Z",
+                "updated_at": "2026-11-16T00:00:00Z",
+            })
+        elif path.startswith("/api/profiles/") and path.endswith("/"):
+            username = path.split("/")[-2]
+            self._send(200, {
+                "simulated": True,
+                "username": username,
+                "joined_at": "2026-11-01",
+                "publication_count": 0,
+                "cats": [],
+                "publications": [],
+            })
         else:
             self._send(404, {"simulated": True,
                              "error": {"code": "NOT_IMPLEMENTED_IN_MOCK",
-                                      "message": "Endpoint no implementado en el mock de desarrollo.",
-                                      "details": {}}})
+                                       "message": "Endpoint no implementado en el mock de desarrollo.",
+                                       "details": {}}})
+
+    def do_POST(self) -> None:
+        path = urlparse(self.path).path
+        length = int(self.headers.get("Content-Length", 0))
+        raw = self.rfile.read(length) if length else b"{}"
+        try:
+            body = json.loads(raw.decode("utf-8"))
+        except json.JSONDecodeError:
+            body = {}
+        if path == "/api/publications/":
+            self._send(201, {
+                "simulated": True,
+                "id": 1,
+                "title": body.get("title"),
+                "description": body.get("description", ""),
+                "visibility": body.get("visibility", "public"),
+                "author": "demo",
+                "cat": {"id": body.get("cat_id", 0), "name": "Gato simulado",
+                        "configuration": {},
+                        "created_at": "2026-11-16T00:00:00Z"},
+                "created_at": "2026-11-16T00:00:00Z",
+                "updated_at": "2026-11-16T00:00:00Z",
+            })
+            return
+        self._send(404, {"simulated": True,
+                         "error": {"code": "NOT_IMPLEMENTED_IN_MOCK",
+                                   "message": "Endpoint no implementado en el mock de desarrollo.",
+                                   "details": {}}})
 
     def log_message(self, fmt, *args) -> None:
         print(f"[mock-api] {args[0]}")

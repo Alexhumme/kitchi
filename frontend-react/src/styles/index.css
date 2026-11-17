@@ -1,0 +1,21 @@
+/* ============================================================
+   kitchi.studio — hoja de estilos raíz
+   Orden de importación: tokens → layout → componentes → pantallas
+   ============================================================ */
+
+@import "./globals.css";
+@import "./layout.css";
+@import "./components/bevels.css";
+@import "./components/toolbar.css";
+@import "./components/forms.css";
+@import "./components/cards.css";
+@import "./components/ui.css";
+@import "./components/filters.css";
+@import "./screens/hub.css";
+@import "./screens/editor.css";
+@import "./screens/my-cats.css";
+@import "./screens/stickers.css";
+@import "./screens/profile.css";
+@import "./screens/settings.css";
+@import "./screens/auth.css";
+@import "./screens/public-profile.css";

@@ -128,7 +128,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = REPO_ROOT / "storage"
 
-CORS_ALLOWED_ORIGINS = _csv("CORS_ALLOWED_ORIGINS", "http://127.0.0.1:8550,http://localhost:8550")
+CORS_ALLOWED_ORIGINS = _csv(
+    "CORS_ALLOWED_ORIGINS",
+    "http://127.0.0.1:8550,http://localhost:8550,http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:4173,http://localhost:4173",
+)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [

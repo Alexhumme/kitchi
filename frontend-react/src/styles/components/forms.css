@@ -1,0 +1,103 @@
+/* ============================================================
+   Formularios: campos elevados, etiquetas y botón de guardar
+   ============================================================ */
+
+.field-shell {
+  background: var(--superficie);
+  border-radius: var(--radio-medio);
+  border: 2px solid var(--tinta-suave);
+  box-shadow: inset -5px -6px 0 0 var(--tinta-suave);
+  padding: 0.25rem;
+}
+.field-shell__input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0.65rem 0.5rem;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.field-shell__input::placeholder { color: var(--tinta-suave); font-weight: 500; }
+.field-shell__input--area { min-height: 64px; resize: none; }
+.field-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+
+/* ---------- Campo "nombre del gato" (plano) ---------- */
+.name-field {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+}
+.name-field__input {
+  width: 100%;
+  height: 48px;
+  border-radius: 18px;
+  border: 2px solid var(--ink);
+  background: var(--superficie);
+  padding: 0 44px 0 16px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+  outline: none;
+  transition: background 0.15s ease;
+}
+.name-field__input::placeholder { font-weight: 500; color: var(--tinta-suave); }
+.name-field__input:focus { background: var(--leche); }
+.name-field__icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--tinta-suave);
+  pointer-events: none;
+}
+
+/* ---------- Campo de búsqueda (pastilla) ---------- */
+.search-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 4px 16px;
+  border-radius: var(--radio-pastilla);
+  border: 2px solid var(--ink);
+  background: var(--superficie);
+  box-shadow: 0 3px 0 var(--ink);
+}
+.search-shell__input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 8px 0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.search-shell__input::placeholder { color: var(--tinta-suave); font-weight: 500; }
+.search-shell__icon { flex-shrink: 0; color: var(--tinta-suave); }
+.search-shell__clear {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  padding: 4px;
+  background: transparent;
+  color: var(--tinta-suave);
+  cursor: pointer;
+}
+.search-shell__clear:hover { background: rgba(0, 0, 0, 0.06); color: var(--ink); }
