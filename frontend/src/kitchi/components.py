@@ -19,6 +19,7 @@ from . import theme as t
 logger = logging.getLogger(__name__)
 
 _HAPTICS_ENABLED = True
+_ANIMATIONS_ENABLED = True
 _HAPTIC_SERVICE = None
 
 
@@ -58,6 +59,11 @@ def mounted(control: ft.Control) -> bool:
         return False
 
 
+def set_animations_enabled(enabled: bool) -> None:
+    global _ANIMATIONS_ENABLED
+    _ANIMATIONS_ENABLED = bool(enabled)
+
+
 def set_haptics_enabled(enabled: bool) -> None:
     global _HAPTICS_ENABLED
     _HAPTICS_ENABLED = bool(enabled)
@@ -85,7 +91,7 @@ def primary_button(text: str, on_click, icon: str | None = None,
     async def _on_tap(e) -> None:
         haptic("light")
         btn = btn_ref.get("btn")
-        if btn is not None and not disabled:
+        if _ANIMATIONS_ENABLED and btn is not None and not disabled:
             btn.scale = 0.92
             btn.update()
             await asyncio.sleep(0.08)
@@ -127,7 +133,7 @@ def secondary_button(text: str, on_click, icon: str | None = None,
     async def _on_tap(e) -> None:
         haptic("light")
         btn = btn_ref.get("btn")
-        if btn is not None and not disabled:
+        if _ANIMATIONS_ENABLED and btn is not None and not disabled:
             btn.scale = 0.93
             btn.update()
             await asyncio.sleep(0.08)

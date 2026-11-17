@@ -206,6 +206,7 @@ class KitchiApp:
             self.animations_enabled = (anim_raw or "on") != "off"
             self.haptic_enabled = (haptic_raw or "on") != "off"
             c.set_haptics_enabled(self.haptic_enabled)
+            c.set_animations_enabled(self.animations_enabled)
         except Exception:  # noqa: BLE001 - preferencias no deben tumbar el arranque
             logger.warning("sin preferencias de UI; se usan valores activados", exc_info=True)
 
@@ -215,6 +216,7 @@ class KitchiApp:
 
     async def set_animations_enabled(self, enabled: bool) -> None:
         self.animations_enabled = enabled
+        c.set_animations_enabled(enabled)
         await self._persist_setting("kitchi.ui.animations", "on" if enabled else "off")
 
     async def set_haptic_enabled(self, enabled: bool) -> None:
