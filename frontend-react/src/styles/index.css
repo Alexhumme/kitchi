@@ -10,6 +10,7 @@
 @import "./components/forms.css";
 @import "./components/cards.css";
 @import "./components/ui.css";
+@import "./components/filters.css";
 @import "./screens/hub.css";
 @import "./screens/editor.css";
 @import "./screens/my-cats.css";

@@ -1,0 +1,60 @@
+/* ============================================================
+   Chips de filtro rápido (hub y Mis gatos)
+   ============================================================ */
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 6px 14px;
+  min-height: 34px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: var(--superficie);
+  box-shadow: 0 2px 0 var(--ink);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.12s ease;
+}
+.filter-chip:active { transform: translateY(2px); box-shadow: 0 0.5px 0 var(--ink); }
+.filter-chip[data-active="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+  box-shadow: none;
+}
+.filter-chip:disabled,
+.filter-chip[data-soon="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.filter-chip:disabled:active,
+.filter-chip[data-soon="true"]:active { transform: none; }
+.filter-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #24a168;
+}
+.filter-soon {
+  font-size: 0.55rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--crema-hondo);
+  color: var(--tinta-suave);
+}

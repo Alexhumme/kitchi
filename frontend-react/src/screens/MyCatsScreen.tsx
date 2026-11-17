@@ -1,16 +1,30 @@
-// Mis gatos: lista de guardados (cuenta o navegador), publicar en el hub y eliminar.
+// Mis gatos: colección de cartas de tus gatos con vista cuadrícula/lista,
+// filtros Todos/Publicados/Borradores y acciones por tarjeta.
+// Estructura basada en testui/misgatos.html.
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useKitchi, MAX_GUEST_CATS } from '../state/AppContext';
 import CatSVG from '../components/CatSVG';
 import Avatar from '../components/Avatar';
-import { ConfirmDialog, EmptyState, SectionTitle } from '../components/ui';
-import { ArrowRight, Cat, Check, Globe, Lock, Megaphone, Pencil, Trash } from 'lucide-react';
+import { ConfirmDialog, EmptyState } from '../components/ui';
+import {
+  ArrowRight, Cat, Check, Globe, LayoutGrid, List, Lock, Megaphone, MoreHorizontal, Pencil, Plus, Trash,
+} from 'lucide-react';
+import { getOption, normalizeConfiguration } from '../lib/catalog';
 import type { CatRecord } from '../lib/types';
 
 interface PublishTarget {
   cat: CatRecord;
+}
+
+const STAGE_TINTS = ['amber', 'teal', 'lavender'] as const;
+type View = 'grid' | 'list';
+type Filter = 'all' | 'published' | 'drafts';
+
+function furName(cat: CatRecord): string {
+  const cfg = normalizeConfiguration(cat.configuration);
+  return getOption('fur', cfg.fur)?.name ?? '';
 }
 
 export default function MyCatsScreen() {
@@ -25,6 +39,9 @@ export default function MyCatsScreen() {
   const [pubVisibility, setPubVisibility] = useState<'public' | 'private'>('public');
   const [publishing, setPublishing] = useState(false);
   const [lastDeleted, setLastDeleted] = useState<CatRecord | null>(null);
+  const [view, setView] = useState<View>('grid');
+  const [filter, setFilter] = useState<Filter>('all');
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   useEffect(() => {
     if (!lastDeleted) return undefined;
@@ -32,10 +49,24 @@ export default function MyCatsScreen() {
     return () => window.clearTimeout(t);
   }, [lastDeleted]);
 
-  const guestCount = !user ? cats.length : 0;
-  const isGuestFull = !user && cats.length >= MAX_GUEST_CATS;
+  const guestFull = !user && cats.length >= MAX_GUEST_CATS;
+  const guestRemaining = Math.max(0, MAX_GUEST_CATS - cats.length);
+
+  const publishedCount = useMemo(
+    () => cats.filter((c) => publishedCatIds.has(String(c.id))).length,
+    [cats, publishedCatIds],
+  );
+  const draftCount = cats.length - publishedCount;
+
+  const visibleCats = useMemo(() => {
+    const sorted = [...cats].sort((a, b) => String(b.updated_at ?? '').localeCompare(String(a.updated_at ?? '')));
+    if (filter === 'published') return sorted.filter((c) => publishedCatIds.has(String(c.id)));
+    if (filter === 'drafts') return sorted.filter((c) => !publishedCatIds.has(String(c.id)));
+    return sorted;
+  }, [cats, filter, publishedCatIds]);
 
   const openPublish = (cat: CatRecord) => {
+    setOpenMenu(null);
     setPublishTarget({ cat });
     setPubTitle(cat.name);
     setPubDescription('');
@@ -60,25 +91,50 @@ export default function MyCatsScreen() {
     if (!user) setLastDeleted(cat);
   };
 
-  const sorted = useMemo(
-    () => [...cats].sort((a, b) => String(b.updated_at ?? '').localeCompare(String(a.updated_at ?? ''))),
-    [cats],
-  );
+  const filterChips: Array<{ key: Filter; label: string; count: number }> = [
+    { key: 'all', label: 'Todos', count: cats.length },
+    { key: 'published', label: 'Publicados', count: publishedCount },
+    { key: 'drafts', label: 'Borradores', count: draftCount },
+  ];
 
   return (
-    <div className="screen-root">
-      <div className="editor-head">
-        <SectionTitle
-          title="Mis gatos"
-          subtitle={user ? 'Guardados en tu cuenta' : `Guardados en este navegador · ${guestCount}/${MAX_GUEST_CATS}`}
-        />
-        {isGuestFull && <span className="badge badge--warn">Lleno</span>}
+    <div className="screen-root" onClick={() => setOpenMenu(null)}>
+      {/* 2. encabezado: título + contador + toggle de vista */}
+      <div className="mycats-head">
+        <div className="mycats-head__titles">
+          <h1 className="editor-title">Mis gatos</h1>
+          <span className="mycats-count" aria-label={`${cats.length} gatos en la colección`}>{cats.length}</span>
+        </div>
+        <div className="view-toggle" role="group" aria-label="Cambiar vista">
+          <button
+            type="button"
+            className="view-toggle__btn"
+            data-active={view === 'grid'}
+            onClick={() => setView('grid')}
+            aria-pressed={view === 'grid'}
+            title="Vista cuadrícula"
+          >
+            <LayoutGrid size={16} strokeWidth={2.4} />
+          </button>
+          <button
+            type="button"
+            className="view-toggle__btn"
+            data-active={view === 'list'}
+            onClick={() => setView('list')}
+            aria-pressed={view === 'list'}
+            title="Vista lista"
+          >
+            <List size={16} strokeWidth={2.4} />
+          </button>
+        </div>
       </div>
 
       {!user && (
         <div className="guest-banner">
           <p className="guest-banner__text">
-            Inicia sesión para publicar y sincronizar tus gatos.
+            {guestFull
+              ? 'Cupo lleno (3/3) en este navegador. Inicia sesión para publicar y sincronizar tus gatos.'
+              : `Te quedan ${guestRemaining}/${MAX_GUEST_CATS} cupos en este navegador. Inicia sesión para publicar y sincronizar tus gatos.`}
           </p>
           <button type="button" className="bevel-btn-yellow btn-xs" onClick={() => navigate('/auth/login')}>
             Entrar
@@ -86,7 +142,26 @@ export default function MyCatsScreen() {
         </div>
       )}
 
-      {sorted.length === 0 ? (
+      {/* 3. filtros rápidos */}
+      <div className="filter-row no-scrollbar" role="tablist" aria-label="Filtrar gatos">
+        {filterChips.map((chip) => (
+          <button
+            key={chip.key}
+            type="button"
+            role="tab"
+            aria-selected={filter === chip.key}
+            className="filter-chip"
+            data-active={filter === chip.key}
+            onClick={() => setFilter(chip.key)}
+          >
+            {chip.key === 'published' && <span className="filter-dot" aria-hidden="true" />}
+            {chip.label} ({chip.count})
+          </button>
+        ))}
+      </div>
+
+      {/* 4. contenido */}
+      {cats.length === 0 ? (
         <EmptyState
           icon={<Cat size={34} strokeWidth={2.1} />}
           title="Aún no tienes gatos"
@@ -97,54 +172,162 @@ export default function MyCatsScreen() {
             </button>
           }
         />
+      ) : visibleCats.length === 0 ? (
+        <p className="mycats-empty-filter">
+          {filter === 'published' ? 'Ningún gato publicado todavía.' : 'Sin borradores por aquí.'}
+        </p>
       ) : (
-        <div className="cat-list">
-          <AnimatePresence>
-            {sorted.map((cat) => {
-              const published = publishedCatIds.has(String(cat.id));
-              return (
-                <motion.div
-                  key={cat.id}
-                  layout
-                  initial={{ opacity: 0, x: -24 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 40, transition: { duration: 0.18 } }}
-                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                  className="cat-card"
-                >
-                  <div className="cat-card__thumb">
-                    <CatSVG configuration={cat.configuration} size={54} />
-                  </div>
-                  <div className="cat-card__body">
-                    <p className="cat-card__name">{cat.name}</p>
-                    <p className="cat-card__meta">
-                      {cat.updated_at ? new Date(cat.updated_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) : ''}
-                      {published && ' · '}
-                      {published && (
-                        <span className="cat-card__published">
-                          <Check size={12} strokeWidth={3.5} aria-hidden="true" /> Publicado
+        <>
+          {view === 'grid' ? (
+            <div className="cats-grid">
+              <AnimatePresence>
+                {visibleCats.map((cat, i) => {
+                  const published = publishedCatIds.has(String(cat.id));
+                  const stageTint = STAGE_TINTS[i % STAGE_TINTS.length];
+                  const date = cat.updated_at
+                    ? new Date(cat.updated_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })
+                    : '';
+                  return (
+                    <motion.article
+                      key={cat.id}
+                      layout
+                      initial={{ opacity: 0, y: 18, scale: 0.92 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      className="collectible"
+                    >
+                      {/* Escenario */}
+                      <div className="collectible__stage" data-tint={stageTint}>
+                        <span className={`collectible__badge ${published ? 'collectible__badge--ok' : 'collectible__badge--draft'}`}>
+                          {published ? <><Check size={11} strokeWidth={4} aria-hidden="true" /> Público</> : 'Borrador'}
                         </span>
-                      )}
-                    </p>
-                    <div className="cat-card__actions">
-                      {user && !published && (
-                        <button type="button" className="badge badge--pink badge--flat badge--interactive" onClick={() => openPublish(cat)}>
-                          <Megaphone size={13} strokeWidth={2.6} aria-hidden="true" /> Publicar
+                        <button
+                          type="button"
+                          className="collectible__menu-btn"
+                          aria-label={`Opciones para ${cat.name}`}
+                          aria-expanded={openMenu === String(cat.id)}
+                          onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === String(cat.id) ? null : String(cat.id)); }}
+                        >
+                          <MoreHorizontal size={17} strokeWidth={2.4} />
                         </button>
-                      )}
-                      <button type="button" className="badge badge--warn badge--flat badge--interactive" onClick={() => navigate(`/crear?cat=${encodeURIComponent(String(cat.id))}`)}>
-                        <Pencil size={13} strokeWidth={2.6} aria-hidden="true" /> Editar
-                      </button>
-                      <button type="button" className="badge badge--error badge--flat badge--interactive" onClick={() => setPendingDelete(cat)}>
-                        <Trash size={13} strokeWidth={2.6} aria-hidden="true" /> Eliminar
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
+                        {openMenu === String(cat.id) && (
+                          <div className="collectible__menu" role="menu" onClick={(e) => e.stopPropagation()}>
+                            {user && !published && (
+                              <button type="button" className="collectible__menu-item" role="menuitem" onClick={() => openPublish(cat)}>
+                                <Megaphone size={15} strokeWidth={2.4} aria-hidden="true" /> Publicar
+                              </button>
+                            )}
+                            <button type="button" className="collectible__menu-item" role="menuitem" onClick={() => navigate(`/crear?cat=${encodeURIComponent(String(cat.id))}`)}>
+                              <Pencil size={15} strokeWidth={2.4} aria-hidden="true" /> Editar
+                            </button>
+                            <button type="button" className="collectible__menu-item collectible__menu-item--danger" role="menuitem" onClick={() => { setOpenMenu(null); setPendingDelete(cat); }}>
+                              <Trash size={15} strokeWidth={2.4} aria-hidden="true" /> Eliminar
+                            </button>
+                          </div>
+                        )}
+                        <CatSVG configuration={cat.configuration} size={104} className="collectible__cat" />
+                      </div>
+
+                      {/* Info + acción */}
+                      <div className="collectible__info">
+                        <div>
+                          <h2 className="collectible__name">{cat.name}</h2>
+                          <p className="collectible__meta">{date}{furName(cat) ? ` · ${furName(cat)}` : ''}</p>
+                        </div>
+                        <button type="button" className="collectible__edit" onClick={() => navigate(`/crear?cat=${encodeURIComponent(String(cat.id))}`)}>
+                          <Pencil size={14} strokeWidth={2.5} aria-hidden="true" /> Editar
+                        </button>
+                      </div>
+                    </motion.article>
+                  );
+                })}
+              </AnimatePresence>
+
+              {/* 5. hueco punteado: crear otro */}
+              <button
+                type="button"
+                className="new-slot"
+                onClick={() => navigate('/crear')}
+                disabled={guestFull}
+                title={guestFull ? 'Cupo lleno (3/3). Elimina uno para crear otro.' : 'Diseña un nuevo personaje para tu colección'}
+              >
+                <span className="new-slot__icon">
+                  <Plus size={21} strokeWidth={2.8} aria-hidden="true" />
+                </span>
+                <span className="new-slot__text">
+                  <span className="new-slot__title">{guestFull ? 'Cupo lleno (3/3)' : 'Crear otro gato'}</span>
+                  <span className="new-slot__hint">{guestFull ? 'Elimina uno para crear otro' : 'Diseña un nuevo personaje para tu colección'}</span>
+                </span>
+              </button>
+            </div>
+          ) : (
+            <div className="cat-list">
+              <AnimatePresence>
+                {visibleCats.map((cat) => {
+                  const published = publishedCatIds.has(String(cat.id));
+                  return (
+                    <motion.div
+                      key={cat.id}
+                      layout
+                      initial={{ opacity: 0, x: -24 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 40, transition: { duration: 0.18 } }}
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      className="cat-card"
+                    >
+                      <div className="cat-card__thumb">
+                        <CatSVG configuration={cat.configuration} size={54} />
+                      </div>
+                      <div className="cat-card__body">
+                        <p className="cat-card__name">{cat.name}</p>
+                        <p className="cat-card__meta">
+                          {cat.updated_at ? new Date(cat.updated_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) : ''}
+                          {furName(cat) ? ` · ${furName(cat)}` : ''}
+                          {published && ' · '}
+                          {published && (
+                            <span className="cat-card__published">
+                              <Check size={12} strokeWidth={3.5} aria-hidden="true" /> Publicado
+                            </span>
+                          )}
+                        </p>
+                        <div className="cat-card__actions">
+                          {user && !published && (
+                            <button type="button" className="badge badge--pink badge--flat badge--interactive" onClick={() => openPublish(cat)}>
+                              <Megaphone size={13} strokeWidth={2.6} aria-hidden="true" /> Publicar
+                            </button>
+                          )}
+                          <button type="button" className="badge badge--warn badge--flat badge--interactive" onClick={() => navigate(`/crear?cat=${encodeURIComponent(String(cat.id))}`)}>
+                            <Pencil size={13} strokeWidth={2.6} aria-hidden="true" /> Editar
+                          </button>
+                          <button type="button" className="badge badge--error badge--flat badge--interactive" onClick={() => setPendingDelete(cat)}>
+                            <Trash size={13} strokeWidth={2.6} aria-hidden="true" /> Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+
+              {/* hueco punteado como cierre de la lista */}
+              <button
+                type="button"
+                className="new-slot new-slot--row"
+                onClick={() => navigate('/crear')}
+                disabled={guestFull}
+              >
+                <span className="new-slot__icon">
+                  <Plus size={21} strokeWidth={2.8} aria-hidden="true" />
+                </span>
+                <span className="new-slot__text">
+                  <span className="new-slot__title">{guestFull ? 'Cupo lleno (3/3)' : 'Crear otro gato'}</span>
+                  <span className="new-slot__hint">{guestFull ? 'Elimina uno para crear otro' : 'Diseña un nuevo personaje'}</span>
+                </span>
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* deshacer eliminación (invitado) */}

@@ -112,3 +112,231 @@
   color: var(--ink);
   cursor: pointer;
 }
+
+/* ---------- Encabezado: título + contador + toggle de vista ---------- */
+.mycats-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+.mycats-head__titles { display: flex; align-items: center; gap: 8px; }
+.mycats-count {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 14px;
+  border: 2px solid var(--ink);
+  background: #efe7d6;
+}
+.view-toggle__btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 28px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--tinta-suave);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.view-toggle__btn:hover { color: var(--ink); }
+.view-toggle__btn[data-active="true"] {
+  background: var(--leche);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.mycats-empty-filter {
+  flex-shrink: 0;
+  padding: 28px 0;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+}
+
+/* ---------- Cuadrícula de cartas coleccionables ---------- */
+.cats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  flex-shrink: 0;
+}
+.collectible {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 2.5px solid var(--ink);
+  background: var(--leche);
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+.collectible__stage {
+  position: relative;
+  height: 138px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2.5px solid var(--ink);
+}
+.collectible__stage[data-tint="amber"] { background: #fde8b5; }
+.collectible__stage[data-tint="teal"] { background: #e6f4f1; }
+.collectible__stage[data-tint="lavender"] { background: #ece6fa; }
+.collectible__cat { position: relative; z-index: 1; }
+
+.collectible__badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  font-size: 0.6rem;
+  font-weight: 800;
+}
+.collectible__badge--ok { background: #d8f8e8; color: #177a4d; }
+.collectible__badge--draft { background: #ece4d2; color: #6e6557; }
+
+.collectible__menu-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  background: rgba(255, 253, 249, 0.9);
+  color: var(--ink);
+  cursor: pointer;
+}
+.collectible__menu-btn:hover { background: #ffffff; }
+
+.collectible__menu {
+  position: absolute;
+  top: 40px;
+  right: 8px;
+  z-index: 20;
+  min-width: 138px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 2px solid var(--ink);
+  background: var(--superficie);
+  box-shadow: 0 4px 0 rgba(33, 27, 38, 0.4);
+}
+.collectible__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-bottom: 1px solid rgba(33, 27, 38, 0.12);
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.collectible__menu-item:last-child { border-bottom: none; }
+.collectible__menu-item:hover { background: var(--crema); }
+.collectible__menu-item--danger { color: var(--error); }
+.collectible__menu-item--danger:hover { background: var(--coral-suave); }
+
+.collectible__info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+}
+.collectible__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.collectible__meta { font-size: 0.66rem; font-weight: 700; color: #8a8072; }
+
+.collectible__edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 14px;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+  box-shadow: 0 2px 0 var(--ink);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+.collectible__edit:hover { background: var(--ambar); }
+.collectible__edit:active { transform: translateY(2px); box-shadow: 0 0.5px 0 var(--ink); }
+
+/* ---------- Hueco punteado: crear otro gato ---------- */
+.new-slot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 2px dashed #b8ad99;
+  border-radius: 22px;
+  background: rgba(255, 253, 249, 0.55);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  text-align: left;
+}
+.new-slot:hover:not(:disabled) { border-color: var(--ink); background: var(--leche); }
+.new-slot__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+}
+.new-slot__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.new-slot__title { font-size: 0.82rem; font-weight: 800; color: var(--ink); }
+.new-slot__hint { font-size: 0.66rem; font-weight: 600; color: #8a8072; }
+.new-slot:disabled { opacity: 0.55; cursor: not-allowed; }
+.new-slot--row { margin-top: 8px; grid-column: auto; }
