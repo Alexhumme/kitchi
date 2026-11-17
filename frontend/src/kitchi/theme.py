@@ -90,13 +90,13 @@ def register_fonts(page: ft.Page) -> None:
 BORDE = 3
 """Ancho nominal del borde; los componentes usan bevel asimétrico real."""
 
-RADIO_GRANDE = 22
+RADIO_GRANDE = 32
 """Radio de tarjetas y diálogos."""
-RADIO_MEDIO = 17
+RADIO_MEDIO = 26
 """Radio de botones y campos."""
 RADIO_PASTILLA = 999
 """Radio de chips y etiquetas."""
-RADIO_ICONO = 50
+RADIO_ICONO = 999
 """Radio de avatares y botones de icono redondos."""
 
 SOMBRA = ft.BoxShadow(
