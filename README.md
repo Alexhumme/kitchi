@@ -180,6 +180,20 @@ flet run frontend/src/main.py --web --port 8550
   datos de la sesión. Los estados de error de login, registro y guardado se muestran en
   línea o como SnackBar.
 
+> **Prototipo en paralelo — frontend-react (no es la entrega).** Desde el 16 de noviembre
+> de 2026 existe una segunda interfaz en [`frontend-react/`](frontend-react/) (Vite + React 19
+> + TypeScript + Tailwind), con paridad funcional completa y el mismo backend. Requiere
+> Node 20+ y que `CORS_ALLOWED_ORIGINS` incluya el origen de Vite (5173/4173, ya incluidos por
+> defecto). Arranque:
+>
+> ```bash
+> cd frontend-react && npm install && npm run dev   # http://127.0.0.1:5173
+> ```
+>
+> Detalles, verificación y estado honesto en [`frontend-react/README.md`](frontend-react/README.md)
+> y [`docs/reports/frontend-react.md`](docs/reports/frontend-react.md) (ADR-009). La entrega
+> final sigue declarando Flet hasta decisión del equipo.
+
 ### 7. Pruebas y benchmark
 
 ```bash

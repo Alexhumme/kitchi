@@ -1,6 +1,6 @@
 # 12 · Guía viva de la plataforma — Kitchi Studio
 
-Documento de estudio para la sustentación · Versión 0.7 · 16 de noviembre de 2026
+Documento de estudio para la sustentación · Versión 0.8 · 16 de noviembre de 2026
 
 > **Estado:** documento vivo, casi vacío a propósito. Se completará **por incrementos** a medida que la aplicación se implemente. No describe funcionalidades que aún no existen.
 >
@@ -35,9 +35,11 @@ placeholders de color, guardar y editar hasta tres gatos. Las cinco pantallas se
 verificaron recorriendo la navegación en un navegador real (crear y guardar un gato
 como invitado sobrevive a una recarga). **El hub está implementado**: feed público con
 buscador, tarjetas de publicación con preview, perfil público de autor con sus gatos y
-publicaciones, y publicación de gatos propios desde **Mis gatos** (P18). El motor de
-composición y los endpoints de stickers, publicaciones (las de comunidad de edición/retiro)
-e IA siguen pendientes, así que el flujo completo de usuario todavía no puede
+publicaciones, y publicación de gatos propios desde **Mis gatos** (P18). **En paralelo
+existe un prototipo React de la interfaz** (`frontend-react/`, ADR-009): paridad funcional
+completa verificada end-to-end contra la API, construido para medir la viabilidad de
+migrar; la entrega final aún no ha cambiado de interfaz. El motor de
+composición y los endpoints de stickers e IA siguen pendientes, así que el flujo completo de usuario todavía no puede
 recorrerse de principio a fin.
 
 ## 2. Problema, usuario y propuesta de valor
@@ -342,6 +344,54 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 | Inferencia | Ejecución real del modelo de IA sobre una fotografía; sustituida por la contingencia manual si falla |
 | Benchmark | Medición comparativa entre ejecución secuencial y paralela con su fórmula de aceleración |
 
+## 14. Interfaz React (prototipo en paralelo a Flet)
+
+Desde el 16 de noviembre de 2026 existe una segunda implementación de la interfaz en
+[`frontend-react/`](../frontend-react/): **Vite + React 19 + TypeScript estricto**, con
+Tailwind CSS v4 como utilidades sobre un sistema de diseño propio en CSS (variables y
+clases bevel del estilo Wonder), `framer-motion` para resortes y transiciones de pantalla,
+`lucide-react` para iconos de trazo redondo, `react-router-dom` para las rutas y la misma
+API DRF de siempre. Nació como **prototipo de viabilidad** (ADR-009) porque los estilos
+deseados no eran alcanzables con Flet 1.1.2; **no sustituye aún a la versión Flet** en la
+entrega y ambas carpetas conviven.
+
+**Para qué sirve hoy:** demostrar, con pantallas reales funcionando contra el backend, que la
+migración es viable — y como candidato de interfaz definitiva si el equipo lo decide antes
+de la sustentación.
+
+**Qué hace distinto de Flet:**
+
+- El gato se dibuja como **SVG completo** (pelaje, cara, peinado, ropa y accesorio), no con
+  placeholders por contenedores. Los mismos códigos de catálogo producen la figura.
+- El sonido es real (Web Audio) y la vibración usa `navigator.vibrate`; Flet 1.1.2 no
+  reproducía audio en web (ADR-006).
+- Las animaciones usan resortes (píldora amarilla del tab activo, transiciones entre
+  secciones, aparición escalonada de tarjetas del feed).
+
+**Cómo arrancarla:**
+
+```bash
+cd frontend-react && npm install && npm run dev   # http://127.0.0.1:5173
+```
+
+El backend debe permitir el origen de Vite: `CORS_ALLOWED_ORIGINS` incluye 5173/4173 por
+defecto desde este incremento, pero una variable de entorno con ese nombre **sobrescribe**
+el valor por defecto — en ese caso hay que añadir también los orígenes de Vite. El puerto
+4173 corresponde a `npm run preview` (build de producción).
+
+**Estado honesto:** paridad funcional completa (Navegar, Crear, Mis gatos, Stickers IA,
+Perfil, Configuración, auth, perfil público), verificada extremo a extremo contra el backend
+local (registro → crear → guardar → publicar → aparece en el feed). Quedan pendientes los
+mismos motores que en Flet (Pillow, seis stickers, IA): la pantalla Stickers IA sigue
+mostrando el estado pendiente P13–P16 sin simular resultados. `npm run lint` deja dos avisos
+`set-state-in-effect` aceptados. La exportación a la entrega final requiere decidir la
+interfaz, actualizar README, guía viva y cumplimiento (AR-01 declara Flet) y ejecutar de
+nuevo la batería completa.
+
+**Cuándo leerla:** si el profesor pregunta por alternativas de interfaz, por qué Flet no
+funcionó, o qué costó la migración. Toda la evidencia está en
+[`docs/reports/frontend-react.md`](../docs/reports/frontend-react.md).
+
 ## Registro de incrementos
 
 | Fecha | Incremento | Qué se documentó | Autor |
@@ -353,3 +403,4 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 | 2026-11-10 | Arranque estable del frontend y recorrido verificado (P10, P12, P36, P39) | Nuevo ADR-006 (iconos `ft.Icons`, `Row(wrap=True)` roto en el cliente web 1.1.2, `SharedPreferences` al arrancar); la guía explica el nuevo orden de arranque (armazón → almacenamiento), los iconos y el sustituto `c.flow()`; se actualizó el estado, las pruebas (34 → 42) y la prueba manual en navegador; evidencia en `docs/reports/frontend-flet-web-startup.md` | Alex Valdelamar |
 | 2026-11-16 | Hub de publicaciones (P18) | Nuevo ADR-007; feed público con buscador, tarjetas con preview (cuadrícula de 2 columnas), publicación autenticada desde Mis gatos; `/api/publications/` + `/api/profiles/{username}/`; nuevo estilo juguetón global (bordes gruesos, sombras sólidas, rebotes); sonido pendiente de Flet 1.2; evidencia en `docs/reports/p18-hub-publicaciones.md` | Alex Valdelamar |
 | 2026-11-16 | Rediseño juguetón | Nuevo ADR-008; bevel asimétrico (libre arriba-izquierda, grueso abajo-derecha), barra de app dorada con separador zig-zag, NavigationBar oscura con indicador amarillo, patrones propios (dots/tiles vía Pillow), botones de plástico sobre `FilledButton`/`OutlinedButton` nativos; sonido pendiente de Flet 1.2 | Alex Valdelamar |
+| 2026-11-16 | Interfaz React en paralelo (prototipo de viabilidad) | Nuevo ADR-009; `frontend-react/` con paridad funcional completa frente al Flet (feed, editor, mis gatos, auth, invitado→cuenta, perfil, configuración, stickers IA honesto, perfil público); gato SVG completo; iconos lucide; sonido Web Audio real; framer-motion; catálogo y API idénticos; CORS ampliado al puerto de Vite; evidencia en `docs/reports/frontend-react.md` | Alex Valdelamar |
