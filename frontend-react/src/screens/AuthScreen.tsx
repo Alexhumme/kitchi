@@ -2,9 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Cat, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, Cat, Eye, EyeOff, PawPrint } from 'lucide-react';
 import { useKitchi } from '../state/AppContext';
-import { SectionTitle } from '../components/ui';
 
 export default function AuthScreen() {
   const { mode } = useParams<{ mode: string }>();
@@ -38,18 +37,22 @@ export default function AuthScreen() {
 
   return (
     <div className="screen-root screen-root--center">
-      <motion.div
-        initial={{ scale: 0.6, opacity: 0, rotate: -8 }}
-        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-        className="auth-hero"
-        aria-hidden="true"
-      >
-        <Cat size={42} strokeWidth={2.2} />
-      </motion.div>
-      <SectionTitle
-        title={isRegister ? 'Crear cuenta' : 'Iniciar sesión'}
-      />
+      <div className="auth-stage">
+        <div className="auth-sun" aria-hidden="true" />
+        <motion.div
+          initial={{ scale: 0.6, opacity: 0, rotate: -8 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+          className="auth-hero"
+          aria-hidden="true"
+        >
+          <Cat size={52} strokeWidth={2.2} />
+        </motion.div>
+      </div>
+      <span className="auth-brand" aria-hidden="true">
+        <PawPrint size={15} strokeWidth={2.6} /> kitchi.studio
+      </span>
+      <h1 className="auth-title">{isRegister ? 'Crear cuenta' : 'Iniciar sesión'}</h1>
 
       <form onSubmit={(e) => void submit(e)} className="auth-form" noValidate>
         <label className="auth-field">
@@ -104,8 +107,9 @@ export default function AuthScreen() {
           </p>
         )}
 
-        <button type="submit" className="bevel-btn-coral btn-lg btn-block" disabled={submitting}>
+        <button type="submit" className="bevel-btn-coral btn-lg auth-submit" disabled={submitting}>
           {submitting ? 'Un momento…' : isRegister ? 'Crear cuenta' : 'Entrar'}
+          {!submitting && <ArrowRight size={20} strokeWidth={2.8} aria-hidden="true" />}
         </button>
       </form>
 
@@ -123,10 +127,10 @@ export default function AuthScreen() {
             </button>
           </p>
         )}
-        <button type="button" className="auth-link auth-link--subtle" onClick={() => navigate('/')}>
-          Seguir como invitado →
-        </button>
       </div>
+      <button type="button" className="auth-guest" onClick={() => navigate('/')}>
+        Seguir como invitado <ArrowRight size={16} strokeWidth={2.6} aria-hidden="true" />
+      </button>
     </div>
   );
 }

@@ -1,16 +1,23 @@
 // Configuración de la app: acerca de, efectos, API y datos locales.
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Cat, CloudOff, Globe, RefreshCw, Sparkles, Trash, Vibrate, Volume2, type LucideIcon } from 'lucide-react';
 import { useKitchi } from '../state/AppContext';
 import { pop, haptic } from '../lib/fx';
 import { ConfirmDialog, SectionTitle, Toggle } from '../components/ui';
-import { Cat, CloudOff, Globe, RefreshCw, Sparkles, Trash, Vibrate, Volume2, type LucideIcon } from 'lucide-react';
 
 const APP_VERSION = '0.4.0';
 
-function ToggleRow({ icon: Icon, title, caption, checked, onChange }: {
+const TECH_CHIPS = [
+  { label: 'React', className: 'tech-chip tech-chip--react' },
+  { label: 'Django REST', className: 'tech-chip tech-chip--django' },
+  { label: 'MySQL', className: 'tech-chip tech-chip--mysql' },
+  { label: 'Fredoka', className: 'tech-chip tech-chip--fredoka' },
+];
+
+function ToggleRow({ icon: Icon, iconClass, title, caption, checked, onChange }: {
   icon: LucideIcon;
+  iconClass: string;
   title: string;
   caption: string;
   checked: boolean;
@@ -18,7 +25,7 @@ function ToggleRow({ icon: Icon, title, caption, checked, onChange }: {
 }) {
   return (
     <div className="toggle-row">
-      <span aria-hidden="true" className="toggle-row__icon"><Icon size={21} strokeWidth={2.2} /></span>
+      <span aria-hidden="true" className={`toggle-row__icon ${iconClass}`}><Icon size={21} strokeWidth={2.2} /></span>
       <div className="toggle-row__text">
         <p className="toggle-row__title">{title}</p>
         <p className="toggle-row__caption">{caption}</p>
@@ -60,7 +67,7 @@ export default function SettingsScreen() {
           <ChevronLeft size={22} strokeWidth={2.4} />
         </button>
         <SectionTitle title="Configuración" />
-        <span className="bevel-chip back-header__trailing">v{APP_VERSION}</span>
+        <span className="version-chip">v{APP_VERSION}</span>
       </header>
 
       {/* acerca de */}
@@ -73,10 +80,9 @@ export default function SettingsScreen() {
           publícalo en el hub y prepárate para el paquete de seis stickers.
         </p>
         <div className="settings-tech">
-          <span className="bevel-chip">React</span>
-          <span className="bevel-chip">Django REST</span>
-          <span className="bevel-chip">MySQL</span>
-          <span className="bevel-chip">Fredoka</span>
+          {TECH_CHIPS.map((chip) => (
+            <span key={chip.label} className={chip.className}>{chip.label}</span>
+          ))}
         </div>
       </section>
 
@@ -105,9 +111,9 @@ export default function SettingsScreen() {
       <section className="settings-section">
         <SectionTitle title="Efectos" />
         <div className="toggle-rows">
-          <ToggleRow icon={Volume2} title="Sonido" caption="Rebotes y confirmaciones sintetizados con Web Audio." checked={soundEnabled} onChange={toggleWithFx(setSoundEnabled)} />
-          <ToggleRow icon={Sparkles} title="Animaciones" caption="Rebote al tocar controles y fundidos al cambiar de sección." checked={animationsEnabled} onChange={toggleWithFx(setAnimationsEnabled)} />
-          <ToggleRow icon={Vibrate} title="Vibración táctil (móvil)" caption="Impulso breve al tocar botones y navegar. En escritorio no hace nada." checked={hapticsEnabled} onChange={toggleWithFx(setHapticsEnabled)} />
+          <ToggleRow icon={Volume2} iconClass="toggle-row__icon--mint" title="Sonido" caption="Rebotes y confirmaciones sintetizados con Web Audio." checked={soundEnabled} onChange={toggleWithFx(setSoundEnabled)} />
+          <ToggleRow icon={Sparkles} iconClass="toggle-row__icon--lavender" title="Animaciones" caption="Rebote al tocar controles y fundidos al cambiar de sección." checked={animationsEnabled} onChange={toggleWithFx(setAnimationsEnabled)} />
+          <ToggleRow icon={Vibrate} iconClass="toggle-row__icon--honey" title="Vibración táctil (móvil)" caption="Impulso breve al tocar botones y navegar. En escritorio no hace nada." checked={hapticsEnabled} onChange={toggleWithFx(setHapticsEnabled)} />
         </div>
         <button type="button" className="bevel-btn btn-xs settings-test-sound" onClick={() => pop('success')}>
           Probar sonido
@@ -128,7 +134,7 @@ export default function SettingsScreen() {
         </div>
         {apiError && <p className="settings-error">{apiError}</p>}
         <div className="settings-actions">
-          <button type="button" className="bevel-btn btn-xs" onClick={() => void doRefresh()} disabled={refreshing}>
+          <button type="button" className="bevel-btn-yellow btn-xs" onClick={() => void doRefresh()} disabled={refreshing}>
             <RefreshCw size={15} strokeWidth={2.5} aria-hidden="true" /> {refreshing ? 'Actualizando…' : 'Actualizar datos'}
           </button>
           {!user && (
