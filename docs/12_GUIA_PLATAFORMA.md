@@ -1,6 +1,6 @@
 # 12 · Guía viva de la plataforma — Kitchi Studio
 
-Documento de estudio para la sustentación · Versión 0.9 · 17 de noviembre de 2026
+Documento de estudio para la sustentación · Versión 0.11 · 17 de noviembre de 2026
 
 > **Estado:** documento vivo, casi vacío a propósito. Se completará **por incrementos** a medida que la aplicación se implemente. No describe funcionalidades que aún no existen.
 >
@@ -406,4 +406,6 @@ funcionó, o qué costó la migración. Toda la evidencia está en
 | 2026-11-16 | Hub de publicaciones (P18) | Nuevo ADR-007; feed público con buscador, tarjetas con preview (cuadrícula de 2 columnas), publicación autenticada desde Mis gatos; `/api/publications/` + `/api/profiles/{username}/`; nuevo estilo juguetón global (bordes gruesos, sombras sólidas, rebotes); sonido pendiente de Flet 1.2; evidencia en `docs/reports/p18-hub-publicaciones.md` | Alex Valdelamar |
 | 2026-11-16 | Rediseño juguetón | Nuevo ADR-008; bevel asimétrico (libre arriba-izquierda, grueso abajo-derecha), barra de app dorada con separador zig-zag, NavigationBar oscura con indicador amarillo, patrones propios (dots/tiles vía Pillow), botones de plástico sobre `FilledButton`/`OutlinedButton` nativos; sonido pendiente de Flet 1.2 | Alex Valdelamar |
 | 2026-11-17 | CSS atomizado sin Tailwind | Se eliminó Tailwind v4 (mezclaba mal con las clases propias bevel); `src/index.css` dividido en `src/styles/` (globals, layout, components/, screens/); cada pantalla y componente tiene sus clases semánticas; misma apariencia 1:1 (verificada en capturas) | Alex Valdelamar |
+| 2026-11-17 | Explorar como río de publicaciones | El feed sigue testui/feed.html: cabecera con autor, hora relativa ("Hace 37 min") y badge de tipo, escenario grande tintado rotando, título + descripción, pie con pelaje y CTA "Ver gato" al perfil público; buscador pulido; chips (Todo/Gatos funcionando; Packs/Stickers/Creadores deshabilitados como "Pronto", no simulados); el diseño vale también para el perfil público. Nick: like/follows/packs ausentes en el backend — se ocultan en lugar de simularse | Alex Valdelamar |
+| 2026-11-17 | Mis gatos coleccionable | La vista de Mis gatos sigue testui/misgatos.html: título con contador, toggle cuadrícula/lista, filtros Todos/Publicados/Borradores, tarjetas con estadio de color, badge Público/Borrador, menú "⋯" (Editar/Publicar/Eliminar), hueco punteado "Crear otro gato" | Alex Valdelamar |
 | 2026-11-16 | Interfaz React en paralelo (prototipo de viabilidad) | Nuevo ADR-009; `frontend-react/` con paridad funcional completa frente al Flet (feed, editor, mis gatos, auth, invitado→cuenta, perfil, configuración, stickers IA honesto, perfil público); gato SVG completo; iconos lucide; sonido Web Audio real; framer-motion; catálogo y API idénticos; CORS ampliado al puerto de Vite; evidencia en `docs/reports/frontend-react.md` | Alex Valdelamar |

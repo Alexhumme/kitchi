@@ -37,7 +37,7 @@
 
 .public-pubs { flex-shrink: 0; padding-bottom: 4px; }
 .public-count { margin-top: 8px; font-size: 0.82rem; font-weight: 600; color: var(--tinta-suave); }
-.public-pubs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
+.public-pubs-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
 .public-offline { flex-shrink: 0; padding-top: 8px; text-align: center; font-size: 0.7rem; font-weight: 600; color: var(--tinta-suave); }
 .public-chip { margin-top: 4px; }
 .public-skeleton { display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }

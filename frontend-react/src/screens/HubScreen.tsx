@@ -1,10 +1,23 @@
-// Navegar / Explorar: feed público del hub con buscador (P18).
+// Navegar / Explorar: río de publicaciones del hub con buscador y filtros (P18).
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, CloudOff, Search, SearchX, Sparkles, X } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import {
+  ArrowRight, Cat, CloudOff, Flame, Package, Search, SearchX, Sparkles, Users, X, type LucideIcon,
+} from 'lucide-react';
+import { useState } from 'react';
 import { useKitchi } from '../state/AppContext';
 import FeedCard from '../components/FeedCard';
 import { EmptyState, SectionTitle } from '../components/ui';
+
+type FeedFilter = 'all' | 'cats';
+
+const FILTERS: Array<{ key: FeedFilter | 'packs' | 'stickers' | 'creators'; label: string; icon: LucideIcon; soon?: boolean }> = [
+  { key: 'all', label: 'Todo', icon: Flame },
+  { key: 'cats', label: 'Gatos', icon: Cat },
+  { key: 'packs', label: 'Packs de Stickers', icon: Package, soon: true },
+  { key: 'stickers', label: 'Stickers sueltos', icon: Sparkles, soon: true },
+  { key: 'creators', label: 'Creadores', icon: Users, soon: true },
+];
 
 export default function HubScreen() {
   const {
@@ -12,11 +25,12 @@ export default function HubScreen() {
     setFeedQuery, loadMoreFeed, user, apiOnline,
   } = useKitchi();
   const navigate = useNavigate();
+  const [filter, setFilter] = useState<FeedFilter>('all');
 
   return (
     <div className="screen-root">
       {/* encabezado */}
-      <SectionTitle title="Explorar" subtitle="Creaciones de nuestra comunidad" />
+      <SectionTitle title="Explorar" subtitle="Creaciones de la comunidad" />
 
       {/* buscador */}
       <label className="search-shell">
@@ -24,7 +38,7 @@ export default function HubScreen() {
         <input
           type="search"
           className="search-shell__input"
-          placeholder="Buscar creación o usuario…"
+          placeholder="Buscar gato o creador…"
           value={feedQuery}
           onChange={(e) => setFeedQuery(e.target.value)}
           aria-label="Buscar en el hub"
@@ -35,6 +49,33 @@ export default function HubScreen() {
           </button>
         )}
       </label>
+
+      {/* filtros del feed (los pendientes se marcan "pronto", no se simulan) */}
+      <div className="filter-row no-scrollbar" role="tablist" aria-label="Filtrar el feed">
+        {FILTERS.map((item) => {
+          if (item.soon) {
+            return (
+              <button key={item.key} type="button" className="filter-chip" data-soon="true" disabled title="Muy pronto">
+                <item.icon size={13} strokeWidth={2.4} aria-hidden="true" /> {item.label} <span className="filter-soon">Pronto</span>
+              </button>
+            );
+          }
+          const active = item.key === filter;
+          return (
+            <button
+              key={item.key}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              className="filter-chip"
+              data-active={active}
+              onClick={() => setFilter(item.key as FeedFilter)}
+            >
+              <item.icon size={13} strokeWidth={2.4} aria-hidden="true" /> {item.label}
+            </button>
+          );
+        })}
+      </div>
 
       {/* contador + estado */}
       <div className="feed-meta">
@@ -51,17 +92,17 @@ export default function HubScreen() {
       {/* contenido */}
       {feedSearching && publications.length === 0 ? (
         <div className="feed-skeleton" aria-hidden="true">
-          {[0, 1, 2, 3, 4, 5].map((n) => <div key={n} className="feed-skeleton__cell" />)}
+          {[0, 1, 2].map((n) => <div key={n} className="feed-skeleton__post" />)}
         </div>
       ) : publications.length > 0 ? (
         <>
-          <motion.div layout className="feed-grid">
-            <AnimatePresence>
+          <div className="feed-stream">
+            <AnimatePresence mode="popLayout">
               {publications.map((pub, i) => (
                 <FeedCard key={pub.id} publication={pub} index={i} />
               ))}
             </AnimatePresence>
-          </motion.div>
+          </div>
           {feedHasMore && (
             <div className="load-more-row">
               <button type="button" className="bevel-btn load-more-btn" onClick={() => void loadMoreFeed()} disabled={feedSearching}>

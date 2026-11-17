@@ -2,65 +2,101 @@
    Tarjetas compartidas: feed card y tarjetas de opción
    ============================================================ */
 
-.feedcard {
+/* ---------- Tarjeta de publicación (post card) ---------- */
+.postcard {
   position: relative;
-  padding: 8px;
-  border-radius: var(--radio-medio);
-  background: var(--superficie);
-  box-shadow: inset -var(--bevel-right) -var(--bevel-bottom) 0 0 var(--ink);
-}
-.feedcard__cat { position: relative; }
-.feedcard__preview {
-  position: relative;
-  height: 128px;
+  overflow: hidden;
+  border-radius: 26px;
+  border: 2.5px solid var(--ink);
+  background: var(--leche);
+  box-shadow: 0 3px 0 var(--ink);
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  overflow: hidden;
-  border-radius: var(--radio-medio);
-  background: var(--crema-hondo);
+  flex-direction: column;
 }
-.feedcard__pattern {
-  position: absolute;
-  inset: 0;
-  background-image: url("../../assets/ui/patterns/dots_soft.png");
-  background-size: 90px;
-  opacity: 0.8;
-}
-.feedcard__title {
-  margin-top: 8px;
-  min-height: 2.1rem;
-  padding: 0 4px;
-  font-size: 0.8rem;
-  font-weight: 800;
-  line-height: 1.35;
-  color: var(--ink);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.feedcard__author {
+.postcard__head {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 4px 0 2px;
-  padding: 2px 4px;
-  border-radius: 999px;
-  min-width: 0;
+  gap: 8px;
+  padding: 10px 12px;
   border: none;
+  border-bottom: 2px solid var(--crema-hondo);
   background: transparent;
   cursor: pointer;
+  text-align: left;
+  font-family: inherit;
 }
-.feedcard__author:hover { background: var(--crema); }
-.feedcard__author-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.72rem;
+.postcard__head:hover { background: #fff7e2; }
+.postcard__author-block { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.postcard__author { font-size: 0.78rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.postcard__time { font-size: 0.66rem; font-weight: 600; color: var(--tinta-suave); }
+.postcard__type {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: var(--lavanda);
+  font-size: 0.64rem;
+  font-weight: 800;
+  color: #5b46b8;
+}
+.postcard__stage {
+  position: relative;
+  height: 152px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2.5px solid var(--ink);
+}
+.postcard__stage[data-tint="amber"] { background: var(--panel-claro); }
+.postcard__stage[data-tint="teal"] { background: #e6f4f1; }
+.postcard__stage[data-tint="lavender"] { background: #ece6fa; }
+.postcard__cat { position: relative; }
+.postcard__body { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px 14px; }
+.postcard__title { font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; color: var(--ink); }
+.postcard__desc { margin-top: 2px; font-size: 0.78rem; font-weight: 500; line-height: 1.4; color: var(--ink-soft); }
+.postcard__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 2px solid var(--crema-hondo);
+}
+.postcard__fur {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--tinta-suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+.postcard__cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 13px;
+  border-radius: 14px;
+  border: 2px solid var(--ink);
+  background: var(--panel);
+  box-shadow: 0 2px 0 var(--ink);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+.postcard__cta:hover { background: var(--ambar); }
+.postcard__cta:active { transform: translateY(2px); box-shadow: 0 0.5px 0 var(--ink); }
 
 /* ---------- Tarjetas de opción (editor) ---------- */
 .option-card {

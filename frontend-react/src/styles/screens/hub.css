@@ -1,5 +1,5 @@
 /* ============================================================
-   Navegar (hub): buscador, meta, rejilla, esqueletos y vacío
+   Navegar (hub): río de publicaciones, buscador y filtros
    ============================================================ */
 
 .feed-meta {
@@ -10,9 +10,9 @@
   flex-shrink: 0;
 }
 .feed-count { font-size: 0.72rem; font-weight: 600; color: var(--tinta-suave); }
-.feed-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.feed-stream {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   flex-shrink: 0;
 }
@@ -28,14 +28,15 @@
 
 /* ---------- Esqueleto de carga ---------- */
 .feed-skeleton {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   flex-shrink: 0;
 }
-.feed-skeleton__cell {
-  height: 176px;
-  border-radius: var(--radio-medio);
+.feed-skeleton__post {
+  height: 300px;
+  border-radius: 26px;
+  border: 2px solid var(--crema-hondo);
   background: var(--crema-hondo);
   animation: pulse 1.6s ease-in-out infinite;
 }
