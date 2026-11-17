@@ -45,6 +45,7 @@ media/
 *.jpeg
 *.png
 !assets/**/*.png
+!frontend/assets/**/*.png
 !docs/**/*.png
 
 # Herramientas

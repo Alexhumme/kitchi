@@ -135,7 +135,7 @@ class EditorScreen:
                     width=74,
                     height=72,
                     bgcolor=t.CORAL_SUAVE if selected else t.SUPERFICIE,
-                    border=ft.Border.all(2 if selected else 1, t.CORAL if selected else t.GRIS_CALIDO),
+                    border=t.bevel(t.INK if selected else t.GRIS_CALIDO, right=3 if selected else 2, bottom=4 if selected else 2),
                     border_radius=18,
                     alignment=ft.Alignment.CENTER,
                     on_click=lambda e, k=key: self._on_category(k),
@@ -147,7 +147,7 @@ class EditorScreen:
     def _stage(self) -> ft.Control:
         self._stage_host.height = 300
         self._stage_host.bgcolor = t.CREMA_HONDO
-        self._stage_host.border = ft.Border.all(1, t.GRIS_CALIDO)
+        self._stage_host.border = t.bevel(t.GRIS_CALIDO, right=3, bottom=4)
         self._stage_host.border_radius = 24
         self._stage_host.padding = 12
         self._stage_host.alignment = ft.Alignment.CENTER
@@ -193,20 +193,20 @@ class EditorScreen:
 
         ears = [
             ft.Container(width=52, height=52, bgcolor=fur.swatch,
-                         border=ft.Border.all(3, t.TINTA), border_radius=18, left=32, top=16),
+                         border=t.bevel(t.INK, right=4, bottom=5), border_radius=18, left=32, top=16),
             ft.Container(width=52, height=52, bgcolor=fur.swatch,
-                         border=ft.Border.all(3, t.TINTA), border_radius=18, right=32, top=16),
+                         border=t.bevel(t.INK, right=4, bottom=5), border_radius=18, right=32, top=16),
         ]
         face = ft.Stack(
             [
                 *ears,
                 ft.Container(
                     width=178, height=154, bgcolor=fur.swatch,
-                    border=ft.Border.all(3, t.TINTA), border_radius=82, left=26, top=34,
+                    border=t.bevel(t.INK, right=5, bottom=6), border_radius=82, left=26, top=34,
                 ),
                 ft.Container(
                     width=128, height=36, bgcolor=hair.swatch,
-                    border=ft.Border.all(2, t.TINTA), border_radius=18, left=51, top=41,
+                    border=t.bevel(t.INK, right=3, bottom=4), border_radius=18, left=51, top=41,
                 ),
                 ft.Container(
                     content=ft.Row([eye(), eye()], spacing=26, alignment=ft.MainAxisAlignment.CENTER),
@@ -229,7 +229,7 @@ class EditorScreen:
                 content=ft.Row(
                     [
                         ft.Container(width=13, height=13, bgcolor=option.swatch,
-                                     border=ft.Border.all(1, t.TINTA), border_radius=7),
+                                     border=t.bevel(t.INK, right=2, bottom=3), border_radius=7),
                         ft.Text(option.name, size=11, color=t.TINTA),
                     ],
                     spacing=5,
@@ -237,7 +237,7 @@ class EditorScreen:
                 ),
                 padding=ft.Padding.symmetric(horizontal=8, vertical=4),
                 bgcolor=t.SUPERFICIE,
-                border=ft.Border.all(1, t.GRIS_CALIDO),
+                border=t.bevel(t.GRIS_CALIDO, right=3, bottom=4),
                 border_radius=999,
             )
 
@@ -265,7 +265,7 @@ class EditorScreen:
     def _accessory_layer(self, accessory) -> ft.Control:
         if accessory.code == "glasses":
             lens = ft.Container(
-                width=34, height=30, border=ft.Border.all(3, t.TINTA), border_radius=10
+                width=34, height=30, border=t.bevel(t.INK, right=4, bottom=5), border_radius=10
             )
             return ft.Container(
                 content=ft.Row(
@@ -285,7 +285,7 @@ class EditorScreen:
             )
         return ft.Container(
             width=132, height=40, bgcolor=accessory.swatch,
-            border=ft.Border.all(2, t.TINTA), border_radius=20, left=49, top=18,
+            border=t.bevel(t.INK, right=3, bottom=4), border_radius=20, left=49, top=18,
         )
 
     # --- partes dinámicas ------------------------------------------------
@@ -344,7 +344,7 @@ class EditorScreen:
                                 width=34,
                                 height=34,
                                 bgcolor=opt.swatch,
-                                border=ft.Border.all(2, t.TINTA if selected else t.GRIS_CALIDO),
+                                border=t.bevel(t.INK if selected else t.GRIS_CALIDO, right=3 if selected else 2, bottom=4 if selected else 2),
                                 border_radius=17,
                             ),
                             ft.Column(
@@ -363,7 +363,7 @@ class EditorScreen:
                     ),
                     padding=12,
                     bgcolor=t.CORAL_SUAVE if selected else t.SUPERFICIE,
-                    border=ft.Border.all(2 if selected else 1, t.CORAL if selected else t.GRIS_CALIDO),
+                    border=t.bevel(t.INK if selected else t.GRIS_CALIDO, right=3 if selected else 2, bottom=4 if selected else 2),
                     border_radius=16,
                     on_click=lambda e, k=cat.key, code=opt.code: self._on_option(k, code),
                     ink=True,
@@ -459,7 +459,7 @@ class EditorScreen:
             shape=ft.RoundedRectangleBorder(radius=20),
             bgcolor=t.SUPERFICIE,
             actions=[
-                ft.TextButton("Cancelar", on_click=lambda e: page.pop_dialog()),
+                ft.TextButton("Cancelar", tooltip="Cancelar", on_click=lambda e: page.pop_dialog()),
                 c.primary_button("Guardar", do_save, icon="save_outlined"),
             ],
         )

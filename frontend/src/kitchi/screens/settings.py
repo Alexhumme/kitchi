@@ -77,21 +77,13 @@ def build(app) -> ft.Control:
 
     return ft.Column(
         [
-            ft.Row(
-                [
-                    ft.IconButton(
-                        icons.get("chevron_left"),
-                        tooltip="Volver",
-                        icon_color=t.TINTA,
-                        on_click=lambda e: app.close_settings(),
-                    ),
-                    ft.Text("Configuración", style=t.section()),
-                    ft.Container(expand=True),
-                    c.chip(f"v{APP_VERSION}", bgcolor=t.LAVANDA, icon="cable"),
-                ],
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            c.app_bar(
+                "Configuración",
+                on_back=lambda e: app.close_settings(),
+                subtitle="acerca de la app, sus efectos y datos",
+                right=c.chip(f"v{APP_VERSION}", bgcolor=t.LAVANDA, icon="cable"),
             ),
-            c.card(
+            c.pattern_card(
                 ft.Column(
                     [
                         ft.Icon(icons.get("pets"), size=44, color=t.CORAL),
@@ -122,20 +114,24 @@ def build(app) -> ft.Control:
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 ),
                 padding=22,
+                pattern="checker_soft",
+                surface_alpha=0.84,
             ),
-            c.card(
+            c.pattern_card(
                 ft.Column(
                     [
                         c.section_title("Así funciona", "Tres pasos, cero talento requerido"),
                         _step("1", "Elige tus piezas", "Seis categorías, tres opciones cada una. Pelaje, ojos, cabello, ropa y extras.", "palette"),
                         _step("2", "Combina sin miedo", "Cambia lo que quieras en tiempo real y deshaz cuando el caos se pase de la raya.", "casino"),
-                        _step("3", "Guarda y comparte", "Guarda hasta 3 gatos por cuenta o en este navegador. El hub llega con P18.", "pets"),
+                        _step("3", "Guarda y comparte", "Guarda hasta 3 gatos por cuenta o en este navegador; publícalo en el hub.", "pets"),
                     ],
                     spacing=10,
                 ),
                 padding=16,
+                pattern="dots_soft",
+                surface_alpha=0.84,
             ),
-            c.card(
+            c.pattern_card(
                 ft.Column(
                     [
                         c.section_title("Efectos"),
@@ -150,8 +146,11 @@ def build(app) -> ft.Control:
                     spacing=12,
                 ),
                 padding=16,
+                pattern="crosshatch",
+                surface_alpha=0.84,
             ),
             api_status,
+            c.divider("zigzag"),
             c.card(
                 ft.Column(
                     [
@@ -199,7 +198,7 @@ def _step(number: str, title: str, body: str, icon: str) -> ft.Container:
                     height=36,
                     bgcolor=t.CORAL,
                     border_radius=18,
-                    border=ft.Border.all(2, t.TINTA),
+                    border=t.bevel(t.INK, right=3, bottom=4),
                     alignment=ft.Alignment.CENTER,
                 ),
                 ft.Column(

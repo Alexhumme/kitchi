@@ -73,7 +73,7 @@ def _build_search_field(app) -> ft.Control:
         padding=ft.Padding.symmetric(horizontal=14, vertical=4),
         bgcolor=t.SUPERFICIE,
         border_radius=t.RADIO_PASTILLA,
-        border=ft.Border.all(t.BORDE, t.TINTA),
+        border=t.bevel(t.INK, right=4, bottom=5),
         shadow=[t.SOMBRA],
     )
 

@@ -18,17 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 def _back_row(app) -> ft.Control:
-    return ft.Row(
-        [
-            ft.IconButton(
-                icons.get("chevron_left"),
-                tooltip="Volver",
-                icon_color=t.TINTA,
-                on_click=lambda e: app.close_public_profile(),
-            ),
-            ft.Text("Perfil público", style=t.section()),
-        ],
-        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    return c.app_bar(
+        "Perfil público",
+        on_back=lambda e: app.close_public_profile(),
+        subtitle="Su huella pública en kitchi.studio",
+        tone=t.INK,
     )
 
 

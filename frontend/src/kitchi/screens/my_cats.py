@@ -240,7 +240,7 @@ def _open_publish_dialog(app, cat: dict) -> None:
             spacing=10,
         ),
         actions=[
-            ft.TextButton("Cancelar", on_click=lambda e: page.pop_dialog()),
+            ft.TextButton("Cancelar", tooltip="Cancelar", on_click=lambda e: page.pop_dialog()),
             c.primary_button("Publicar", do_publish, icon="share"),
         ],
     )

@@ -124,6 +124,7 @@ class AuthScreen:
                 self.submit_button,
                 ft.TextButton(
                     switch_label,
+                    tooltip=switch_label,
                     on_click=lambda e: self.app.open_auth(switch_mode),
                 ),
             ]

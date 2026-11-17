@@ -99,45 +99,100 @@ class KitchiApp:
         page.padding = 0
         page.spacing = 0
 
-        header = ft.Container(
+        brand = ft.Container(
             content=ft.Row(
                 [
-                    ft.Icon(icons.get("pets"), size=26, color=t.CORAL),
-                    ft.Text("kitchi.studio", size=20, weight=ft.FontWeight.W_700, color=t.TINTA),
-                    ft.Container(expand=True),
-                    ft.IconButton(
-                        icons.get("settings"),
-                        tooltip="Configuración de la app",
-                        icon_color=t.TINTA,
-                        on_click=lambda e: self.toggle_settings(),
+                    ft.Container(
+                        content=ft.Icon(icons.get("pets"), size=22, color=t.CORAL),
+                        width=40,
+                        height=40,
+                        bgcolor=t.SUPERFICIE,
+                        border_radius=20,
+                        border=t.bevel(t.INK, right=3, bottom=4),
+                        alignment=ft.Alignment.CENTER,
                     ),
-                    self._identity_host,
+                    ft.Text("kitchi.studio", size=19, weight=ft.FontWeight.W_800, color=t.INK),
                 ],
-                spacing=6,
+                spacing=10,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
+        )
+        gear_button = ft.IconButton(
+            icons.get("settings"),
+            tooltip="Configuración de la app",
+            icon_color=t.INK,
+            bgcolor=t.SUPERFICIE,
+            on_click=lambda e: self.toggle_settings(),
+            style=ft.ButtonStyle(
+                color=t.INK,
+                overlay_color="#FFFFFF55",
+                shape=ft.RoundedRectangleBorder(radius=20),
+                side=ft.BorderSide(3, t.INK),
+            ),
+        )
+        header = ft.Container(
+            content=ft.Column(
+                [
+                    ft.Row(
+                        [
+                            brand,
+                            ft.Container(expand=True),
+                            gear_button,
+                            self._identity_host,
+                        ],
+                        spacing=6,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                    ft.Image(
+                        src="ui/separators/zigzag.png",
+                        repeat=ft.ImageRepeat.REPEAT_X,
+                        height=11,
+                    ),
+                ],
+                spacing=0,
+            ),
             padding=ft.Padding.symmetric(horizontal=16, vertical=10),
-            bgcolor=t.CREMA,
-            border=ft.Border(bottom=ft.BorderSide(t.BORDE, t.TINTA)),
+            bgcolor=t.PANEL,
+            border=t.bevel(t.INK, right=0, bottom=6),
         )
         self._render_identity()
 
         body = ft.Container(
-            content=self._content,
+            content=ft.Stack(
+                [
+                    c.pattern_image("bubbles_soft", opacity=0.55, border_radius=0, expand=True),
+                    ft.Container(
+                        content=self._content,
+                        expand=True,
+                        padding=ft.Padding.symmetric(horizontal=16, vertical=14),
+                    ),
+                ],
+            ),
             expand=True,
-            padding=ft.Padding.symmetric(horizontal=16, vertical=14),
         )
+
+        def build_destination(i: int, label: str, icon_name: str) -> ft.NavigationBarDestination:
+            color = t.INK if i == 0 else "#FFFFFF"
+            return ft.NavigationBarDestination(
+                icon=ft.Icon(icons.get(icon_name), size=22, color=color),
+                label=label,
+                bgcolor="#00000000",
+                tooltip=label,
+            )
 
         self._nav = ft.NavigationBar(
             destinations=[
-                ft.NavigationBarDestination(icon=icons.get(icon_name), label=label)
-                for label, icon_name in SECTIONS
+                build_destination(i, label, icon_name)
+                for i, (label, icon_name) in enumerate(SECTIONS)
             ],
             selected_index=0,
             on_change=self._on_nav_change,
-            bgcolor=t.SUPERFICIE,
-            indicator_color=t.CORAL_SUAVE,
-            height=68,
+            bgcolor=t.INK,
+            indicator_color=t.PANEL,
+            indicator_shape=ft.RoundedRectangleBorder(radius=22),
+            label_behavior=ft.NavigationBarLabelBehavior.ALWAYS_SHOW,
+            height=72,
+            elevation=0,
         )
 
         page.add(ft.Column([header, body], spacing=0, expand=True))
@@ -339,12 +394,19 @@ class KitchiApp:
         self.go(int(e.control.selected_index))
 
     def go(self, index: int) -> None:
+        c.haptic("light")
         self.section = index
         self.auth_mode = None
         self.show_settings = False
         self.public_profile = None
-        if self._nav is not None and self._nav.selected_index != index:
+        if self._nav is not None and c.mounted(self._nav):
+            color = t.INK if index == self.section else "#FFFFFF"
+            for i, (_, icon_name) in enumerate(SECTIONS):
+                dest = self._nav.destinations[i]
+                if isinstance(dest.icon, ft.Icon):
+                    dest.icon.color = color if i == index else "#FFFFFF"
             self._nav.selected_index = index
+            self._nav.update()
         self.rebuild_current()
 
     def toggle_settings(self) -> None:
