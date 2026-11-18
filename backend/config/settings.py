@@ -30,6 +30,30 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = _csv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
 
+# Orígenes de desarrollo permitidos: Flet Web (8550) y Vite (5173 dev / 4173 preview).
+# Si `CORS_ALLOWED_ORIGINS` está definida en el entorno (p. ej. en .env), se UNEN con
+# estos orígenes en vez de sustituirlos; antes, un .env antiguo solo con 8550 dejaba
+# al frontend React sin acceso a la API.
+_DEV_CORS_ORIGINS = [
+    "http://127.0.0.1:8550",
+    "http://localhost:8550",
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:4173",
+    "http://localhost:4173",
+]
+def _cors_origins() -> list[str]:
+    configured = _csv("CORS_ALLOWED_ORIGINS", "")
+    seen: set[str] = set()
+    union: list[str] = []
+    for origin in configured + _DEV_CORS_ORIGINS:
+        if origin not in seen:
+            seen.add(origin)
+            union.append(origin)
+    return union
+
+CORS_ALLOWED_ORIGINS = _cors_origins()
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -127,11 +151,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = REPO_ROOT / "storage"
-
-CORS_ALLOWED_ORIGINS = _csv(
-    "CORS_ALLOWED_ORIGINS",
-    "http://127.0.0.1:8550,http://localhost:8550,http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:4173,http://localhost:4173",
-)
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
