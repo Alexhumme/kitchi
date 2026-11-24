@@ -1,6 +1,6 @@
 # 00 · Visión general del proyecto — Kitchi Studio
 
-Documento de producto · MVP académico · Versión 1.1 · 28 de octubre de 2026
+Documento de producto · MVP académico · Versión 1.2 · 23 de noviembre de 2026
 
 > Este es el punto de entrada obligatorio para cualquier integrante o agente de programación. Léelo antes que cualquier otro documento. La fuente vigente de los requisitos académicos es el PDF del profesor y su resumen operativo en [`13_CUMPLIMIENTO_ACADEMICO.md`](13_CUMPLIMIENTO_ACADEMICO.md).
 
@@ -26,7 +26,7 @@ Aplicación web móvil para crear gatos chibi personalizados mediante composici�
 | Paquete MVP | 6 stickers |
 | Cliente | Web móvil |
 | Arte | 2D por capas |
-| Stack | Python · Flet Web · Django REST Framework · MySQL · Pillow |
+| Stack | React 19 + TypeScript + Vite · Django REST Framework · MySQL · Pillow |
 
 ## Objetivo general
 
@@ -63,7 +63,7 @@ La generación por IA debe contar con un flujo verificable independiente. Si el 
 
 | Rol | Responsabilidad | Entregable principal |
 | --- | --- | --- |
-| Integrante A — Frontend y UX | Flet, navegación, editor visual, estados de generación, hub, comunicación con la API | Experiencia completa desde la creación del gato hasta la descarga |
+| Integrante A — Frontend y UX | React, navegación, editor visual, estados de generación, hub, comunicación con la API | Experiencia completa desde la creación del gato hasta la descarga |
 | Integrante B — Backend y datos | Django REST Framework, MySQL, autenticación, modelos, permisos, API, Swagger, persistencia | API documentada y funcional, con pruebas de permisos y límites |
 | Integrante C — Motor gráfico, IA y programación avanzada | Composición con Pillow, exportación, adaptador de IA, procesamiento de tareas, pruebas de rendimiento | Generador verificable de seis PNG y evidencias académicas reproducibles |
 | Diseñadora gráfica | Guía visual, personajes base, catálogo de opciones, poses, accesorios, iconografía | Biblioteca gráfica organizada, documentada y lista para composición |

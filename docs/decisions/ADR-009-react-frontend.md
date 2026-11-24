@@ -1,9 +1,9 @@
 # ADR-009 — Frontend React en paralelo a Flet (verificación de viabilidad)
 
-- **Estado:** aceptado (prototipo de viabilidad; la entrega final aún no cambia de interfaz)
+- **Estado:** sustituido por [ADR-011](ADR-011-react-interfaz-definitiva.md)
 - **Fecha:** 2026-11-16
 - **Sustituye a:** —
-- **Sustituida por:** —
+- **Sustituida por:** ADR-011
 
 ## Contexto
 

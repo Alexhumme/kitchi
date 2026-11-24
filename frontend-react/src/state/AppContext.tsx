@@ -14,7 +14,7 @@ import {
   type ReactNode,
 } from 'react';
 import { api, ApiError } from '../lib/api';
-import { applyApiCatalog, normalizeConfiguration, validateConfig } from '../lib/catalog';
+import { applyApiCatalog, normalizeConfiguration, toApiConfiguration, validateConfig } from '../lib/catalog';
 import { syncFx } from '../lib/fx';
 import type { CatRecord, PublicationRecord, UserRecord } from '../lib/types';
 
@@ -287,21 +287,23 @@ export function KitchiProvider({ children }: { children: ReactNode }) {
   const saveCat = useCallback(async (name: string, configuration: unknown, editingId?: string | null) => {
     const cleanName = name.trim();
     if (!cleanName) return null;
-    const errors = validateConfig(configuration);
+    const normalized = normalizeConfiguration(configuration);
+    const errors = validateConfig(normalized);
     if (errors.length) {
       notify('La combinación no es válida para el catálogo actual.', 'error');
       return null;
     }
+    const payload = toApiConfiguration(normalized);
     if (token) {
       try {
         if (editingId) {
-          const record = await api.updateCat(editingId, { name: cleanName, configuration } as Partial<CatRecord>);
+          const record = await api.updateCat(editingId, { name: cleanName, configuration: payload } as Partial<CatRecord>);
           const cat = normalizeCat(record);
           setCats((prev) => prev.map((c) => (String(c.id) === String(cat.id) ? cat : c)));
           notify(`'${cat.name}' guardado en tu cuenta.`, 'success');
           return cat;
         }
-        const record = await api.createCat(cleanName, configuration);
+        const record = await api.createCat(cleanName, payload);
         const cat = normalizeCat(record);
         setCats((prev) => [...prev, cat]);
         notify(`'${cat.name}' guardado en tu cuenta.`, 'success');
@@ -316,7 +318,7 @@ export function KitchiProvider({ children }: { children: ReactNode }) {
       const updated: CatRecord = {
         ...existing,
         name: cleanName,
-        configuration: configuration as Record<string, unknown>,
+        configuration: payload,
         updated_at: nowIso(),
       };
       const next = cats.map((c) => (String(c.id) === String(editingId) ? updated : c));
@@ -329,7 +331,7 @@ export function KitchiProvider({ children }: { children: ReactNode }) {
       notify('Ya tienes 3 gatos. Elimina uno para guardar otro.', 'error');
       return null;
     }
-    const cat = newGuestCat(cleanName, configuration);
+    const cat = newGuestCat(cleanName, payload);
     const next = [...cats, cat];
     setCats(next);
     writeGuestCats(next);

@@ -8,9 +8,11 @@ Directorio de evidencias reproducibles exigidas por el plan maestro y por la rú
 | --- | --- | --- | --- |
 | [`rubric.md`](rubric.md) | Rúbrica del PDF transcrita y sus implicaciones para el proyecto | Criterios 1–5 | P01 |
 | `academic-audit.md` | Auditoría final de README, repositorio, producto y sustentación | Criterios 2, 3 y 5 | P40 |
-| `week1-validation.md` | Validación de Flet, DRF, MySQL, Pillow y Swagger (versiones exactas fijadas) | Criterio 2 / AC-12 | P02 |
-| [`frontend-integration.md`](frontend-integration.md) | Integración Flet ↔ API, sembrado del catálogo provisional, 34 pruebas y smoke test de pantallas | Criterio 2 / AC-12 | P02, P08, P10, P12, P36, P39 |
-| [`frontend-flet-web-startup.md`](frontend-flet-web-startup.md) | Arranque estable del frontend: causas de la pantalla gris y la inyección de `SharedPreferences`, iconos `ft.Icons`, `c.flow()` y evidencia del recorrido por las cinco secciones con guardado y recarga | Criterio 2 / AC-12 | P10, P12, P36, P39 |
+| `week1-validation.md` | Validación histórica de Flet, DRF, MySQL, Pillow y Swagger (versiones exactas fijadas) | Criterio 2 / AC-12 | P02 |
+| [`frontend-integration.md`](frontend-integration.md) | Evidencia histórica de integración Flet ↔ API, catálogo provisional, 34 pruebas y smoke test de pantallas | Criterio 2 / AC-12 | P02, P08, P10, P12, P36, P39 |
+| [`frontend-flet-web-startup.md`](frontend-flet-web-startup.md) | Evidencia histórica del arranque Flet y del recorrido por sus cinco secciones | Criterio 2 / AC-12 | P10, P12, P36, P39 |
+| [`frontend-react.md`](frontend-react.md) | Historia y estado actual de React como única interfaz activa, con verificación de build, lint y flujo contra MySQL | Criterio 2 / AC-12 | P02, P10, P12, P36 |
+| [`editor-visual-assets.md`](editor-visual-assets.md) | Editor SVG real, cabeza delantera, orden de capas, colores, multiaccesorio, MySQL y capturas | Criterio 2 / AC-01, AC-02, AC-06 | P06, P08, P09, P10, P12, P36 |
 | [`p18-hub-publicaciones.md`](p18-hub-publicaciones.md) | Hub de publicaciones extremo a extremo: publicación autenticada, feed público, perfiles públicos y estilo juguetón global | Criterio 2 / AC-07 (primera parte) | P18 |
 | `ai-evaluation.md` | Prueba comparativa de IA: las 7 preguntas de [07_AI_INTEGRATION.md](../07_AI_INTEGRATION.md) | AC-08 | P05 |
 | `concurrency-logs.md` | Logs de la prueba concurrente con operaciones reales | AC-09 | P20 |

@@ -1,6 +1,6 @@
 # 09 · Plan de pruebas y control de calidad — Kitchi Studio
 
-Pruebas unitarias, integración, aceptación, seguridad, repositorio y rendimiento · Versión 1.1 · 28 de octubre de 2026
+Pruebas unitarias, integración, aceptación, seguridad, repositorio y rendimiento · Versión 1.2 · 23 de noviembre de 2026
 
 > Las pruebas validan tanto el funcionamiento del producto como los requisitos académicos. El criterio de aceptación no es que las pantallas se vean bien en una captura: se debe poder ejecutar el recorrido completo con datos reales de prueba, desde un clon limpio y sin editar la base de datos a mano.
 
@@ -21,13 +21,13 @@ Se prueban de forma aislada:
 - Serializers y permisos de la API.
 - Manejo de errores y mensajes al usuario.
 
-Ubicación: `backend/tests/`, `frontend/tests/` y los módulos de evidencia de concurrencia ([08_CONCURRENCY_AND_PARALLELISM.md](08_CONCURRENCY_AND_PARALLELISM.md)).
+Ubicación: `backend/tests/`, `frontend-react/` (build y lint) y los módulos de evidencia de concurrencia ([08_CONCURRENCY_AND_PARALLELISM.md](08_CONCURRENCY_AND_PARALLELISM.md)).
 
 ## Pruebas de integración
 
 | Prueba | Resultado esperado |
 | --- | --- |
-| Flet consulta el catálogo | Obtiene las opciones activas de la API |
+| React consulta el catálogo | Obtiene las opciones activas de la API |
 | Usuario registra un gato | El registro persiste en MySQL |
 | Se solicita un paquete | Se crea un trabajo y se devuelve un identificador |
 | Termina el trabajo | El estado cambia a `completed` y existen seis PNG |
@@ -41,10 +41,14 @@ Ubicación: `backend/tests/`, `frontend/tests/` y los módulos de evidencia de c
 | Se abre `/api/docs/` | Swagger muestra los endpoints y permite probarlos |
 | Se provoca un error de validación | La UI muestra un mensaje comprensible y la API no expone trazas internas |
 
-Estado al 9 de noviembre de 2026: las filas de catálogo, registro y persistencia de gatos
-están cubiertas por `frontend/tests/` (34 pruebas) y por el cliente HTTP; las de paquetes,
-publicaciones, copia e IA siguen pendientes porque sus endpoints no existen. La prueba
-manual en navegador aún no se registra en `docs/reports/`.
+Estado al 23 de noviembre de 2026: las filas de catálogo, registro y persistencia de gatos
+están cubiertas por 66 pruebas backend y por el cliente HTTP. El color independiente
+de accesorios está cubierto por pruebas backend de guardado, validación y compatibilidad legacy. Publicaciones y
+perfiles públicos ya tienen pruebas backend y verificación en navegador; paquetes, copia e
+IA siguen pendientes porque sus endpoints no existen. El editor visual React se verificó
+en navegador y contra MySQL, incluido el orden cabeza → cabello delantero sobre la prenda
+superior; la evidencia está en [`reports/editor-visual-assets.md`](reports/editor-visual-assets.md).
+Las 46 pruebas Flet son históricas y no forman parte de la suite vigente.
 
 ## Pruebas de aceptación
 

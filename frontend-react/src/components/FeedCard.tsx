@@ -17,7 +17,7 @@ export default function FeedCard({ publication, index }: { publication: Publicat
   const navigate = useNavigate();
   const stageTint = ['amber', 'teal', 'lavender'][index % 3];
 
-  const furCode = normalizeConfiguration(cat?.configuration).fur;
+  const furCode = normalizeConfiguration(cat?.configuration).fur.code;
   const furName = getOption('fur', furCode)?.name ?? '';
 
   return (

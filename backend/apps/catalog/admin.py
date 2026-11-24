@@ -9,8 +9,8 @@ from .models import CatalogOption, Pose
 
 @admin.register(CatalogOption)
 class CatalogOptionAdmin(admin.ModelAdmin):
-    list_display = ("code", "category", "label", "z_order", "asset_path", "is_premium", "is_active")
-    list_filter = ("category", "is_premium", "is_active")
+    list_display = ("code", "category", "label", "compatibility_group", "z_order", "asset_path", "is_premium", "is_active")
+    list_filter = ("category", "compatibility_group", "is_premium", "is_active")
     search_fields = ("code", "label", "asset_path")
     list_editable = ("z_order", "is_premium", "is_active")
     list_per_page = 50

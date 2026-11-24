@@ -1,6 +1,6 @@
 # 02 · Requisitos y alcance — Kitchi Studio
 
-Requisitos funcionales, alcance, requisitos académicos y criterios de aceptación · Versión 1.1 · 28 de octubre de 2026
+Requisitos funcionales, alcance, requisitos académicos y criterios de aceptación · Versión 1.2 · 23 de noviembre de 2026
 
 > La restricción más importante no es solo el tiempo de programación: es la combinación de diseño gráfico, editor interactivo, procesamiento de imágenes, integración de IA y backend, con una fecha límite de **cuatro semanas**. El alcance se divide en tres niveles y no debe expandirse sin registrar la decisión. Los requisitos académicos del PDF del profesor son obligatorios y están detallados en [`13_CUMPLIMIENTO_ACADEMICO.md`](13_CUMPLIMIENTO_ACADEMICO.md).
 
@@ -16,7 +16,7 @@ Requisitos funcionales, alcance, requisitos académicos y criterios de aceptaci�
 - Límite de tres gatos para usuarios gratuitos.
 - Publicar, explorar y copiar personajes.
 - **Al menos tres funcionalidades completas y demostrables** (ver sección siguiente).
-- **Interfaz real** (Flet Web), no una aplicación de solo consola.
+- **Interfaz real** (React Web), no una aplicación de solo consola.
 - **Persistencia** de cuentas, gatos, publicaciones y paquetes.
 - **Manejo de errores visible** en la interfaz y en la API.
 - **Swagger/OpenAPI** disponible para la API.
@@ -70,7 +70,7 @@ Estos requisitos provienen del PDF del profesor y se verifican con la auditoría
 
 | ID | Requisito | Criterio de verificación |
 | --- | --- | --- |
-| AR-01 | Aplicación real con interfaz, no solo consola | Flet Web operativo y demostrable |
+| AR-01 | Aplicación real con interfaz, no solo consola | React Web operativo y demostrable |
 | AR-02 | Backend con endpoints y persistencia | API DRF + MySQL |
 | AR-03 | Al menos 3 funcionalidades completas | Tabla anterior y escenario de aceptación |
 | AR-04 | Datos persistentes | Reinicio y recuperación de datos |

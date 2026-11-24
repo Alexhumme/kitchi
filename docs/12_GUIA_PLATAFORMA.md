@@ -1,8 +1,8 @@
 # 12 · Guía viva de la plataforma — Kitchi Studio
 
-Documento de estudio para la sustentación · Versión 0.14 · 17 de noviembre de 2026
+Documento de estudio para la sustentación · Versión 0.18 · 23 de noviembre de 2026
 
-> **Estado:** documento vivo, casi vacío a propósito. Se completará **por incrementos** a medida que la aplicación se implemente. No describe funcionalidades que aún no existen.
+> **Estado:** documento vivo. Se completa **por incrementos** a medida que la aplicación se implemente y distingue lo verificado de lo pendiente.
 >
 > **Para quién es:** todos los integrantes del equipo, incluida la diseñadora. Es la lectura previa a la presentación y la base para responder preguntas individuales sobre cualquier parte del proyecto.
 
@@ -28,47 +28,49 @@ Kitchi Studio es una aplicación web móvil con la que una persona que no sabe d
 compone un gato chibi combinando recursos 2D por capas, guarda hasta tres personajes,
 pide un paquete de seis stickers PNG transparentes y comparte sus creaciones en un hub.
 
-**Estado a 16 de noviembre:** el backend (API, datos, cuentas, permisos y documentación
-OpenAPI) está implementado y en uso. La interfaz Flet Web existe y consume la API para
-catálogo, poses, cuentas y gatos; el editor ya permite crear, previsualizar con
-placeholders de color, guardar y editar hasta tres gatos. Las cinco pantallas se
-verificaron recorriendo la navegación en un navegador real (crear y guardar un gato
-como invitado sobrevive a una recarga). **El hub está implementado**: feed público con
-buscador, tarjetas de publicación con preview, perfil público de autor con sus gatos y
-publicaciones, y publicación de gatos propios desde **Mis gatos** (P18). **En paralelo
-existe un prototipo React de la interfaz** (`frontend-react/`, ADR-009): paridad funcional
-completa verificada end-to-end contra la API, construido para medir la viabilidad de
-migrar; la entrega final aún no ha cambiado de interfaz. El motor de
-composición y los endpoints de stickers e IA siguen pendientes, así que el flujo completo de usuario todavía no puede
-recorrerse de principio a fin.
+**Estado a 23 de noviembre:** el backend (API, datos, cuentas, permisos y documentación
+OpenAPI) está implementado y en uso. **La interfaz React es la única interfaz activa** y usa
+los SVG reales de cuerpo, cabeza delantera, cabello dividido en delante/atrás, prendas y
+accesorios: ofrece sliders de color, un mini slider independiente en cada accesorio
+seleccionado, previews reales por opción y varios accesorios sin repetir su tipo. La cabeza
+se dibuja después de la prenda superior para que los cuellos queden detrás de la cara.
+Guarda y edita hasta tres gatos. Las cinco pantallas se verificaron en un navegador real; el
+guardado de un gato invitado sobrevive a una recarga. **El hub está implementado**: feed
+público con buscador, tarjetas de publicación con preview, perfil público y publicación de
+gatos propios desde **Mis gatos** (P18). Flet se retiró y sus reportes quedan como historial
+([ADR-011](decisions/ADR-011-react-interfaz-definitiva.md)). El motor de composición, los
+endpoints de stickers, la copia de publicaciones y la integración de IA siguen pendientes,
+por lo que el flujo completo todavía no puede recorrerse de principio a fin.
 
 ## 2. Problema, usuario y propuesta de valor
 
 - **Problema:** conseguir stickers personalizados exige saber ilustrar o pagar una
   herramienta de diseño.
 - **Usuario previsto:** cualquier persona desde el navegador del teléfono; sin cuenta
-  compone y guarda en el navegador; con cuenta guarda en la API. Ambas rutas de
-  composición y guardado ya existen (P10/P12). Publicar y copiar creaciones sigue
-  pendiente del hub (P19).
-- **Propuesta de valor:** el motor 2D por capas. En lugar de producir 3⁶ = 729
-  ilustraciones, se mantiene un catálogo de 18 opciones conceptuales (3 por cada uno de
-  los 6 campos) y la apariencia se reconstruye desde una configuración ([ADR-002](decisions/ADR-002-character-rendering.md)).
+  compone y guarda en el navegador (`localStorage`); con cuenta guarda en la API. La ruta de
+  composición y guardado ya existe (P10/P12).
+  Publicar y consultar el feed ya funciona (P18); copiar una creación sigue pendiente (P19).
+- **Propuesta de valor:** el motor 2D por capas. En lugar de producir todas las
+  combinaciones como imágenes independientes, se reconstruye la apariencia desde una
+  configuración validada contra el catálogo ([ADR-002](decisions/ADR-002-character-rendering.md)).
+  El catálogo actual tiene 53 códigos, incluidos aliases para clientes antiguos, y seis poses;
+  las 18 opciones fueron el inventario conceptual inicial, no el total actual.
 - **IA:** diferenciador opcional para transformar una fotografía; el flujo manual no
   depende de ella ([ADR-003](decisions/ADR-003-ai-strategy.md)).
 
 ## 3. Flujo completo del usuario
 
-Lo que ya se puede recorrer (16 de noviembre):
+Lo que ya se puede recorrer (23 de noviembre):
 
-1. **Entrar sin cuenta.** La app arranca en modo invitado y guarda los gatos en el
-   almacenamiento del navegador (`SharedPreferences`). El límite de tres también se aplica
-   localmente.
-2. **Crear y personalizar.** En **Crear** se eligen las seis categorías del catálogo. La
-   previsualización cambia en tiempo real usando **placeholders de color**, porque los
-   assets definitivos no existen (P06).
-3. **Guardar, editar y borrar.** El gato se guarda en el navegador o, con sesión, en la API.
-   Borrar en modo invitado ofrece **Deshacer**; en cuenta pide confirmación y llama a
-   `DELETE /api/cats/{id}/`.
+1. **Entrar sin cuenta.** La app arranca en modo invitado. React guarda los gatos en
+   `localStorage`; el límite de tres también se aplica localmente.
+2. **Crear y personalizar.** En **Crear** se eligen pelaje, ojos, cabello, parte superior,
+   parte inferior y accesorios. Se usan SVG reales: cabello trasero y delantero, cabeza
+   delantera sobre la prenda superior, sliders de color, mini slider en cada accesorio
+   seleccionado, preview real en cada opción y varios accesorios sin repetir grupo.
+3. **Guardar, editar y borrar.** La configuración se valida en el backend antes de
+   guardarla. React usa `localStorage` sin sesión y `/api/cats/` con sesión. Borrar en modo
+   invitado ofrece **Deshacer**; en cuenta pide confirmación y llama a `DELETE /api/cats/{id}/`.
 4. **Crear cuenta o iniciar sesión.** **Perfil → Crear cuenta / Iniciar sesión** usa
    `/api/auth/register/` y `/api/auth/login/`, guarda el token y mantiene la sesión. Si
    había gatos de invitado y hay espacio, se migran a la cuenta automáticamente.
@@ -76,17 +78,15 @@ Lo que ya se puede recorrer (16 de noviembre):
    El contador muestra `n/3` y el backend valida el límite.
 6. **Stickers IA.** La pantalla muestra las seis poses reales de `/api/poses/`, pero el
    botón de generar está deshabilitado: faltan motor, paquetes y descargas (P13–P16).
-7. **Explorar.** El hub muestra las publicaciones públicas en una **cuadrícula de dos
-   columnas** con buscador (título, descripción y autor con `q=`). Cada tarjeta muestra
-   el **preview del gato**, el título y el autor. Tocando el autor se abre su **perfil
-   público** con sus gatos y publicaciones.
+7. **Explorar.** El hub muestra las publicaciones públicas con buscador (título,
+   descripción y autor con `q=`). Cada tarjeta muestra el preview del gato, el título y
+   el autor; tocar el autor abre su perfil público con sus gatos y publicaciones.
 8. **Publicar.** Desde **Mis gatos**, la acción de compartir abre un diálogo (título,
-   descripción, visibilidad pública o privada) y un gato publicado queda marcado como
-   "Publicado". Se crea con `POST /api/publications/`; publicar dos veces el mismo gato
-   responde 409.
+   descripción y visibilidad) y el gato queda marcado como "Publicado". Se crea con
+   `POST /api/publications/`; publicar dos veces el mismo gato responde 409.
 
-Pendiente para cerrar el recorrido: generar seis PNG, descargarlos, publicar en el hub y
-copiar una creación. Nada de eso se presenta como terminado.
+Pendiente para cerrar el recorrido: generar y descargar seis PNG, copiar una creación y
+completar la integración de IA. La publicación en el hub ya no está pendiente.
 
 ## 4. Pantallas y navegación
 
@@ -100,28 +100,28 @@ sólidas sin desenfoque, rebotes) y los toques vibran en móvil.
 | --- | --- | --- |
 | **Navegar** | Feed público con **buscador** (q por título, descripción y autor) y tarjetas de publicación (preview del gato, título y fila de autor). Tocar el autor abre su **perfil público** | Retirar/editar una publicación (P19 o posterior) |
 | **Mis gatos** | Lista los gatos de la cuenta (API) o del navegador (invitado), con editar, publicar y eliminar; aplica el límite de tres | — |
-| **Crear** | Editor de seis categorías con tres opciones cada una, previsualización de color en tiempo real, guardado/edición y eliminar | Assets finales (P06) y render con Pillow (P13) |
+| **Crear** | SVG reales por capas, cabeza delantera sobre la prenda superior, sliders de cabello/prendas/accesorios, previews reales y multiaccesorio por grupo; guardado/edición y eliminar | Motor Pillow y exportación PNG (P13); inventario gráfico final (P06) |
 | **Stickers IA** | Muestra las seis poses reales y explica el flujo; el botón está deshabilitado | Paquetes, polling, descargas, IA (P13–P17) |
 | **Perfil** | Identidad y cuenta: registro, inicio/cierre de sesión, migración de gatos de invitado, contador n/3 | — |
-| **Configuración** (engranaje) | Acerca de la app (kitchi.studio, tagline, créditos, licencia), efectos (animaciones y retroalimentación háptica, sonido **pendiente de Flet 1.2**), estado de la API y vaciado de datos locales | — |
+| **Configuración** (engranaje) | Acerca de la app, efectos, estado de la API y datos locales. React reproduce sonido con Web Audio y vibración | — |
 | **Perfil público** | Tarjeta de un usuario: miembro desde, gatos publicados y sus publicaciones | — |
 | **Login / Registro** | Formulario con validación local, errores inline, estado de carga y llamada a la API | Caso de token expirado |
 | **Importación de IA / Revisión** | No existen | P16 |
 
 El detalle de widgets y estilos vive en [`06_DESIGN_SYSTEM.md`](06_DESIGN_SYSTEM.md); la
-implementación está en `frontend/src/kitchi/screens/`.
+implementación está en `frontend-react/src/screens/`.
 
 ## 5. Arquitectura en cinco minutos
 
 Tres capas, un solo backend y sin infraestructura externa ([ADR-001](decisions/ADR-001-frontend-backend.md)):
 
 ```
-Flet Web (interfaz)            → implementado; render provisional con placeholders
+React 19 + Vite (interfaz web)      → implementado; editor con SVG reales
         │ HTTP/JSON · Authorization: Token <clave>
         ▼
 Django REST Framework          → sí existe y está en uso
    ├── apps/accounts  cuentas, perfil con rol, token y permisos RBAC
-   ├── apps/catalog   opciones del editor y poses
+   ├── apps/catalog   opciones del editor, grupos de accesorio y poses
    ├── apps/cats      personajes guardados y límite del plan
    ├── apps/stickers  paquetes y PNG (modelos y estados; sin endpoint aún)
    ├── apps/community publicaciones del hub (P18: listar, publicar y perfil público)
@@ -138,21 +138,30 @@ Cómo se arranca y cómo se comprueba:
 | Acción | Comando | Qué ocurre |
 | --- | --- | --- |
 | Instalar backend | `pip install -r backend/requirements.txt` | Versiones fijadas; PyMySQL como driver porque `mysqlclient` no tiene ruedas para Python 3.14 |
-| Instalar frontend | `pip install -e "frontend[dev]"` | Flet 1.1.2 para web y pytest; requiere Python 3.11+ |
-| Crear el esquema | `python manage.py migrate` | Aplica las 6 migraciones de dominio sobre MySQL (o SQLite con `DB_ENGINE=sqlite`) |
-| Sembrar catálogo provisional | `python scripts/seed_catalog.py` | 18 opciones y 6 poses con rutas de placeholder; idempotente |
-| Levantar la API | `python manage.py runserver` | Sirve `/api/…`, `/api/schema/` y `/api/docs/` |
-| Levantar la interfaz | `flet run frontend/src/main.py --web --port 8550` | Flet Web en `http://127.0.0.1:8550/`; lee `API_BASE_URL` del `.env` |
-| Crear una cuenta de consola | `python manage.py createsuperuser` | Usuario con `is_staff` para entrar en `/admin/` |
+| Instalar frontend | `cd frontend-react && npm install` | React, TypeScript, Vite y dependencias fijadas en el lockfile |
+| Crear el esquema | `python backend/manage.py migrate` | Aplica las migraciones de dominio sobre MySQL (o SQLite con `DB_ENGINE=sqlite`); la extensión de accesorios es no destructiva |
+| Sembrar catálogo real | `python scripts/seed_catalog.py` | 53 códigos, incluidos aliases legacy, y seis poses con rutas de SVG reales; idempotente |
+| Levantar la API | `python backend/manage.py runserver` | Sirve `/api/…`, `/api/schema/` y `/api/docs/` |
+| Levantar React | `cd frontend-react && npm run dev` | Interfaz en `http://127.0.0.1:5173/`; el backend permite ese origen por defecto |
+| Crear una cuenta de consola | `python backend/manage.py createsuperuser` | Usuario con `is_staff` para entrar en `/admin/` |
 | Consola de administración | `http://127.0.0.1:8000/admin/` | Gestión de cuentas, catálogo, poses, gatos, paquetes, publicaciones y trabajos |
-| Pruebas del backend | `python -m pytest` (en `backend/`) | 47 pruebas sobre SQLite en memoria |
-| Pruebas del frontend | `python -m pytest -q` (en `frontend/`) | 46 pruebas del cliente HTTP, catálogo, sesión, almacenamiento, modelos, arranque y cliente de publicaciones |
+| Pruebas del backend | `python -m pytest -q` (en `backend/`) | 66 pruebas sobre SQLite en memoria |
+| Pruebas de React | `cd frontend-react && npm run build && npm run lint` | TypeScript estricto, build de producción y 0 errores de lint; 2 avisos conocidos |
+| Compilación de React | `cd frontend-react && npm run build` | TypeScript estricto y bundle de producción con Vite |
 | Verificación en vivo | `python scripts/check_backend.py` | 19 comprobaciones contra el servidor en marcha y MySQL real; autolimpia sus datos |
 
 Puntos de diseño que conviene saber explicar:
 
 - **El catálogo manda.** `apps/catalog/services.py` valida cada documento de configuración
-  contra la tabla `catalog_options`; la interfaz nunca envía rutas de archivo ([04_DATA_MODEL.md](04_DATA_MODEL.md)).
+  contra la tabla `catalog_options`: existencia, estado activo, plan premium, colores y
+  grupos de accesorios. La interfaz nunca envía rutas de archivo
+  ([04_DATA_MODEL.md](04_DATA_MODEL.md)).
+- **La extensión visual es aditiva.** El esquema sigue siendo `schema_version: 1`.
+  `top` y `bottom` admiten color; cada elemento de `accessories` admite su propio `color`
+  opcional y permite combinar varios recursos; `accessory` conserva el código del primero
+  como espejo para documentos y clientes antiguos. La migración añade
+  `catalog_options.compatibility_group` sin alterar datos existentes
+  ([ADR-010](decisions/ADR-010-configuracion-visual-compatible.md)).
 - **Los permisos son por rol y por recurso.** `apps/accounts/permissions.py` define una matriz
   RBAC (`member`/`admin`) y la propiedad del recurso; una vista sin recurso declarado se trata
   como compartido y un miembro no puede escribir en ella ([ADR-005](decisions/ADR-005-autenticacion-y-rbac.md)).
@@ -162,30 +171,24 @@ Puntos de diseño que conviene saber explicar:
 - **El límite de tres gatos se aplica en el backend** con `select_for_update` sobre la fila del
   usuario, para que dos peticiones simultáneas no lo excedan. **El rol `admin` no tiene tope**
   (ADR-005 aplicado a planes): `create_cat` omite el tope cuando el rol del usuario es `admin`.
-- **El cliente usa los códigos del backend.** `frontend/src/kitchi/catalog.py` reemplaza las
-  opciones locales con las de `/api/catalog/` y adapta la configuración normalizada
-  (`{"fur": {"code": "tabby"}}` → `"tabby"`). Si la API no responde, conserva el catálogo
-  empaquetado y el modo invitado.
-- **La sesión decide dónde viven los gatos.** `frontend/src/kitchi/app.py` pinta el
-  armazón (cabecera, contenido y barra inferior) antes de tocar el almacenamiento.
-  Después crea `SharedPreferences` con reintentos cortos y un plazo de comprobación por
-  lectura (`kitchi/storage.open_browser_storage()`); si el cliente web no enlaza el
-  servicio, la app sigue en memoria con un aviso visible en la pantalla en vez de caerse.
-  Con token usa `/api/cats/`, sin token usa el almacenamiento local. Al iniciar sesión,
-  los gatos de invitado se migran a la cuenta si hay espacio. En Flet 1.1.2 el arranque
-  era inestable (ver [ADR-006](decisions/ADR-006-flet-1-1-2-web-issues.md)); si al subir
-  de versión ya no hace falta este rodeo, hay que quitarlo.
-- **Los iconos se pasan como `ft.Icons`, nunca como cadenas.** Flet 1.x exige `IconData`;
-  una cadena rompe la construcción de la página y solo se ve el fondo gris. Los datos que
-  guardan nombres legibles (catálogo, poses, tonos) pasan por `kitchi/icons.get()`.
-- **`ft.Row(wrap=True)` está roto en el cliente web 1.1.2.** Las filas de chips usan
-  `c.flow()` (filas de a lo sumo N elementos) o filas simples.
-- **La previsualización es honesta.** El editor dibuja cada pieza con el color del catálogo y
-  la etiqueta “Vista previa con placeholders”; no finge que existen los PNG finales.
+- **El cliente usa los códigos del backend.** `frontend-react/src/lib/catalog.ts` combina el
+  catálogo empaquetado con `/api/catalog/`, normaliza la configuración y conserva el modo
+  invitado si la API no responde. `src/lib/characters.ts` relaciona cada código visual con
+  su SVG y adapta nombres antiguos sin enviar rutas arbitrarias al backend.
+- **La sesión decide dónde viven los gatos.** `frontend-react/src/state/AppContext.tsx`
+  restaura la sesión y los datos antes de pintar las pantallas. Sin token usa
+  `localStorage`; con token usa `/api/cats/`. Al iniciar sesión, los gatos de invitado se
+  migran a la cuenta si hay espacio. La persistencia invitada depende de que el navegador
+  permita `localStorage`; no hay un respaldo garantizado en memoria. El manejo visible de un
+  almacenamiento bloqueado queda pendiente en P39 y no se presenta como persistencia exitosa.
+- **Cada previsualización es honesta.** React apila los SVG reales y usa el mismo
+  renderizador para el lienzo y los previews. La previsualización no genera archivos ni
+  sustituye los seis PNG finales.
 - **El estilo apunta a Wonder.** La firma visual del producto son: bordes asimétricos
   (0 arriba y a la izquierda, canto grueso abajo y a la derecha), sombras duras sin
-  desenfoque, patrones propios del repositorio (`frontend/assets/ui/patterns/`) y
-  rebote elástico al tocar. `scripts/generate_ui_patterns.py` regenera los tiles PNG.
+  desenfoque y rebote elástico al tocar. Los estilos viven en
+  `frontend-react/src/styles/`; React reproduce sonido con Web Audio y usa
+  `navigator.vibrate` en dispositivos compatibles.
 
 ### 5.1 La consola de administración (`/admin/`)
 
@@ -228,7 +231,7 @@ Ocho entidades, administradas con modelos y migraciones de Django sobre MySQL
 | --- | --- | --- |
 | `auth_user` + `user_profiles` | Cuentas y su rol | El perfil se crea solo (señal `post_save`); guarda `role` (`member`/`admin`) y `premium` (plan simulado) |
 | `authtoken_token` | Sesión de API | Token de Django; el logout borra la fila y el siguiente login genera una nueva |
-| `catalog_options` | Opciones del editor | Única por `(category, code)`, con `z_order`, `is_premium` e `is_active` |
+| `catalog_options` | Opciones del editor | Única por `(category, code)`, con `z_order`, `is_premium`, `is_active` y `compatibility_group` para accesorios excluyentes |
 | `poses` | Catálogo de poses | `code` único; un paquete completo usa las activas |
 | `cats` | Personajes guardados | `configuration` es JSON validado; nombre único por usuario; índice `(user, created_at)` |
 | `sticker_packs` + `stickers` | Paquetes y sus PNG | Un sticker por `(pack, pose)`; el paquete se completa solo cuando los seis están `completed` |
@@ -237,9 +240,14 @@ Ocho entidades, administradas con modelos y migraciones de Django sobre MySQL
 
 Decisiones de modelado que hay que saber defender:
 
-- **La configuración se guarda como JSON, no como tablas por combinación.** Evita las 729 filas
-  y deja el control de validez en el catálogo. El campo `schema_version` permite cambiar el
-  documento sin migrar datos.
+- **La configuración se guarda como JSON, no como tablas por combinación.** Evita
+  multiplicar filas por cada variante y deja el control de validez en el catálogo. Las
+  cinco categorías base guardan `{code, ...colores}` y `accessories` guarda una lista de
+  `{code, color?}` con colores independientes. El backend normaliza los documentos antiguos
+  y devuelve `accessory: {code}` con el primer elemento por compatibilidad de datos.
+- **El orden de accesorios no es arbitrario.** Si dos opciones comparten
+  `compatibility_group` (por ejemplo, dos coronas), el backend rechaza la combinación y
+  React sustituye la anterior. Códigos repetidos también se rechazan.
 - **Los archivos no van en la base de datos.** `stickers.file_path` guarda una ruta relativa a
   `storage/`; las imágenes viven en el sistema de archivos durante la demo.
 - **Los estados son una máquina explícita.** `apps/core/models.py` centraliza
@@ -251,15 +259,19 @@ Decisiones de modelado que hay que saber defender:
 
 ## 7. Motor de stickers
 
-**Estado:** no implementado (P04/P13/P14). Lo que existe hoy es una previsualización
-provisional en el editor: seis capas de color construidas con `Container`/`Stack` de Flet,
-actualizadas al cambiar la configuración. Las rutas `assets/placeholders/...` del catálogo
-son etiquetas de intención, no archivos de imagen.
+**Estado:** el motor de exportación no está implementado (P04/P13/P14). React ya ofrece
+una previsualización real con SVG: apila cabello trasero, cuerpo completo, prenda inferior,
+prenda superior, cabeza delantera, cabello delantero y accesorios, aplicando anclas y
+colores en el navegador. La cabeza va después de la prenda superior para que cuellos y
+solapas queden detrás de la cara; el cuerpo completo permanece como base posterior para
+conservar la alineación. Esta previsualización no genera archivos ni sustituye el paquete
+de seis PNG.
 
 Cuando se implemente, el motor deberá componer las capas con Pillow, respetar el orden
 `z_order`, exportar seis PNG con transparencia y validar que el paquete tenga los seis
-archivos antes de marcarlo como completado (P13–P15). El telefono no descargará rutas
-absolutas: la API devolverá URLs autorizadas.
+archivos antes de marcarlo como completado (P13–P15). El teléfono no descargará rutas
+absolutas: la API devolverá URLs autorizadas. La evidencia del editor SVG está en
+[`docs/reports/editor-visual-assets.md`](reports/editor-visual-assets.md).
 
 ## 8. Integración de IA
 
@@ -285,44 +297,44 @@ Implementado y en uso:
 - Hub: publicación autenticada desde **Mis gatos**, feed público paginado con buscador
   (`q=` por título, descripción y autor), perfil público de usuario con sus gatos y
   publicaciones, y “Gato publicado” como estado en Mis gatos.
-- Interfaz Flet Web con cinco secciones (estilo juguetón: bordes gruesos, sombras sólidas,
-  rebotes), login/registro, sesión persistida, perfil, modo invitado y CRUD de gatos; el
-  catálogo y las poses se leen de la API.
-- Engranaje de configuración en la cabecera: acerca de la app, efectos (animaciones y
-  vibración; sonido pendiente de Flet 1.2), estado de la API y vaciado de datos locales.
-- Editor con seis categorías, tres opciones cada una y previsualización de color en tiempo real.
+- Interfaz React Web como única interfaz activa: cinco secciones (estilo juguetón:
+  bordes gruesos, sombras sólidas, rebotes), login/registro, sesión persistida, perfil,
+  modo invitado y CRUD de gatos.
+- Editor React con SVG reales por capas, cabeza delantera sobre la prenda superior,
+  cabello delantero/trasero, sliders de color, previews reales por opción y combinaciones
+  multiaccesorio con exclusión por tipo.
+- Engranaje de configuración en la cabecera: acerca de la app, efectos, estado de la API
+  y vaciado de datos locales. React usa Web Audio y vibración.
 - Migración automática de gatos de invitado a la cuenta al iniciar sesión, si hay espacio.
-- Arranque tolerante a fallos: la app pinta el armazón antes de persistir y, si el
-  almacenamiento del navegador no responde, sigue en memoria con un aviso visible
-  (Flet 1.1.2 + SharedPreferences, [ADR-006](decisions/ADR-006-flet-1-1-2-web-issues.md)).
-- Recorrido en navegador real: las cinco secciones, navegación, guardar un gato como
-  invitado y verlo persistido tras recargar la página.
+- Recorrido en navegador real de las cinco secciones; creación, guardado, recarga y
+  eliminación de un gato invitado. El editor visual también se verificó con interacciones
+  reales y persistencia autenticada contra MySQL el 23 de noviembre.
 - Manejo visible de errores en login/registro, guardado, perfil, hub y Mis gatos.
 - Documentación OpenAPI/Swagger servida y versionada en `shared/contracts/openapi.yaml`.
 - Esquema de datos completo con migraciones aplicadas sobre MySQL 8.
 - Permisos RBAC por rol y por recurso; manejo de errores con formato único.
-- Consola `/admin/` con las nueve entidades, validación de catálogo en el formulario de gatos y
-  acciones de estado que usan la máquina de estados.
-- Pruebas: 58 del backend, 46 del frontend y verificación en vivo contra MySQL.
+- Consola `/admin/` con las nueve entidades, validación de catálogo en el formulario de
+  gatos y acciones de estado que usan la máquina de estados.
+- Pruebas: 66 del backend, build y lint de React; verificación en vivo contra MySQL y
+  evidencia en `docs/reports/editor-visual-assets.md`. Las 46 pruebas Flet son históricas
+  y no forman parte de la suite vigente.
 
-Pendiente de implementar (existe solo el modelo de datos o ni eso):
+Pendiente de implementar y limitaciones conocidas:
 
-- **Assets reales:** `assets/catalog.json` sigue vacío; el catálogo sembrado con
-  `scripts/seed_catalog.py` usa rutas `assets/placeholders/...` que no son imágenes. El editor
-  muestra placeholders de color (P06/P08).
-- **Motor de composición con Pillow:** `stickers` y `poses` tienen tabla, pero no hay código que
-  genere PNG (P13/P14). Los endpoints de paquetes y descargas tampoco (P15).
+- **Inventario gráfico final:** los SVG ya se usan en React y la semilla apunta a rutas
+  reales, pero `assets/catalog.json` sigue pendiente como inventario de autoría, licencia
+  y aprobación (P06/P08). No se implementan texturas de pelaje hasta su entrega.
+- **Motor de composición con Pillow:** `stickers` y `poses` tienen tabla, pero no hay código
+  que genere PNG (P13/P14). Los endpoints de paquetes y descargas tampoco (P15).
 - **IA:** `generation_jobs` está listo para registrar trabajos y estados; el adaptador del
   proveedor no existe y `AI_PROVIDER=none` ([ADR-003](decisions/ADR-003-ai-strategy.md)) (P16).
-- **Hub:** `/api/publications/` existe desde el 16 de noviembre con feed público filtrable
-  por `q=`, creación (`POST`, requieren sesión), detalle, perfil público con sus gatos y
-  publicaciones. Falta **copiar una publicación pública** (P19) y el moderador de retiros
-  desde la interfaz (solo `/admin/` hoy).
+- **Hub:** `/api/publications/` permite feed público, búsqueda, creación, detalle y perfil
+  público. Falta **copiar una publicación pública** (P19) y la moderación de retiros desde
+  la interfaz (solo `/admin/` hoy).
 - **Concurrencia y paralelismo:** nada implementado (P20–P22).
-- **Prueba manual con cuenta:** el recorrido como invitado (crear, guardar, recargar y
-  verlo en Mis gatos) y las cinco secciones se verificaron en navegador real; el flujo de
-  creación → publicación → feed con inicio de sesión también se verificó (16 nov). Falta
-  el caso de token expirado en vivo.
+- **Prueba manual con cuenta:** el recorrido autenticado creación → publicación → feed se
+  verificó el 16 de noviembre; el guardado y la edición visual multiaccesorio contra MySQL
+  se verificaron el 23 de noviembre. Falta el caso de token expirado en vivo.
 - **Tokens que no caducan:** el token de Django no tiene expiración; aceptable para un
   prototipo local y registrado como riesgo en [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md).
 - **Suscripciones premium:** el campo `premium` y el flag `is_premium` existen y se validan, pero
@@ -334,7 +346,8 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 
 | Término | Significado en este proyecto |
 | --- | --- |
-| Configuración | Documento JSON con los seis campos del personaje; se valida contra el catálogo |
+| Configuración | Documento JSON con cinco categorías base y una lista de accesorios; se valida contra el catálogo |
+| Grupo de compatibilidad | Tipo de accesorio que no puede repetirse en un gato; permite combinar, por ejemplo, gafas, corbata y bigote, pero no dos coronas |
 | Capa | Recurso gráfico que el motor apila en un `z_order` explícito para reconstruir al gato |
 | Opción del catálogo | Variante concreta de una categoría (`fur:tabby`, `top:hoodie`); puede ser premium o estar inactiva |
 | Pose | Identificador de la postura del sticker; seis poses activas dan un paquete completo |
@@ -345,31 +358,52 @@ Pendiente de implementar (existe solo el modelo de datos o ni eso):
 | Inferencia | Ejecución real del modelo de IA sobre una fotografía; sustituida por la contingencia manual si falla |
 | Benchmark | Medición comparativa entre ejecución secuencial y paralela con su fórmula de aceleración |
 
-## 14. Interfaz React (prototipo en paralelo a Flet)
+## 14. Interfaz React (interfaz definitiva)
 
-Desde el 16 de noviembre de 2026 existe una segunda implementación de la interfaz en
-[`frontend-react/`](../frontend-react/): **Vite + React 19 + TypeScript estricto**, con un
-sistema de diseño propio en CSS atomizado (`src/styles/`: globals, layout, components/,
-screens/), `framer-motion` para resortes y transiciones de pantalla, `lucide-react` para
-iconos de trazo redondo, `react-router-dom` para las rutas y la misma API DRF de siempre.
-Nació como **prototipo de viabilidad** (ADR-009) porque los estilos deseados no eran
-alcanzables con Flet 1.1.2; **no sustituye aún a la versión Flet** en la entrega y ambas
-carpetas conviven. Inicialmente usaba Tailwind v4 como capa de utilidades; se eliminó el
-17 de noviembre porque la mezcla de utilidades y clases propias hacía muy difícil la edición
-manual de los estilos.
+Desde el 23 de noviembre de 2026, [`frontend-react/`](../frontend-react/) es la única
+interfaz activa: **Vite + React 19 + TypeScript estricto**, con un sistema de diseño propio
+en CSS atomizado (`src/styles/`: globals, layout, components/, screens/), `framer-motion`
+para resortes y transiciones de pantalla, `lucide-react` para iconos de trazo redondo,
+`react-router-dom` para las rutas y la misma API DRF de siempre. La decisión está registrada
+en [ADR-011](decisions/ADR-011-react-interfaz-definitiva.md), que sustituye ADR-009.
 
-**Para qué sirve hoy:** demostrar, con pantallas reales funcionando contra el backend, que la
-migración es viable — y como candidato de interfaz definitiva si el equipo lo decide antes
-de la sustentación.
+La implementación Flet y sus pruebas se retiraron del árbol de entrega. Sus ADR y reportes
+se conservan como historial: explican por qué se descartó esa interfaz, no una segunda
+aplicación que siga funcionando. El campo legacy `accessory: {code}` permanece en el
+contrato de datos para no romper documentos guardados.
 
-**Qué hace distinto de Flet:**
+**Qué ofrece:**
 
-- El gato se dibuja como **SVG completo** (pelaje, cara, peinado, ropa y accesorio), no con
-  placeholders por contenedores. Los mismos códigos de catálogo producen la figura.
-- El sonido es real (Web Audio) y la vibración usa `navigator.vibrate`; Flet 1.1.2 no
-  reproducía audio en web (ADR-006).
+- El gato se dibuja como **SVG completo con los assets reales** (cabello trasero y
+  delantero, cuerpo completo, cabeza delantera, prendas y accesorios), no con placeholders
+  por contenedores. Los mismos códigos de catálogo producen la figura.
+- El selector de opciones muestra previews SVG reales y el lienzo utiliza el mismo
+  componente, de modo que la miniatura y la edición no pueden divergir.
+- Cabello y prendas tienen slider de color. Cada accesorio seleccionado muestra un mini
+  slider propio en el borde inferior de su tarjeta, sin anidarlo dentro del botón; su color
+  es independiente y persiste. Varios accesorios pueden convivir y elegir uno del mismo tipo
+  sustituye al anterior. “Ninguno” vacía la selección y “Deshacer” restaura el cambio.
+- El sonido es real (Web Audio) y la vibración usa `navigator.vibrate`.
 - Las animaciones usan resortes (píldora amarilla del tab activo, transiciones entre
   secciones, aparición escalonada de tarjetas del feed).
+
+### Cómo funciona el editor visual
+
+- `src/lib/characters.ts` relaciona cada código con su SVG, caja de coordenadas, ancla,
+  orden y grupo de compatibilidad. También normaliza nombres antiguos de recursos.
+- `src/components/CatSVG.tsx` importa los SVG como texto, convierte las clases de
+  Illustrator en rellenos y apila las capas. Solo tiñe los rellenos base: conserva los
+  blancos de detalle, mantiene el lienzo transparente y no añade rectángulos de fondo.
+- `src/screens/EditorScreen.tsx` gestiona selección, historial para deshacer, sliders y
+  multiaccesorio. Las tarjetas de accesorios separan el botón de selección del mini slider
+  para que arrastrar el color no cambie la selección. Cada preview se pasa a `CatSVG`,
+  exactamente igual que el lienzo principal.
+- `src/lib/catalog.ts` normaliza configuraciones nuevas y antiguas, valida contra el
+  catálogo visual y serializa el payload. `src/state/AppContext.tsx` vuelve a normalizar
+  y validar antes de persistir en `localStorage` o en la API.
+- El orden es cabello trasero → cuerpo completo → inferior → superior → cabeza delantera →
+  cabello delantero → accesorios. La cabeza cubre el cuello de la prenda superior sin
+  alterar el SVG del cuerpo. Las texturas de pelaje no están implementadas ni se simulan.
 
 **Cómo arrancarla:**
 
@@ -378,22 +412,25 @@ cd frontend-react && npm install && npm run dev   # http://127.0.0.1:5173
 ```
 
 El backend debe permitir el origen de Vite: `CORS_ALLOWED_ORIGINS` incluye 5173/4173 por
-defecto desde este incremento, pero una variable de entorno con ese nombre **sobrescribe**
-el valor por defecto — en ese caso hay que añadir también los orígenes de Vite. El puerto
-4173 corresponde a `npm run preview` (build de producción).
+defecto, pero una variable de entorno con ese nombre **sobrescribe** el valor por defecto;
+en ese caso hay que añadir también los orígenes de Vite. El puerto 4173 corresponde a
+`npm run preview` (build de producción).
 
 **Estado honesto:** paridad funcional completa (Navegar, Crear, Mis gatos, Stickers IA,
 Perfil, Configuración, auth, perfil público), verificada extremo a extremo contra el backend
-local (registro → crear → guardar → publicar → aparece en el feed). Quedan pendientes los
-mismos motores que en Flet (Pillow, seis stickers, IA): la pantalla Stickers IA sigue
-mostrando el estado pendiente P13–P16 sin simular resultados. `npm run lint` deja dos avisos
-`set-state-in-effect` aceptados. La exportación a la entrega final requiere decidir la
-interfaz, actualizar README, guía viva y cumplimiento (AR-01 declara Flet) y ejecutar de
-nuevo la batería completa.
+local (registro → crear → guardar → publicar → aparece en el feed). El editor visual se
+verificó además con sliders, mini sliders de accesorios, previews, cabello dividido,
+multiaccesorio, deshacer, aleatorio, persistencia de invitado y creación/edición/eliminación
+contra MySQL el 23 de noviembre. La cabeza delantera se comprobó en el lienzo y en los seis
+previews; el encuadre conserva pies y cabello sin recortarlos. `npm run build` pasa,
+`npm run lint` mantiene dos avisos `set-state-in-effect` aceptados y la suite vigente tiene
+66 pruebas backend. Quedan pendientes los motores Pillow, seis stickers e IA: la pantalla
+Stickers IA declara P13–P16 sin simular resultados.
 
-**Cuándo leerla:** si el profesor pregunta por alternativas de interfaz, por qué Flet no
-funcionó, o qué costó la migración. Toda la evidencia está en
-[`docs/reports/frontend-react.md`](../docs/reports/frontend-react.md).
+**Cuándo leerla:** si el profesor pregunta por las alternativas de interfaz, por qué se
+retiró Flet o cómo se compone el personaje. La evidencia está en
+[`docs/reports/frontend-react.md`](reports/frontend-react.md) y
+[`docs/reports/editor-visual-assets.md`](reports/editor-visual-assets.md).
 
 ## Registro de incrementos
 
@@ -413,3 +450,7 @@ funcionó, o qué costó la migración. Toda la evidencia está en
 | 2026-11-17 | Explorar como río de publicaciones | El feed sigue testui/feed.html: cabecera con autor, hora relativa ("Hace 37 min") y badge de tipo, escenario grande tintado rotando, título + descripción, pie con pelaje y CTA "Ver gato" al perfil público; buscador pulido; chips (Todo/Gatos funcionando; Packs/Stickers/Creadores deshabilitados como "Pronto", no simulados); el diseño vale también para el perfil público. Nick: like/follows/packs ausentes en el backend — se ocultan en lugar de simularse | Alex Valdelamar |
 | 2026-11-17 | Mis gatos coleccionable | La vista de Mis gatos sigue testui/misgatos.html: título con contador, toggle cuadrícula/lista, filtros Todos/Publicados/Borradores, tarjetas con estadio de color, badge Público/Borrador, menú "⋯" (Editar/Publicar/Eliminar), hueco punteado "Crear otro gato" | Alex Valdelamar |
 | 2026-11-16 | Interfaz React en paralelo (prototipo de viabilidad) | Nuevo ADR-009; `frontend-react/` con paridad funcional completa frente al Flet (feed, editor, mis gatos, auth, invitado→cuenta, perfil, configuración, stickers IA honesto, perfil público); gato SVG completo; iconos lucide; sonido Web Audio real; framer-motion; catálogo y API idénticos; CORS ampliado al puerto de Vite; evidencia en `docs/reports/frontend-react.md` | Alex Valdelamar |
+| 2026-11-23 | Editor visual con SVG reales y multiaccesorio | Se actualizaron resumen, flujo, pantallas, arquitectura, modelo, motor y limitaciones: React usa cuerpo/cabello/prendas/accesorios reales, sliders, previews y grupos de compatibilidad. ADR-010, semilla de 53 códigos, esquema 1 aditivo y verificación en navegador/MySQL; evidencia en `docs/reports/editor-visual-assets.md` | Alex Valdelamar |
+| 2026-11-23 | Color independiente por accesorio | Se documentó el mini slider en el borde inferior de cada tarjeta seleccionada, el color `accessories[].color`, su persistencia, la separación entre selección y slider y la compatibilidad del espejo legacy; ADR-010, OpenAPI, pruebas y evidencia actualizados | Alex Valdelamar |
+| 2026-11-23 | Cabeza delantera y orden de capas | La cabeza base se integró sin perder el trabajo local y se renderiza después de la prenda superior; el cuerpo completo permanece atrás. Se documentaron anclajes, color de pelaje/ojos, lienzo sin recortes y verificación en lienzo y previews; ADR-010 y evidencia actualizados | Alex Valdelamar |
+| 2026-11-23 | React como interfaz definitiva | ADR-011 sustituyó ADR-009; Flet y sus pruebas se retiraron del árbol activo. README, arquitectura, contratos, checklist, guía y evidencia pasaron a declarar React como única interfaz; los reportes Flet quedan como historial | Alex Valdelamar |

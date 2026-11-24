@@ -1,8 +1,8 @@
 # 05 · Contratos de la API REST — Kitchi Studio
 
-Endpoints, OpenAPI/Swagger, comportamiento de trabajos y gestión de errores · Versión 1.1 · 28 de octubre de 2026
+Endpoints, OpenAPI/Swagger, comportamiento de trabajos y gestión de errores · Versión 1.2 · 23 de noviembre de 2026
 
-> La API ofrece contratos estables entre Flet y Django. Los endpoints propuestos son conceptuales; **sus nombres definitivos se registran en este documento** antes de desarrollar frontend y backend en paralelo. Modificar un contrato compartido requiere coordinar con los responsables y registrar la decisión en [`decisions/`](decisions/). La documentación navegable es un requisito académico (AR-06 / AC-18).
+> La API ofrece contratos estables entre React y Django. React es la única interfaz activa ([ADR-011](decisions/ADR-011-react-interfaz-definitiva.md)); Flet se retiró y sus reportes se conservan como historial. Los endpoints propuestos son conceptuales; **sus nombres definitivos se registran en este documento** antes de desarrollar frontend y backend en paralelo. Modificar un contrato compartido requiere coordinar con los responsables y registrar la decisión en [`decisions/`](decisions/). La documentación navegable es un requisito académico (AR-08 / AC-18).
 
 ## Documentación automática
 
@@ -26,17 +26,17 @@ servido por la API y tiene prueba automatizada; no que la interfaz ya lo consuma
 
 | Método | Endpoint | Propósito | Autenticación | Estado |
 | --- | --- | --- | --- | --- |
-| `POST` | `/api/auth/register/` | Registrar un usuario | Pública | Implementado y consumido por Flet |
-| `POST` | `/api/auth/login/` | Iniciar sesión | Pública | Implementado y consumido por Flet |
-| `POST` | `/api/auth/logout/` | Cerrar sesión | Requerida | Implementado y consumido por Flet |
-| `GET` | `/api/auth/me/` | Consultar el usuario actual | Requerida | Implementado y consumido por Flet |
-| `GET` | `/api/catalog/` | Obtener opciones disponibles | Pública | Implementado, sembrado provisional y consumido por Flet |
-| `GET` | `/api/poses/` | Obtener las poses | Pública | Implementado, sembrado provisional y consumido por Flet |
-| `GET` | `/api/cats/` | Listar gatos propios | Requerida* | Implementado y consumido por Flet |
-| `POST` | `/api/cats/` | Crear un gato | Requerida* | Implementado y consumido por Flet |
+| `POST` | `/api/auth/register/` | Registrar un usuario | Pública | Implementado y consumido por React |
+| `POST` | `/api/auth/login/` | Iniciar sesión | Pública | Implementado y consumido por React |
+| `POST` | `/api/auth/logout/` | Cerrar sesión | Requerida | Implementado y consumido por React |
+| `GET` | `/api/auth/me/` | Consultar el usuario actual | Requerida | Implementado y consumido por React |
+| `GET` | `/api/catalog/` | Obtener opciones disponibles | Pública | Implementado, sembrado con assets reales y consumido por React |
+| `GET` | `/api/poses/` | Obtener las poses | Pública | Implementado, sembrado con assets reales y consumido por React |
+| `GET` | `/api/cats/` | Listar gatos propios | Requerida* | Implementado y consumido por React |
+| `POST` | `/api/cats/` | Crear un gato | Requerida* | Implementado y consumido por React |
 | `GET` | `/api/cats/{id}/` | Consultar un gato | Dueño / pública si publicada | Implementado |
-| `PATCH` | `/api/cats/{id}/` | Actualizar su configuración | Solo dueño | Implementado y consumido por Flet |
-| `DELETE` | `/api/cats/{id}/` | Eliminar un gato propio | Solo dueño | Implementado y consumido por Flet |
+| `PATCH` | `/api/cats/{id}/` | Actualizar su configuración | Solo dueño | Implementado y consumido por React |
+| `DELETE` | `/api/cats/{id}/` | Eliminar un gato propio | Solo dueño | Implementado y consumido por React |
 | `POST` | `/api/sticker-packs/` | Solicitar generación de un paquete | Requerida* | Pendiente (P15) |
 | `GET` | `/api/sticker-packs/{id}/` | Consultar estado y resultado | Dueño | Pendiente (P15) |
 | `GET` | `/api/sticker-packs/{id}/download/` | Descargar el paquete completo o un sticker | Dueño | Pendiente (P14/P15) |
@@ -55,24 +55,67 @@ con sus migraciones (P11); lo pendiente en esas filas son los endpoints.
 
 \* El modo invitado funciona con almacenamiento local del navegador; la API autoriza operaciones de cuenta solo para usuarios registrados. La persistencia en servidor de invitados es decisión pendiente ([01_MASTER_PLAN.md](01_MASTER_PLAN.md)).
 
-### Consumo desde Flet (16 de noviembre de 2026)
+### Consumo desde React (23 de noviembre de 2026)
 
-El cliente [`frontend/src/kitchi/api.py`](../frontend/src/kitchi/api.py) resuelve la URL desde
-`KITCHI_API_URL`, `API_BASE_URL` o la `.env` de la raíz. Si no hay URL, queda en modo local
-sin llamar a la API. Los endpoints consumidos hoy son `health`, `catalog`, `poses`,
-`register`, `login`, `logout`, `me`, `list/create/update/delete` de gatos,
-`publications` (listar con `q=`/`user=`, crear y ver) y `profiles/<username>/` público.
+El cliente tipado [`frontend-react/src/lib/api.ts`](../frontend-react/src/lib/api.ts) resuelve
+la URL desde `VITE_API_URL`; si no se define, usa `http://127.0.0.1:8000`. Los endpoints
+consumidos hoy son `health`, `catalog`, `poses`, `register`, `login`, `logout`, `me`,
+`list/create/update/delete` de gatos, `publications` (listar con `q=`/`user=`, crear y ver) y
+`profiles/<username>/` público.
 
-- El cliente envía `Authorization: Token <clave>` y normaliza los errores del envoltorio
-  `{error: {code, message, details}}`; `ApiError.user_message()` extrae el primer mensaje de
-  campo para mostrarlo en la pantalla.
-- `/api/poses/` y el feed de `/api/publications/` están paginados: el cliente lee
-  `results`. El feed además acepta `q=` (título/descripción/autor) y `user=`.
-- La configuración que envía Flet es la del contrato backend
-  (`{"schema_version": 1, "fur": "tabby", ...}`); al leer un gato, `cat_from_api()` aplana
-  bloques como `{"fur": {"code": "bicolor"}}` a `"bicolor"`.
-- El catálogo del backend es la autoridad de códigos; el frontend adapta su catálogo local y
-  conserva descripciones/swatches solo para la previsualización.
+- `frontend-react/src/state/AppContext.tsx` restaura el token de la sesión y el cliente envía
+  `Authorization: Token <clave>` en las operaciones privadas.
+- El cliente normaliza el envoltorio `{error: {code, message, details}}` en `ApiError`;
+  `userMessage()` prioriza los mensajes de `details.campos` para mostrarlos en la interfaz.
+- `/api/poses/` acepta respuesta paginada o arreglo; el cliente lee `results` cuando existe.
+  `/api/cats/` también acepta ambas formas. El feed de `/api/publications/` es paginado y
+  admite `q=` (título/descripción/autor), `user=`, `page` y `page_size`.
+- `frontend-react/src/lib/catalog.ts` normaliza la configuración schema 1, valida los códigos
+  del catálogo visual y serializa colores y accesorios antes de guardar. El backend sigue
+  siendo la autoridad final de validación.
+- El catálogo empaquetado aporta nombres, descripciones y swatches para la previsualización;
+  `/api/catalog/` confirma los recursos disponibles. El modo invitado guarda en
+  `localStorage` y no llama a operaciones privadas de la API.
+
+### Configuración visual y accesorios (23 de noviembre de 2026)
+
+El esquema sigue siendo `schema_version: 1`; la extensión es aditiva y conserva la
+compatibilidad con documentos y clientes legacy ([ADR-010](decisions/ADR-010-configuracion-visual-compatible.md)).
+Ejemplo de request para
+`POST /api/cats/` o `PATCH /api/cats/{id}/`:
+
+```json
+{
+  "name": "Michi",
+  "configuration": {
+    "schema_version": 1,
+    "fur": {"code": "bicolor", "base_color": "#FFF0D8", "secondary_color": "#F2A15A"},
+    "eyes": {"code": "round_green", "color": "#4DAD72"},
+    "hair": {"code": "bob", "color": "#6B4226"},
+    "top": {"code": "short_sleeved", "color": "#70D6C1"},
+    "bottom": {"code": "sweat_pants", "color": "#7B61FF"},
+    "accessories": [
+      {"code": "round_glasses", "color": "#FF6B6B"},
+      {"code": "bow_tie", "color": "#7B61FF"},
+      {"code": "moustache", "color": "#211B26"}
+    ]
+  }
+}
+```
+
+- `GET /api/catalog/` agrupa por categoría e incluye `compatibility_group` en cada opción.
+  La semilla actual registra 53 códigos, incluidos aliases legacy, con rutas de los SVG reales.
+- Las cinco categorías base se normalizan a objetos `{code, ...colores}`. Los colores válidos
+  son hexadecimales de 6 u 8 dígitos; el backend rechaza slots no permitidos.
+- `accessories` admite cero o varios objetos `{code, color?}`. El color es hexadecimal de 6 u
+  8 dígitos y se conserva por separado para cada accesorio. Se rechazan duplicados, dos elementos
+  del mismo `compatibility_group`, colores inválidos y campos extra; los errores llegan en
+  `details.campos.accessories`.
+- Se acepta `accessory` legacy (cadena u objeto) y categorías legacy como cadenas. Si se envían
+  ambos campos, `accessory` debe coincidir con el primer elemento de `accessories`; una lista
+  vacía no admite el espejo legacy.
+- La respuesta canónica incluye `accessories` y, si no está vacía, `accessory: {code}` con el
+  primer accesorio. React usa la lista; el espejo se conserva para datos y clientes legacy.
 
 ## Convenciones
 
@@ -87,7 +130,7 @@ sin llamar a la API. Los endpoints consumidos hoy son `health`, `catalog`, `pose
   los recursos propios (`cats`, `sticker_packs`, `publications`, `generation_jobs`) se
   leen y escriben solo por su dueño o por un admin; los compartidos (`catalog`, `poses`)
   son de lectura autenticada y escritura restringida a `admin`.
-- CORS se configura solo para los orígenes locales de Flet; no se usa `*` en producción.
+- CORS permite los orígenes locales de desarrollo, incluidos Vite `5173` y `4173`; no se usa `*` en producción.
 
 ## Comportamiento de la generación
 
@@ -162,7 +205,7 @@ en [`backend/apps/core/exceptions.py`](../backend/apps/core/exceptions.py)):
 | `error.code` | HTTP | Cuándo se devuelve |
 | --- | --- | --- |
 | `INVALID_CREDENTIALS` | 401 | Inicio de sesión con usuario o contraseña incorrectos |
-| `INVALID_CONFIGURATION` | 400 | La configuración usa recursos fuera del catálogo o incompletos; `details.campos` indica la clave fallida |
+| `INVALID_CONFIGURATION` | 400 | La configuración usa recursos fuera del catálogo, colores inválidos, accesorios repetidos o incompatibles; `details.campos` indica la clave fallida |
 | `UNSUPPORTED_SCHEMA_VERSION` | 400 | El documento de configuración declara una versión de esquema desconocida |
 | `CAT_NOT_FOUND` | 404 | No existe el gato solicitado |
 | `CAT_LIMIT_REACHED` | 409 | Se intenta guardar un cuarto gato en el plan gratuito; `details.limite` y `details.actuales` acompañan el mensaje |
@@ -173,15 +216,16 @@ interfaz siempre puede leer `error.code` y `error.message`.
 ## Próximos pasos para cerrar contratos (tarea P03)
 
 - [~] Fijar nombres definitivos de endpoints y sustituir esta tabla. **Hecho para las
-  rutas de cuentas, catálogo, poses y gatos**; quedan por fijar las de paquetes, IA y
-  comunidad cuando se implementen (P15/P16/P18).
+  rutas de cuentas, catálogo, poses, gatos y comunidad publicada**; quedan por fijar las de
+  paquetes, IA, edición/retiro de publicaciones y copia cuando se implementen
+  (P15/P16/P18/P19).
 - [~] Definir esquemas de request/response por endpoint. Los endpoints implementados
   tienen su esquema generado por drf-spectacular y versionado en
   [`shared/contracts/openapi.yaml`](../shared/contracts/openapi.yaml).
-- [~] Acordar el mecanismo de autenticación entre Flet y Django: token de Django +
-  RBAC, registrado como [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md). El cliente
-  Flet ya lo implementa y lo cubre con pruebas; falta la prueba manual de extremo a
-  extremo en navegador (tarea P02, comprobación 2).
+- [x] Acordar el mecanismo de autenticación entre React y Django: token de Django + RBAC,
+  registrado como [ADR-005](decisions/ADR-005-autenticacion-y-rbac.md). El cliente React lo
+  implementa, las pruebas automatizadas lo cubren y el recorrido autenticado se verificó
+  contra MySQL el 23 de noviembre.
 - [x] Publicar los contratos compartidos en `shared/contracts/`.
 - [x] Verificar que `/api/docs/` muestra todos los endpoints y permite probarlos.
 - [ ] Añadir ejemplos de error y de respuestas paginadas al documento de contrato. El

@@ -4,20 +4,20 @@ Aplicación web móvil para crear gatos chibi personalizados mediante ilustracio
 
 **Proyecto final de Programación Avanzada A1 — Universidad de La Guajira · 2026-2**
 
-> **Estado actual:** el **backend** está implementado y en uso: API REST con Django REST Framework, modelo de datos aplicado sobre MySQL 8, cuentas con token y permisos RBAC, validación contra catálogo, consola de administración (`http://127.0.0.1:8000/admin/`) y documentación OpenAPI/Swagger (`http://127.0.0.1:8000/api/docs/`). La **interfaz Flet Web ya está implementada** y consume la API para catálogo, poses, registro, login, sesión y CRUD de gatos; el editor muestra una **previsualización provisional con placeholders de color** porque la diseñadora aún no entregó los assets definitivos. El **motor de composición con Pillow**, la generación/descarga de stickers, el hub y la integración de IA siguen pendientes. El avance real se sigue en [`docs/10_DEVELOPMENT_CHECKLIST.md`](docs/10_DEVELOPMENT_CHECKLIST.md); no se presentan como terminadas las funciones que solo existen en el diseño.
+> **Estado actual:** el **backend** está implementado y en uso: API REST con Django REST Framework, modelo de datos aplicado sobre MySQL 8, cuentas con token y permisos RBAC, validación contra catálogo, consola de administración (`http://127.0.0.1:8000/admin/`) y documentación OpenAPI/Swagger (`http://127.0.0.1:8000/api/docs/`). La **interfaz React** es la única interfaz activa y usa los SVG reales de cuerpo, cabello dividido, prendas y accesorios, con sliders de color, previews reales y multiaccesorio. El **hub de publicaciones** está implementado. El **motor Pillow**, la generación/descarga de stickers, la copia de publicaciones y la integración de IA siguen pendientes. El avance real se sigue en [`docs/10_DEVELOPMENT_CHECKLIST.md`](docs/10_DEVELOPMENT_CHECKLIST.md); no se presentan como terminadas las funciones que solo existen en el diseño.
 
 ## Problema que resuelve
 
 Crear stickers personalizados suele requerir saber ilustrar o pagar una herramienta de diseño. Kitchi Studio permite que una persona sin conocimientos de dibujo componga un gato chibi a partir de recursos gráficos compatibles, obtenga un paquete de seis stickers con fondo transparente y los comparta o reutilice desde una galería comunitaria.
 
-El valor diferencial es el **motor 2D por capas**: no se producen 729 ilustraciones para las 3⁶ combinaciones, sino un catálogo inicial de 18 opciones (tres por cada uno de los seis campos) que el motor compone de forma determinista. La IA es un diferenciador adicional para transformar una fotografía de referencia, no un requisito para usar el editor.
+El valor diferencial es el **motor 2D por capas**: no se producen todas las combinaciones como imágenes independientes, sino un catálogo de recursos que el motor compone de forma determinista. El catálogo actual tiene 53 códigos, incluidos aliases de clientes antiguos, y seis poses; las 18 opciones fueron el inventario conceptual inicial. La IA es un diferenciador adicional para transformar una fotografía de referencia, no un requisito para usar el editor.
 
 ## Funcionalidades principales
 
-1. **Editor de personajes:** crear un gato y personalizar pelaje, ojos, cabello, parte superior, parte inferior y accesorios. La previsualización usa placeholders de color hasta que existan los assets de diseño.
+1. **Editor de personajes:** crear un gato y personalizar pelaje, ojos, cabello, parte superior, parte inferior y accesorios. La interfaz usa SVG reales, cabello delantero/trasero, sliders de color, un mini slider por accesorio seleccionado, previews por opción y varios accesorios sin repetir su tipo. La cabeza se dibuja delante de la prenda superior para que los cuellos queden detrás.
 2. **Cuenta y persistencia:** registrarse, iniciar sesión, mantener la sesión y guardar hasta tres gatos por cuenta; el modo invitado guarda en el almacenamiento del navegador.
 3. **Generación y descarga:** generar seis poses y descargar los PNG transparentes. **Pendiente:** requiere el motor Pillow y los endpoints de paquetes.
-4. **Comunidad:** publicar una creación, explorarla desde otra sesión y copiarla sin alterar el original. **Pendiente:** requiere los endpoints de publicaciones.
+4. **Comunidad:** publicar una creación, explorarla desde otra sesión y consultar perfiles públicos. **Implementado:** feed, buscador, publicación y perfil. **Pendiente:** copiar una creación sin alterar el original (P19).
 5. **IA (diferenciador):** subir una fotografía, ejecutar una inferencia real, revisar el resultado y continuar el flujo manual si el servicio falla. **Pendiente.**
 6. **Programación avanzada (diferenciador):** evidencias reproducibles de concurrencia, multiprocesamiento y paralelismo en la generación de stickers. **Pendiente.**
 
@@ -25,7 +25,7 @@ El valor diferencial es el **motor 2D por capas**: no se producen 729 ilustracio
 
 | Capa | Tecnología |
 | --- | --- |
-| Interfaz | Python + Flet Web (diseño móvil primero) |
+| Interfaz | React 19 + TypeScript + Vite, con SVG reales y CSS propio |
 | API | Django + Django REST Framework |
 | Documentación de API | drf-spectacular (OpenAPI 3 + Swagger UI) |
 | Base de datos | MySQL 8 mediante el ORM de Django |
@@ -39,14 +39,11 @@ El valor diferencial es el **motor 2D por capas**: no se producen 729 ilustracio
 ## Arquitectura en una imagen
 
 ```
-Flet Web (interfaz)
-        │  HTTP/JSON
-        ▼
-Django REST Framework (API, permisos, validación)
-        │
-        ├── MySQL (usuarios, gatos, publicaciones, trabajos)
-        ├── storage/ (PNG y recursos generados)
-        └── Motor Pillow + adaptador de IA (servicios)
+React 19 + Vite (interfaz web) ──→ HTTP/JSON → Django REST Framework
+                                              │
+                                              ├── MySQL
+                                              ├── storage/
+                                              └── Pillow + IA (pendiente)
 ```
 
 Detalle completo en [`docs/03_ARCHITECTURE.md`](docs/03_ARCHITECTURE.md). Decisiones en [`docs/decisions/`](docs/decisions/).
@@ -57,7 +54,7 @@ Detalle completo en [`docs/03_ARCHITECTURE.md`](docs/03_ARCHITECTURE.md). Decisi
 
 | Nombre | Rol | Responsabilidad principal | Commits |
 | --- | --- | --- | --- |
-| Martin Solano | Integrante A — Frontend y UX | Flet, navegación, editor, estados, hub | ≥ 5 |
+| Martin Solano | Integrante A — Frontend y UX | React, navegación, editor, estados, hub | ≥ 5 |
 | Alex Valdelamar | Integrante B — Backend y datos | DRF, MySQL, autenticación, permisos, Swagger | ≥ 5 |
 | Aixa Claret Gutierrez | Integrante C — | Guía visual, personajes, poses, accesorios, documentación visual | ≥ 5 |
 
@@ -67,16 +64,14 @@ Todos los integrantes deben poder explicar cualquier parte del código durante l
 
 > **Contrato de instalación:** el backend se verificó en este equipo el 4 de noviembre de
 > 2026 (Python 3.14.7, Windows, MySQL 8.0.45) y dejó evidencia en
-> [`docs/reports/week1-validation.md`](docs/reports/week1-validation.md). El frontend Flet
-> y la integración se ejecutaron con Python 3.11.6 el 9 de noviembre de 2026; sus pruebas
-> están registradas en [`docs/reports/frontend-integration.md`](docs/reports/frontend-integration.md).
+> [`docs/reports/week1-validation.md`](docs/reports/week1-validation.md). React se verificó con Node 24.22.1 y npm 11.19.0 el 23 de noviembre de 2026; su evidencia está en [`docs/reports/frontend-react.md`](docs/reports/frontend-react.md).
 > La validación completa desde un clon limpio sigue correspondiendo a la tarea P29.
 
 ### Requisitos previos
 
 - **Python 3.14.7** para el backend (versión con la que se fijó `backend/requirements.txt`;
-  el entorno de este equipo está en 3.11.6 y las 47 pruebas también pasan).
-- **Python 3.11+** para el frontend Flet (`frontend/pyproject.toml`); verificado con 3.11.6.
+  las pruebas del backend se ejecutaron con Python 3.11.6 y las 66 pruebas pasan).
+- **Node.js 20+ y npm 10+** para la interfaz React; verificado con Node 24.22.1 y npm 11.19.0.
 - MySQL 8 en local (verificado con 8.0.45). Si tu equipo no puede instalarlo, arranca con
   `DB_ENGINE=sqlite` en `.env` — el modelo de datos y las migraciones no cambian ([ADR-005](docs/decisions/ADR-005-autenticacion-y-rbac.md)).
 - Git.
@@ -121,15 +116,14 @@ Verificado: 10 paquetes con versiones fijadas en `backend/requirements.txt` (tar
 driver de MySQL es **PyMySQL**, porque `mysqlclient` no publica ruedas para Python 3.14 y
 obligaría a instalar un compilador en cada equipo.
 
-Instala el frontend (Flet Web y herramientas de prueba):
+Instala la interfaz React:
 
 ```bash
-pip install -e "frontend[dev]"
+cd frontend-react
+npm install
 ```
 
-El frontend declara `flet[web]==1.1.2` y `requires-python = ">=3.11"` en
-[`frontend/pyproject.toml`](frontend/pyproject.toml). Si usas un Python distinto al del
-backend, instala el frontend en su propio entorno o con `python -m pip` del intérprete 3.11.
+Las dependencias y sus versiones están fijadas en [`frontend-react/package.json`](frontend-react/package.json) y `frontend-react/package-lock.json`.
 
 ### 5. Preparar la base de datos
 
@@ -143,17 +137,17 @@ Verificado contra MySQL 8.0.45: seis migraciones de dominio, 19 tablas creadas. 
 gatos, paquetes, publicaciones y trabajos; su funcionamiento se explica en la
 [guía viva, sección 5.1](docs/12_GUIA_PLATAFORMA.md).
 
-El catálogo real de assets todavía no existe (P06), pero la API necesita opciones para que
-el editor funcione. Siembra las 18 opciones y 6 poses provisionales (idempotente):
+Siembra el catálogo real con **53 opciones** —recursos SVG y aliases de compatibilidad— y
+**6 poses**. El script es idempotente:
 
 ```bash
 python scripts/seed_catalog.py
 ```
 
-El script usa las rutas `assets/placeholders/...`; no crea imágenes. Las opciones y poses
-quedan activas en MySQL y `/api/catalog/` y `/api/poses/` ya las devuelven.
-`scripts/seed_demo_data.py` sigue siendo un marcador sin implementar (tarea P26); no lo
-ejecutes todavía.
+El catálogo incluye rutas reales de los SVG y los grupos de compatibilidad de accesorios.
+La API los devuelve desde `/api/catalog/` y `/api/poses/`. La autoría y aprobación visual
+siguen registrándose en `assets/catalog.json` (P06/P08). `scripts/seed_demo_data.py` sigue
+siendo un marcador sin implementar (tarea P26); no lo ejecutes todavía.
 
 ### 6. Iniciar backend y frontend
 
@@ -162,37 +156,23 @@ python backend/manage.py runserver 127.0.0.1:8000
 ```
 
 - API: `http://127.0.0.1:8000/api/health/` → `{"status":"ok","database":"up","engine":"mysql"}`
-- Swagger: `http://127.0.0.1:8000/api/docs/` (verificado, 9 endpoints)
+- Swagger: `http://127.0.0.1:8000/api/docs/` (contrato vigente: 12 rutas y 16 operaciones)
 - Esquema OpenAPI: `http://127.0.0.1:8000/api/schema/` (verificado)
 - Consola de administración: `http://127.0.0.1:8000/admin/` (verificado, 9 entidades)
 
-Con el backend en marcha, levanta la interfaz Flet en otra terminal:
+Con el backend en marcha, levanta la interfaz React en otra terminal:
 
 ```bash
-flet run frontend/src/main.py --web --port 8550
+cd frontend-react
+npm run dev
 ```
 
-- Interfaz: `http://127.0.0.1:8550/`
-- El cliente lee `KITCHI_API_URL`, luego `API_BASE_URL` (entorno o `.env` de la raíz). Sin
-  URL, entra en **modo local**: la interfaz de invitado funciona con almacenamiento del
-  navegador, sin llamadas a la API.
-- La pantalla **Perfil** muestra si la API está conectada, el origen del catálogo y los
-  datos de la sesión. Los estados de error de login, registro y guardado se muestran en
-  línea o como SnackBar.
-
-> **Prototipo en paralelo — frontend-react (no es la entrega).** Desde el 16 de noviembre
-> de 2026 existe una segunda interfaz en [`frontend-react/`](frontend-react/) (Vite + React 19
-> + TypeScript + Tailwind), con paridad funcional completa y el mismo backend. Requiere
-> Node 20+ y que `CORS_ALLOWED_ORIGINS` incluya el origen de Vite (5173/4173, ya incluidos por
-> defecto). Arranque:
->
-> ```bash
-> cd frontend-react && npm install && npm run dev   # http://127.0.0.1:5173
-> ```
->
-> Detalles, verificación y estado honesto en [`frontend-react/README.md`](frontend-react/README.md)
-> y [`docs/reports/frontend-react.md`](docs/reports/frontend-react.md) (ADR-009). La entrega
-> final sigue declarando Flet hasta decisión del equipo.
+- Interfaz: `http://127.0.0.1:5173/`.
+- El backend permite los orígenes 5173/4173 por defecto. Si defines `CORS_ALLOWED_ORIGINS`, añade manualmente los orígenes que uses.
+- Para otro backend, define `VITE_API_URL` antes de arrancar o en `frontend-react/.env.local` (ese archivo no se versiona).
+- El modo invitado guarda en `localStorage`; con sesión usa `/api/cats/` y conserva el token de Django.
+- La pantalla **Perfil** permite crear una cuenta, iniciar/cerrar sesión y consultar el estado de la API.
+- Build de producción: `cd frontend-react && npm run build`; preview local: `npm run preview`.
 
 ### 7. Pruebas y benchmark
 
@@ -200,9 +180,10 @@ flet run frontend/src/main.py --web --port 8550
 cd backend && python -m pytest
 ```
 
-Verificado: 47 pruebas en verde, incluidas las de la consola de administración. Usan SQLite en
-memoria porque el usuario de desarrollo de MySQL no tiene privilegio `CREATE DATABASE`; la
-verificación sobre MySQL real se hace con el servidor en marcha:
+Verificado: **66 pruebas en verde**, incluidas las de la consola de administración y la
+validación de colores independientes en accesorios múltiples. Usan SQLite en memoria porque el usuario de
+desarrollo de MySQL no tiene privilegio `CREATE DATABASE`; la verificación sobre MySQL real
+se hace con el servidor en marcha:
 
 ```bash
 python scripts/check_backend.py
@@ -212,18 +193,15 @@ Verificado: 19 comprobaciones del flujo de cuentas, catálogo y gatos, con limpi
 de sus propios datos. `scripts/benchmark_generation.py` sigue siendo un marcador sin
 implementar (tareas P22/P27).
 
-Pruebas del frontend:
+Pruebas de la interfaz:
 
 ```bash
-python -m pytest -q frontend/tests
+cd frontend-react
+npm run build
+npm run lint
 ```
 
-Verificado: **34 pruebas en verde** (cliente HTTP, catálogo, almacenamiento de invitado y
-sesión, modelos y adaptación de la configuración del backend). El 9 de noviembre también se
-construyeron todas las pantallas con un `FakeApp` para comprobar que los controles Flet se
-crean sin errores; el resultado está en
-[`docs/reports/frontend-integration.md`](docs/reports/frontend-integration.md). No se ha
-hecho todavía una prueba manual completa en navegador desde un clon limpio.
+Verificado el 23 de noviembre: build correcto y lint con **0 errores y 2 avisos** conocidos `set-state-in-effect`. Las 46 pruebas Flet son históricas; la carpeta y sus pruebas se retiraron al adoptar React como interfaz definitiva ([ADR-011](docs/decisions/ADR-011-react-interfaz-definitiva.md)).
 
 Los comandos exactos y los resultados se registran en [`docs/reports/`](docs/reports/).
 
@@ -236,6 +214,8 @@ La rúbrica permite usar IA, pero exige que cada integrante entienda el código 
 | OpenCode (agente de IA) | Análisis del PDF del curso, revisión de la documentación, redacción y adecuación de la rúbrica | `docs/00`–`docs/13`, `README.md`, `AGENTS.md` |
 | OpenCode (agente de IA) | Integración Flet ↔ API: cliente HTTP, catálogo dinámico, sesión, pantallas de login/perfil, editor con placeholders, ajustes de tests y documentación del incremento. Todo el código se revisó y se ejecutó con pytest y un smoke test de pantallas | `frontend/`, `scripts/seed_catalog.py`, [`docs/reports/frontend-integration.md`](docs/reports/frontend-integration.md) |
 | Qoder (agente de IA) | Andamiaje del backend: estructura de apps, modelos y migraciones, permisos RBAC, envoltorio de errores, endpoints de cuentas/catálogo/gatos, pruebas pytest y verificación en vivo sobre MySQL. Todo el código se revisó, se ejecutó y se explica en [`docs/12_GUIA_PLATAFORMA.md`](docs/12_GUIA_PLATAFORMA.md) | `backend/`, `shared/contracts/openapi.yaml`, `scripts/check_backend.py`, [ADR-005](docs/decisions/ADR-005-autenticacion-y-rbac.md) |
+| Qoder (agente de IA) | Integración del editor visual con los SVG reales: capas de cabello delantero/trasero, cabeza delantera sobre la ropa, sliders HSL, previews compartidas, multiaccesorio, persistencia y compatibilidad legacy. Se verificaron build, lint, backend, OpenAPI e interacción en navegador y MySQL; la evidencia y las limitaciones están en [`docs/reports/editor-visual-assets.md`](docs/reports/editor-visual-assets.md) | `frontend-react/`, `backend/apps/catalog/`, `backend/tests/`, `scripts/seed_catalog.py`, `shared/contracts/openapi.yaml`, [ADR-010](docs/decisions/ADR-010-configuracion-visual-compatible.md) |
+| Qoder (agente de IA) | Adopción de React como interfaz definitiva, retirada de Flet y alineación de instalación, arquitectura, guía viva y evidencia | `frontend-react/`, `README.md`, `docs/`, [ADR-011](docs/decisions/ADR-011-react-interfaz-definitiva.md) |
 | _[Completar por cada integrante]_ | _[Desarrollo, pruebas, revisión, diseño]_ | _[Módulos]_ |
 
 Reglas:

@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
+from apps.catalog.models import CatalogOption
 from apps.cats.models import Cat
 
 from .conftest import FULL_CONFIGURATION
@@ -104,3 +105,109 @@ def test_invitado_no_puede_escribir_en_el_catalogo(anon_client, catalog, db):
     """El catálogo solo lo escribe el rol admin (matriz RBAC de ADR-005)."""
     assert anon_client.get("/api/catalog/").status_code == 200
     assert anon_client.post("/api/cats/", _payload(), format="json").status_code == 401
+
+
+def test_guarda_colores_de_prendas_y_accesorios_multiples(member_client, catalog, db):
+    CatalogOption.objects.create(category="accessory", code="round_glasses", label="Gafas", compatibility_group="eyewear")
+    CatalogOption.objects.create(category="accessory", code="crown", label="Corona", compatibility_group="headwear")
+    configuration = {
+        **FULL_CONFIGURATION,
+        "top": {"code": "hoodie", "color": "#123456"},
+        "bottom": {"code": "shorts", "color": "#ABCDEF"},
+        "accessories": [
+            {"code": "round_glasses", "color": "#123456"},
+            {"code": "crown", "color": "#ABCDEF80"},
+        ],
+        "accessory": {"code": "round_glasses"},
+    }
+
+    response = member_client.post("/api/cats/", _payload(configuration=configuration), format="json")
+
+    assert response.status_code == 201
+    saved = response.json()["configuration"]
+    assert saved["schema_version"] == 1
+    assert saved["top"]["color"] == "#123456"
+    assert saved["bottom"]["color"] == "#ABCDEF"
+    assert saved["accessories"] == [
+        {"code": "round_glasses", "color": "#123456"},
+        {"code": "crown", "color": "#ABCDEF80"},
+    ]
+    assert saved["accessory"] == {"code": "round_glasses"}
+    detail = member_client.get(f"/api/cats/{response.json()['id']}/")
+    assert detail.json()["configuration"]["accessories"] == saved["accessories"]
+
+
+def test_rechaza_dos_accesorios_del_mismo_grupo(member_client, catalog, db):
+    CatalogOption.objects.create(category="accessory", code="crown_3", label="Corona 3", compatibility_group="headwear")
+    CatalogOption.objects.create(category="accessory", code="crown_4", label="Corona 4", compatibility_group="headwear")
+    configuration = {
+        **FULL_CONFIGURATION,
+        "accessories": [{"code": "crown_3"}, {"code": "crown_4"}],
+    }
+    configuration.pop("accessory")
+
+    response = member_client.post("/api/cats/", _payload(configuration=configuration), format="json")
+
+    assert response.status_code == 400
+    assert "accessories" in response.json()["error"]["details"]["campos"]
+
+
+def test_rechaza_accesorio_repetido_y_campos_extra(member_client, catalog, db):
+    CatalogOption.objects.create(category="accessory", code="round_glasses", label="Gafas", compatibility_group="eyewear")
+    configuration = {
+        **FULL_CONFIGURATION,
+        "accessories": [{"code": "round_glasses"}, {"code": "round_glasses"}],
+    }
+    configuration.pop("accessory")
+    repeated = member_client.post("/api/cats/", _payload(configuration=configuration), format="json")
+    assert repeated.status_code == 400
+
+    configuration["accessories"] = [{"code": "round_glasses", "size": 2}]
+    extra = member_client.post("/api/cats/", _payload(configuration=configuration), format="json")
+    assert extra.status_code == 400
+
+
+def test_rechaza_color_invalido_en_accesorio(member_client, catalog, db):
+    CatalogOption.objects.create(category="accessory", code="round_glasses", label="Gafas", compatibility_group="eyewear")
+    configuration = {
+        **FULL_CONFIGURATION,
+        "accessories": [{"code": "round_glasses", "color": "rojo"}],
+    }
+    configuration.pop("accessory")
+
+    response = member_client.post("/api/cats/", _payload(configuration=configuration), format="json")
+
+    assert response.status_code == 400
+    assert "accessories" in response.json()["error"]["details"]["campos"]
+
+
+def test_accesorio_legacy_no_acepta_color(member_client, catalog, db):
+    configuration = {**FULL_CONFIGURATION, "accessory": {"code": "bow", "color": "#FFFFFF"}}
+
+    response = member_client.post("/api/cats/", _payload(configuration=configuration), format="json")
+
+    assert response.status_code == 400
+    assert "accessory" in response.json()["error"]["details"]["campos"]
+
+
+def test_configuracion_legacy_se_normaliza_a_lista_de_accesorios(member_client, catalog, db):
+    response = member_client.post("/api/cats/", _payload(), format="json")
+    assert response.status_code == 201
+    saved = response.json()["configuration"]
+    assert saved["accessories"] == [{"code": "bow"}]
+    assert saved["accessory"] == {"code": "bow"}
+
+
+def test_lista_vacia_no_admite_espejo_legacy(member_client, catalog, db):
+    configuration = {**FULL_CONFIGURATION, "accessories": []}
+    configuration.pop("accessory")
+    valid = member_client.post("/api/cats/", _payload(configuration=configuration), format="json")
+    assert valid.status_code == 201
+    assert valid.json()["configuration"]["accessories"] == []
+    assert "accessory" not in valid.json()["configuration"]
+
+    configuration["accessory"] = {"code": "bow"}
+    invalid = member_client.post("/api/cats/", _payload(configuration=configuration), format="json")
+    assert invalid.status_code == 400
+    assert invalid.json()["error"]["code"] == "INVALID_CONFIGURATION"
+    assert "accessory" in invalid.json()["error"]["details"]["campos"]

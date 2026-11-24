@@ -5,6 +5,7 @@ def test_catalog_publico_agrupa_por_categoria(anon_client, catalog, db):
     assert body["schema_version"] == 1
     assert set(body["categories"]) == set(catalog)
     assert body["categories"]["fur"][0]["code"] == "tabby"
+    assert "compatibility_group" in body["categories"]["fur"][0]
 
 
 def test_poses_publicas(anon_client, catalog, db):

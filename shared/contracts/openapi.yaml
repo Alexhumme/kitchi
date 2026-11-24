@@ -409,7 +409,7 @@ components:
           type: string
           maxLength: 80
         configuration:
-          description: Documento validado contra el catálogo.
+          $ref: '#/components/schemas/CatConfiguration'
         schema_version:
           type: integer
           readOnly: true
@@ -422,11 +422,153 @@ components:
           format: date-time
           readOnly: true
       required:
+      - configuration
       - created_at
       - id
       - name
       - schema_version
       - updated_at
+    CatConfiguration:
+      type: object
+      additionalProperties: false
+      description: Documento del personaje validado contra catalog_options. Esquema 1 con extensión aditiva para colores y accesorios. Se acepta la forma canónica con accessories o el accesorio legacy; si se envían ambos, deben coincidir.
+      required:
+      - fur
+      - eyes
+      - hair
+      - top
+      - bottom
+      anyOf:
+      - required:
+        - accessories
+      - required:
+        - accessory
+      allOf:
+      - not:
+          required:
+          - accessories
+          - accessory
+          properties:
+            accessories:
+              maxItems: 0
+      properties:
+        schema_version:
+          type: integer
+          enum:
+          - 1
+          default: 1
+        fur:
+          $ref: '#/components/schemas/CategoryConfiguration'
+        eyes:
+          $ref: '#/components/schemas/CategoryConfiguration'
+        hair:
+          $ref: '#/components/schemas/CategoryConfiguration'
+        top:
+          $ref: '#/components/schemas/CategoryConfiguration'
+        bottom:
+          $ref: '#/components/schemas/CategoryConfiguration'
+        accessories:
+          type: array
+          description: Accesorios simultáneos; no admite códigos repetidos ni grupos compatibles repetidos. Una lista vacía significa que no lleva accesorios.
+          items:
+            $ref: '#/components/schemas/AccessoryConfiguration'
+        accessory:
+          description: Espejo legacy del primer accesorio para datos y clientes antiguos. No admite color; la respuesta canónica lo devuelve como objeto con code cuando hay accesorios.
+          $ref: '#/components/schemas/LegacyAccessoryConfiguration'
+    CategoryConfiguration:
+      description: Bloque canónico con code o entrada legacy con style/pattern o un código en texto. El backend valida los colores permitidos según la categoría.
+      oneOf:
+      - $ref: '#/components/schemas/CanonicalCategoryConfiguration'
+      - $ref: '#/components/schemas/LegacyCategoryConfiguration'
+      - type: string
+        description: Código legacy de la opción.
+        minLength: 1
+        maxLength: 60
+    CanonicalCategoryConfiguration:
+      type: object
+      additionalProperties: false
+      description: Pelaje admite base_color y secondary_color; ojos, cabello y prendas admiten color.
+      required:
+      - code
+      properties:
+        code:
+          type: string
+          maxLength: 60
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$'
+        base_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$'
+        secondary_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$'
+    LegacyCategoryConfiguration:
+      type: object
+      additionalProperties: false
+      description: Entrada legacy con style o pattern; style tiene prioridad sobre code y pattern al normalizar.
+      anyOf:
+      - required:
+        - style
+      - required:
+        - pattern
+      properties:
+        code:
+          type: string
+          maxLength: 60
+        style:
+          type: string
+          maxLength: 60
+        pattern:
+          type: string
+          maxLength: 60
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$'
+        base_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$'
+        secondary_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$'
+    AccessoryConfiguration:
+      type: object
+      additionalProperties: false
+      description: Accesorio canónico con un color opcional e independiente para su recurso.
+      required:
+      - code
+      properties:
+        code:
+          type: string
+          maxLength: 60
+        color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$'
+    LegacyAccessoryConfiguration:
+      description: Accesorio legacy como código de texto o bloque con code/style/pattern. No admite colores y se normaliza a una lista de un elemento.
+      oneOf:
+      - type: string
+        minLength: 1
+        maxLength: 60
+      - type: object
+        additionalProperties: false
+        anyOf:
+        - required:
+          - code
+        - required:
+          - style
+        - required:
+          - pattern
+        properties:
+          code:
+            type: string
+            maxLength: 60
+          style:
+            type: string
+            maxLength: 60
+          pattern:
+            type: string
+            maxLength: 60
     CatalogOption:
       type: object
       properties:
@@ -447,6 +589,10 @@ components:
           maximum: 65535
           minimum: 0
           description: Orden explícito de composición.
+        compatibility_group:
+          type: string
+          maxLength: 40
+          description: Tipo de accesorio; solo puede seleccionarse uno del mismo grupo en un gato.
         is_premium:
           type: boolean
       required:
@@ -608,6 +754,114 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Pose'
+    PaginatedPublicationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+        previous:
+          type: string
+          nullable: true
+          format: uri
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Publication'
+    Publication:
+      type: object
+      required:
+      - author
+      - cat
+      - created_at
+      - description
+      - id
+      - title
+      - updated_at
+      - visibility
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 500
+        visibility:
+          type: string
+          enum:
+          - public
+          - private
+        author:
+          type: string
+          description: Nombre público del autor.
+          readOnly: true
+        cat:
+          $ref: '#/components/schemas/PublicationCat'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PublicationCat:
+      type: object
+      description: Gato embebido en una publicación; no expone datos privados del autor.
+      required:
+      - configuration
+      - created_at
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 80
+        configuration:
+          $ref: '#/components/schemas/CatConfiguration'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PublicProfile:
+      type: object
+      required:
+      - cats
+      - joined_at
+      - publication_count
+      - publications
+      - username
+      properties:
+        username:
+          type: string
+        joined_at:
+          type: string
+          format: date
+        publication_count:
+          type: integer
+          minimum: 0
+          description: Cantidad de publicaciones públicas del autor.
+        cats:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicationCat'
+        publications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Publication'
     PatchedCat:
       type: object
       properties:
@@ -618,7 +872,7 @@ components:
           type: string
           maxLength: 80
         configuration:
-          description: Documento validado contra el catálogo.
+          $ref: '#/components/schemas/CatConfiguration'
         schema_version:
           type: integer
           readOnly: true

@@ -1,6 +1,6 @@
 # 13 · Cumplimiento académico y rúbrica — Kitchi Studio
 
-Alineación con el proyecto final de Programación Avanzada A1 · Versión 1.0 · 28 de octubre de 2026
+Alineación con el proyecto final de Programación Avanzada A1 · Versión 1.1 · 23 de noviembre de 2026
 
 > **Fuente vigente:** [`Proyecto-final-Programacion-Avanzada-A1-20262.pdf`](Proyecto-final-Programacion-Avanzada-A1-20262.pdf). Este documento traduce la rúbrica a requisitos verificables y evidencia esperada; no sustituye al PDF del profesor ni las instrucciones del aula.
 
@@ -12,7 +12,7 @@ Alineación con el proyecto final de Programación Avanzada A1 · Versión 1.0 �
 | Modalidad | Repositorio Git + sustentación presencial | Repositorio en GitHub; guion en [`11_DEMO_SCRIPT.md`](11_DEMO_SCRIPT.md) |
 | Duración de la defensa | 10 minutos por grupo: demo en vivo + preguntas individuales | Guion de 6–7 min + 3–4 min de preguntas |
 | Integrantes | De 2 a 4 personas | 4: 3 desarrollo + 1 diseño |
-| Interfaz | No se acepta solo consola | Flet Web móvil + API REST |
+| Interfaz | No se acepta solo consola | React Web móvil + API REST |
 | Base de datos | SQLite o PostgreSQL son ejemplos; no hay motor obligatorio | MySQL 8 mediante Django ORM |
 | Documentación de API | Swagger/OpenAPI recomendado | `/api/schema/` y `/api/docs/` con drf-spectacular |
 | README | Nombre, problema, instalación/ejecución, uso de IA y nombres | [`README.md`](../README.md) (nombres pendientes) |
@@ -24,20 +24,20 @@ Alineación con el proyecto final de Programación Avanzada A1 · Versión 1.0 �
 
 | ID | Requisito | Cómo se cumple | Evidencia | Responsable | Estado |
 | --- | --- | --- | --- | --- | --- |
-| AR-01 | Aplicación real, no solo consola | Flet Web + API REST | Demo y capturas | A | Diseño |
-| AR-02 | Interfaz o punto de acceso real | Editor web móvil, hub, login | URL local y capturas | A | Diseño |
-| AR-03 | Backend con endpoints y persistencia | Django REST Framework + MySQL | Swagger y pruebas | B | Diseño |
-| AR-04 | Base de datos | Modelos y migraciones Django | `docs/reports/clean-install.md` | B | Diseño |
+| AR-01 | Aplicación real, no solo consola | React Web + API REST | Demo y capturas | A | En progreso: editor y hub verificados; falta demo integral |
+| AR-02 | Interfaz o punto de acceso real | Editor web móvil, hub, login | URL local y capturas | A | En progreso: capturas del editor disponibles |
+| AR-03 | Backend con endpoints y persistencia | Django REST Framework + MySQL | Swagger y pruebas | B | En progreso: endpoints base verificados |
+| AR-04 | Base de datos | Modelos y migraciones Django | `docs/reports/clean-install.md` | B | En progreso: MySQL verificado; falta clon limpio |
 | AR-05 | Al menos 3 funcionalidades completas | Editor + stickers, autenticación + hub, IA | Escenario de aceptación | A/B/C | Pendiente |
-| AR-06 | Datos que persisten | Cuentas, gatos, publicaciones, paquetes | Prueba de integración | B | Pendiente |
-| AR-07 | Manejo de errores visible | Códigos y mensajes en UI/API | Pruebas de error | A/B | Pendiente |
-| AR-08 | Documentación automática de API | drf-spectacular (`/api/docs/`) | Captura y prueba | B | Pendiente |
+| AR-06 | Datos que persisten | Cuentas, gatos, publicaciones, paquetes | Prueba de integración | B | En progreso: cuentas/gatos/publicaciones; faltan paquetes |
+| AR-07 | Manejo de errores visible | Códigos y mensajes en UI/API | Pruebas de error | A/B | En progreso: errores base visibles; faltan IA y storage bloqueado |
+| AR-08 | Documentación automática de API | drf-spectacular (`/api/docs/`) | Captura y prueba | B | Cumplido |
 | AR-09 | README completo | Secciones obligatorias | Revisión con checklist | A | En progreso |
 | AR-10 | Sección “Uso de IA” en README | Herramientas y partes del proyecto | README | Todo el equipo | En progreso |
 | AR-11 | Nombres de todos los integrantes | Tabla en README | README | Todo el equipo | Pendiente |
 | AR-12 | Repositorio público y organizado | GitHub + estructura modular | Enlace y revisión | Integración | Pendiente |
 | AR-13 | Mínimo 5 commits por integrante | Ramas y commits pequeños | `git shortlog -sne` | Todo el equipo | Pendiente |
-| AR-14 | `requirements.txt` o `pyproject.toml` | Dependencias fijadas | Archivos versionados | B/A | Pendiente |
+| AR-14 | `requirements.txt` o `pyproject.toml` | Dependencias fijadas | Archivos versionados | B/A | Cumplido: backend y React con versiones fijadas |
 | AR-15 | `.gitignore` correcto | Sin `.env`, `__pycache__`, temporales | Revisión de Git | Integración | Cumplido |
 | AR-16 | Sin secretos en el repositorio | `.env` + python-dotenv | Auditoría de secretos | Integración | Cumplido (inicial) |
 | AR-17 | Sustentación de 10 minutos | Guion cronometrado | Ensayo registrado | Todo el equipo | Pendiente |
@@ -79,7 +79,7 @@ La **IA** es un cuarto flujo deseable y un diferenciador. Si falla, se documenta
 - [x] Sección “Uso de IA” (se actualizará durante el desarrollo).
 - [ ] Nombres de todos los integrantes.
 - [x] Enlace al repositorio y a la documentación.
-- [ ] Capturas o evidencias de la demo (cuando existan).
+- [ ] Capturas o evidencias de la demo integral. Ya existen capturas del editor y del orden cabeza/cuello en [`reports/editor-visual-assets.md`](reports/editor-visual-assets.md).
 
 ### Repositorio
 
@@ -134,7 +134,7 @@ Reglas:
 | Calendario de 4 semanas | Alto | Congelar P1, priorizar las tres funcionalidades mínimas y ensayar desde la semana 3 |
 | MySQL difícil de instalar en un clon limpio | Medio | Documentar requisitos y validar instalación en P29; si bloquea la demo, registrar ADR de contingencia |
 | IA sin API gratuita estable | Medio | Mantener el flujo manual y la contingencia documentada |
-| Flet no se comporta como se espera en web móvil | Medio | Validarlo en la primera semana; si falla, registrar ADR antes de cambiar de interfaz |
+| Cambio de interfaz sin actualizar la documentación | Medio | React es la única interfaz activa (ADR-011); README, guía y comandos se actualizan en el mismo incremento |
 | Un integrante no puede explicar su módulo | Alto | Guía viva, revisión cruzada y ensayos individuales |
 | Commits concentrados en una persona | Alto | Repartir tareas y commits desde la primera semana; incluir a la diseñadora |
 | Nombres o enlace del repositorio incompletos | Medio | Completar el README antes de la entrega interna |
@@ -147,9 +147,9 @@ Reglas:
 - [x] Reglas académicas incorporadas a [`AGENTS.md`](../AGENTS.md).
 - [ ] Nombres de los integrantes en el README.
 - [ ] Repositorio verificado como público.
-- [x] `backend/requirements.txt` y `frontend/pyproject.toml` con versiones verificadas.
+- [x] `backend/requirements.txt` y `frontend-react/package.json` con versiones verificadas.
 - [ ] Instalación desde clon limpio.
 - [x] Swagger/OpenAPI funcionando (`/api/docs/` y `/api/schema/`, verificado el 4 de noviembre).
-- [ ] Tres funcionalidades completas demostrables (editor, cuentas y persistencia ya funcionan; faltan stickers, hub e IA).
+- [ ] Tres funcionalidades completas demostrables (editor, cuentas y persistencia funcionan; el hub publica y explora, pero faltan stickers, copia de publicaciones e IA).
 - [ ] 5 commits por integrante.
 - [ ] Ensayo de la defensa de 10 minutos.

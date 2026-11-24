@@ -1,6 +1,6 @@
 # 11 · Guion de la sustentación académica — Kitchi Studio
 
-Preparación de la exposición · Versión 1.1 · 28 de octubre de 2026
+Preparación de la exposición · Versión 1.2 · 23 de noviembre de 2026
 
 > La sustentación es el **miércoles 25 de noviembre de 2026**, en horario de clase. El profesor asigna **10 minutos por grupo**: demo en vivo + preguntas individuales. El guion debe ejecutarse completo en ese tiempo, no en 8–12 minutos. Incluye resultados obtenidos durante las pruebas, **no cifras inventadas** ni demostraciones preparadas únicamente para aparentar concurrencia.
 
@@ -37,10 +37,10 @@ Preparación de la exposición · Versión 1.1 · 28 de octubre de 2026
 
 ### Bloque 2 — Editor y generación (≈2 min)
 
-- Modificar las seis categorías en vivo.
-- Explicar cómo las capas mantienen la consistencia de marca.
-- Mensaje clave: 18 opciones conceptuales + motor de composición, no 729 imágenes.
-- Generar el paquete y abrir los seis PNG transparentes.
+- Modificar las seis categorías en vivo; mostrar el slider de color, una preview real, dos accesorios compatibles y el mini slider de color de un accesorio seleccionado.
+- Explicar cómo las capas y los anclajes mantienen la consistencia de marca. La cabeza va delante de la prenda superior para que el cuello no cruce la cara.
+- Mensaje clave: 53 códigos de catálogo, incluidos aliases, y recursos SVG por capas; no se generan todas las combinaciones como imágenes independientes.
+- Mostrar el estado actual de stickers: la pantalla declara que Pillow y los seis PNG siguen pendientes (P13–P16), sin simular una descarga.
 
 ### Bloque 3 — Backend, datos y Swagger (≈1.5 min)
 
@@ -97,7 +97,7 @@ Relacionar el proyecto con los cinco criterios de la rúbrica y con los criterio
 
 - Si falla la red o el proveedor de IA: mostrar la contingencia y el flujo manual; no fingir una inferencia.
 - Si falla MySQL: usar los datos de demostración ya cargados o el respaldo de capturas, indicando que es un respaldo.
-- Si falla Flet: mostrar Swagger y los endpoints, y explicar la arquitectura.
+- Si falla React o el backend: mostrar Swagger y los endpoints, y explicar la arquitectura sin presentar capturas como una demo en vivo.
 - Si el tiempo se acorta: priorizar editor + stickers + comunidad; dejar la IA y el benchmark para preguntas.
 
 ## Registro de ensayos

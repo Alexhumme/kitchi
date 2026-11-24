@@ -1,4 +1,9 @@
-# Interfaz React (`frontend-react/`) — evidencia del incremento 2026-11-16
+# Interfaz React (`frontend-react/`) — evidencia histórica y estado actual
+
+> **Estado actual (23 de noviembre de 2026):** React es la única interfaz activa
+> ([ADR-011](../decisions/ADR-011-react-interfaz-definitiva.md)). Flet y sus pruebas se
+> retiraron del árbol de entrega. Las secciones siguientes conservan la evidencia del
+> incremento original y sus resultados históricos; no describen una segunda interfaz vigente.
 
 Prototipo de viabilidad construido tras el pivot del 16 de noviembre de 2026 (ADR-009):
 el Flet 1.1.2 no era capaz de concretar los estilos deseados (ADR-006). Este documento
@@ -18,8 +23,8 @@ registra qué se hizo, cómo se verificó y qué falta.
   y `src/styles/index.css` como hoja de imports. Tailwind v4 se eliminó el 2026-11-17 porque la
   mezcla de utilidades y clases propias hacía muy difícil la edición manual de los estilos.
 - `framer-motion` (resortes, transiciones, píldora activa); `lucide-react`; gato SVG completo.
-- `CORS_ALLOWED_ORIGINS` incluye por defecto 5173/4173 (settings.py); una variable de entorno
-  con ese nombre tiene prioridad (ver ADR-009).
+- `CORS_ALLOWED_ORIGINS` une por defecto 5173/4173 (`settings.py`) con los orígenes definidos
+  en el entorno; una variable de entorno no elimina los orígenes locales de React.
 
 ## Verificación
 
@@ -51,7 +56,10 @@ Capturas (430×900): [`navegador.png`](frontend-react/navegador.png) ·
 - Iconos lucide (trazo uniforme) en lugar de emojis; tab bar con píldora animada.
 - Bundle estático; sin ciclo cliente-servidor de Flet Web.
 
-## Pendiente honesto
+## Pendiente honesto al cierre del incremento original
+
+> Las afirmaciones de esta sección corresponden al 16–17 de noviembre. La adopción de
+> React y la retirada de Flet quedaron resueltas el 23 de noviembre por ADR-011.
 
 - La entrega académica sigue declarando Flet (cumplimiento, AR-01); migrar en firme exige
   decidirlo en equipo y actualizar README, cumplimiento y guía viva.
@@ -59,3 +67,17 @@ Capturas (430×900): [`navegador.png`](frontend-react/navegador.png) ·
 - Equipo: el prototipo lo construyó solo una persona; la integración con los otros tres
   integrantes está por planificar (reparto de módulos).
 - Dos avisos de lint no críticos; chunk grande (framer-motion + lucide) aceptable para el scope.
+
+## Incremento de editor visual — 2026-11-23
+
+El editor pasó a usar los SVG reales de cuerpo, cabello dividido, prendas y accesorios.
+Incorpora sliders de color, un mini slider propio en el borde inferior de cada accesorio
+seleccionado, previews reales por opción y combinaciones multiaccesorio con exclusividad por
+tipo. El backend amplía de forma aditiva el esquema 1 con `accessories[].color`, conserva los
+colores independientes y mantiene el espejo `accessory: {code}` para datos y clientes legacy.
+
+La verificación completa, los resultados de navegador, MySQL y las limitaciones están en
+[`editor-visual-assets.md`](editor-visual-assets.md). Al cierre del 23 de noviembre, el build
+sigue limpio, lint mantiene los dos avisos conocidos y la suite vigente tiene 66 pruebas
+backend; las 46 pruebas Flet son históricas y ya no se ejecutan. React es la única interfaz
+activa y la cabeza delantera se renderiza sobre la prenda superior.

@@ -1,6 +1,6 @@
 # 04 · Modelo de datos — Kitchi Studio
 
-Esquema MySQL, entidades, relaciones y decisiones de modelado · Versión 1.1 · 28 de octubre de 2026
+Esquema MySQL, entidades, relaciones y decisiones de modelado · Versión 1.2 · 23 de noviembre de 2026
 
 > La base de datos representa usuarios, configuraciones de personajes, paquetes de stickers, publicaciones y trabajos de generación. **No** es necesario crear tablas para cada una de las 729 combinaciones posibles. Los nombres son una propuesta inicial y se normalizan al fijar el esquema definitivo.
 
@@ -15,7 +15,7 @@ Esquema MySQL, entidades, relaciones y decisiones de modelado · Versión 1.1 ·
 | `sticker_packs` | Paquetes de stickers | `id`, `cat_id`, `status`, `created_at`, `completed_at` |
 | `stickers` | Imágenes individuales | `id`, `pack_id`, `pose_id`, `file_path`, `status` |
 | `poses` | Catálogo de poses | `id`, `code`, `name`, `asset_path`, `is_active` |
-| `catalog_options` | Opciones del editor | `id`, `category`, `code`, `asset_path`, `is_premium`, `is_active` |
+| `catalog_options` | Opciones del editor | `id`, `category`, `code`, `asset_path`, `compatibility_group`, `is_premium`, `is_active` |
 | `publications` | Creaciones compartidas | `id`, `cat_id`, `user_id`, `title`, `description`, `visibility`, `created_at`, `updated_at` |
 | `generation_jobs` | Trabajos de IA o composición | `id`, `user_id`, `job_type`, `status`, `created_at`, `started_at`, `completed_at`, `error_code` |
 
@@ -43,31 +43,46 @@ POSES ||──o{ STICKERS      (appears_in)
 
 Para el MVP se almacena como **JSON validado en una columna de MySQL**. Esto facilita guardar combinaciones de atributos sin crear numerosas tablas. Los recursos válidos siguen definidos por el catálogo.
 
-Estructura conceptual del documento de configuración (las claves definitivas deben coincidir con los recursos que produzca la diseñadora — ver [06_DESIGN_SYSTEM.md](06_DESIGN_SYSTEM.md)):
+Estructura canónica del documento de configuración (esquema 1, extensión aditiva de [ADR-010](decisions/ADR-010-configuracion-visual-compatible.md)):
 
 ```json
 {
   "schema_version": 1,
   "fur": {
-    "pattern": "tabby",
-    "base_color": "#F2A15A",
-    "secondary_color": "#FFF0D8"
+    "code": "bicolor",
+    "base_color": "#FFF0D8",
+    "secondary_color": "#F2A15A"
   },
   "eyes": {
-    "style": "round",
+    "code": "round_green",
     "color": "#4DAD72"
   },
   "hair": {
-    "style": "short_fringe",
-    "color": "#684632"
+    "code": "bob",
+    "color": "#6B4226"
   },
-  "top": "hoodie",
-  "bottom": "shorts",
-  "accessory": "bow"
+  "top": {
+    "code": "short_sleeved",
+    "color": "#70D6C1"
+  },
+  "bottom": {
+    "code": "sweat_pants",
+    "color": "#7B61FF"
+  },
+  "accessories": [
+    {"code": "round_glasses", "color": "#FF6B6B"},
+    {"code": "bow_tie", "color": "#7B61FF"},
+    {"code": "moustache", "color": "#211B26"}
+  ],
+  "accessory": {"code": "round_glasses"}
 }
 ```
 
-El backend valida los identificadores de recurso contra el catálogo disponible. **No debe aceptar nombres de archivos arbitrarios enviados por el cliente.**
+- `fur`, `eyes`, `hair`, `top` y `bottom` son objetos con `code`. Los colores permitidos son `base_color`/`secondary_color` en pelaje y `color` en ojos, cabello y prendas; aceptan `#RRGGBB` o `#RRGGBBAA`.
+- `accessories` es una lista que puede estar vacía. Cada elemento admite `code` y un `color` hexadecimal opcional e independiente; no admite códigos repetidos ni dos accesorios con el mismo `catalog_options.compatibility_group` (por ejemplo, dos coronas o dos pares de gafas). Si está vacía, no se envía ni se devuelve el espejo `accessory`.
+- El backend acepta documentos antiguos con categorías como cadena y `accessory` individual. Al guardar, normaliza a la estructura canónica; cuando hay accesorios, devuelve también `accessory` con el primero para conservar la compatibilidad del campo legacy.
+- Un cliente que solo lea `accessory` verá el primer accesorio, pero no la combinación múltiple ni sus colores. React edita la lista completa; Flet quedó retirado por [ADR-011](decisions/ADR-011-react-interfaz-definitiva.md).
+- El backend valida identificadores, colores, estado y grupos contra el catálogo disponible. **No debe aceptar nombres de archivos arbitrarios enviados por el cliente.**
 
 ### Archivos
 

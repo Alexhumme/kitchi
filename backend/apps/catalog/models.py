@@ -18,6 +18,12 @@ class CatalogOption(models.Model):
     label = models.CharField(max_length=80)
     asset_path = models.CharField(max_length=255, blank=True)
     z_order = models.PositiveSmallIntegerField(default=0, help_text="Orden explícito de composición.")
+    compatibility_group = models.CharField(
+        max_length=40,
+        blank=True,
+        default="",
+        help_text="Tipo de accesorio; solo puede haber uno del mismo grupo en un gato.",
+    )
     is_premium = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 

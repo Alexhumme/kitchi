@@ -45,7 +45,6 @@ media/
 *.jpeg
 *.png
 !assets/**/*.png
-!frontend/assets/**/*.png
 !frontend-react/src/assets/**/*.png
 !docs/**/*.png
 

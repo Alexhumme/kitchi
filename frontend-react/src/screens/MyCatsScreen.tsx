@@ -24,7 +24,7 @@ type Filter = 'all' | 'published' | 'drafts';
 
 function furName(cat: CatRecord): string {
   const cfg = normalizeConfiguration(cat.configuration);
-  return getOption('fur', cfg.fur)?.name ?? '';
+  return getOption('fur', cfg.fur.code)?.name ?? '';
 }
 
 export default function MyCatsScreen() {

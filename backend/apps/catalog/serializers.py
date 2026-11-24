@@ -6,7 +6,7 @@ from .models import CatalogOption, Pose
 class CatalogOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CatalogOption
-        fields = ["category", "code", "label", "asset_path", "z_order", "is_premium"]
+        fields = ["category", "code", "label", "asset_path", "z_order", "compatibility_group", "is_premium"]
 
 
 class PoseSerializer(serializers.ModelSerializer):

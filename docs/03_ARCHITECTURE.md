@@ -1,26 +1,26 @@
 # 03 · Arquitectura — Kitchi Studio
 
-Arquitectura lógica, tecnologías, estructura del repositorio y calidad técnica · Versión 1.1 · 28 de octubre de 2026
+Arquitectura lógica, tecnologías, estructura del repositorio y calidad técnica · Versión 1.2 · 23 de noviembre de 2026
 
 > Decisiones de arquitectura registradas en [`decisions/`](decisions/). No cambiar la arquitectura, el esquema de datos, los contratos de API ni las dependencias principales sin un ADR previo. La adecuación a la rúbrica del curso está en [ADR-004](decisions/ADR-004-academic-requirements.md).
 
 ## Decisión arquitectónica de base
 
-Se conserva Python, Flet, Django REST Framework y MySQL, con una distinción importante:
+Se conserva Python para el backend y el motor gráfico, con React como interfaz web:
 
-- **Flet** será la interfaz web móvil.
+- **React 19 + TypeScript + Vite** es la interfaz web móvil ([ADR-011](decisions/ADR-011-react-interfaz-definitiva.md)).
 - **Django REST Framework** será la API del sistema.
 - **MySQL** será la persistencia relacional.
 - **Pillow** será el motor de composición 2D.
 - **drf-spectacular** generará la documentación OpenAPI/Swagger.
 
-No se recomienda crear dos backends, repartir la lógica entre Flet y Django, ni introducir microservicios o infraestructura compleja. La propuesta se apoya en librerías conocidas y evita una cola de mensajes o un servidor de tareas independiente durante la primera versión.
+No se recomienda crear dos backends, repartir la lógica entre React y Django, ni introducir microservicios o infraestructura compleja. La propuesta se apoya en librerías conocidas y evita una cola de mensajes o un servidor de tareas independiente durante la primera versión.
 
 El PDF del curso no impone un stack concreto; esta arquitectura cumple el requisito de aplicación real con interfaz, API, base de datos y documentación automática. MySQL es el motor elegido; SQLite o PostgreSQL son alternativas válidas si un ADR de contingencia lo justifica.
 
 ## Arquitectura lógica
 
-### Capa 1 — Interfaz Flet
+### Capa 1 — Interfaz React
 
 Editor · Selector de poses · Hub · Login · Descargas · Estados de error y carga
 
@@ -39,8 +39,9 @@ Pillow · asyncio · procesos trabajadores · adaptador de IA
 
 | Tecnología | Responsabilidad |
 | --- | --- |
+| React + TypeScript | Interfaz web móvil, editor SVG, navegación y estados |
+| Vite | Desarrollo, TypeScript estricto y bundle de producción |
 | Python | Lenguaje principal y lógica del motor gráfico |
-| Flet | Interfaz web móvil y controles del editor |
 | Django | Backend, modelos, autenticación y reglas de negocio |
 | Django REST Framework | API consumida por la interfaz |
 | drf-spectacular | Esquema OpenAPI y Swagger UI |
@@ -80,7 +81,7 @@ Detalle de los casos de uso de concurrencia en [08_CONCURRENCY_AND_PARALLELISM.m
 - `GET /api/docs/` — Swagger UI navegable.
 - `GET /api/health/` — verificación básica de disponibilidad.
 - Los contratos compartidos se versionan en `shared/contracts/`.
-- La API debe poder demostrarse desde Swagger sin depender de la interfaz Flet.
+- La API debe poder demostrarse desde Swagger sin depender de la interfaz React.
 
 Swagger/OpenAPI es un requisito académico (AR-06 / AC-18) y también una herramienta de trabajo para frontend y backend en paralelo.
 
@@ -119,10 +120,11 @@ kitchi/
 │   │   ├── ADR-003-ai-strategy.md
 │   │   └── ADR-004-academic-requirements.md
 │   └── reports/
-├── frontend/
-│   ├── pyproject.toml
+├── frontend-react/
+│   ├── package.json
+│   ├── package-lock.json
 │   ├── src/
-│   └── tests/
+│   └── public/
 ├── backend/
 │   ├── manage.py
 │   ├── requirements.txt
@@ -153,9 +155,9 @@ kitchi/
 Notas:
 
 - La estructura es orientativa. No es obligatorio separar cada entidad en una aplicación Django diferente si el código resultante es demasiado pequeño, pero la separación por dominio debe ser clara.
-- `frontend/src/` y `backend/apps/` se adaptan al empaquetado real que se escoja.
+- `frontend-react/src/` y `backend/apps/` se adaptan al empaquetado real que se escoja.
 - `docker-compose.yml` queda opcional: no se introduce Docker si el equipo no lo domina o su configuración consume tiempo necesario para las funcionalidades.
-- `backend/requirements.txt` y `frontend/pyproject.toml` deben fijar versiones verificadas antes de la entrega. Si se prefiere, un único `requirements.txt` en la raíz es aceptable para la rúbrica.
+- `backend/requirements.txt` y `frontend-react/package.json` con su lockfile deben fijar versiones verificadas antes de la entrega. `backend/requirements.txt` satisface el requisito académico de dependencias Python.
 - `storage/` y `.env` nunca se versionan.
 
 ## Calidad técnica del código

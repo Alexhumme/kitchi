@@ -1,6 +1,6 @@
 # 06 · Sistema visual y motor gráfico 2D — Kitchi Studio
 
-Recursos gráficos, orden de capas y contrato entre diseño y desarrollo · Versión 1.1 · 28 de octubre de 2026
+Recursos gráficos, orden de capas y contrato entre diseño y desarrollo · Versión 1.3 · 23 de noviembre de 2026
 
 > Esta es la parte central del producto. La aplicación **no** almacena una ilustración diferente para cada combinación: almacena una configuración del personaje y reconstruye su apariencia usando recursos gráficos ([ADR-002](decisions/ADR-002-character-rendering.md)).
 
@@ -40,37 +40,67 @@ La estructura exacta de carpetas puede cambiar según el formato de las ilustrac
 - Paleta o tintado permitido.
 - Licencia y autoría del recurso.
 
-`assets/catalog.json` es la fuente de verdad del catálogo; el backend la valida contra la tabla `catalog_options` ([04_DATA_MODEL.md](04_DATA_MODEL.md)).
+`assets/catalog.json` será el inventario de autoría y aprobación. Mientras se completa, el
+backend valida contra `catalog_options` ([04_DATA_MODEL.md](04_DATA_MODEL.md)) y la semilla
+`scripts/seed_catalog.py` registra 53 códigos con rutas relativas de los SVG reales. El editor
+React los declara en `frontend-react/src/lib/characters.ts`.
 
 ## Orden de composición
 
-El orden debe ser explícito. Orden inicial posible:
+El orden es explícito. El render actual del editor React usa:
 
-1. Cuerpo y cola.
-2. Pelaje y marcas.
+1. Cabello trasero.
+2. Cuerpo, cara, ojos y cola.
 3. Parte inferior.
 4. Parte superior.
-5. Cabello posterior.
-6. Cabeza y rasgos faciales.
-7. Cabello frontal.
-8. Accesorios.
-9. Elementos gráficos del sticker.
+5. Cabeza delantera, con pelaje y ojos.
+6. Cabello delantero.
+7. Accesorios seleccionados, en el orden de la lista.
+8. Elementos gráficos del sticker cuando exista el motor de exportación.
 
-El orden definitivo dependerá de las ilustraciones. Si todas las prendas están diseñadas como capas completas, hay que evitar duplicar partes del cuerpo o crear huecos entre piezas.
+La cabeza se superpone después de `top` para que cuellos y solapas no crucen la cara. El
+cuerpo completo permanece como capa posterior para conservar la alineación de orejas, cola
+y extremidades; no se divide ni se regenera su SVG.
+
+El lienzo de referencia es el `viewBox` `0 -10 206.068 270`. Cada asset declara su anclaje
+en `characters.ts`; el render lo convierte en `translate(...) scale(...)` para conservar la
+posición relativa. Las prendas son capas completas, por lo que no se duplican partes del cuerpo.
 
 ## Contrato entre diseño y desarrollo
 
 La diseñadora no entrega imágenes aisladas sin especificaciones. Desde la primera semana el equipo acuerda:
 
-- [ ] Un lienzo y una resolución base comunes.
-- [ ] El centro de referencia y las coordenadas de cada capa.
-- [ ] Un sistema coherente de nombres de archivos.
-- [ ] Una convención de transparencia.
-- [ ] Reglas de superposición.
+- [x] Un lienzo y una resolución base comunes.
+- [x] El centro de referencia y las coordenadas de cada capa.
+- [x] Un sistema coherente de nombres de archivos.
+- [x] Una convención de transparencia.
+- [x] Reglas de superposición.
 - [ ] Una lista de recursos obligatorios para el primer paquete.
 - [ ] Una hoja de control de recursos aprobados y pendientes.
 
 **Criterio de la primera entrega gráfica:** debe incluir un personaje completo que pueda componerse técnicamente. Es preferible un gato completo con pocas opciones que seis categorías incompletas.
+
+### Implementación visual vigente (23 de noviembre)
+
+- El cabello se compone con dos SVG independientes: parte trasera y delantera. El color del
+  peinado se aplica a ambas capas. Entre la prenda superior y el cabello delantero se renderiza
+  `base/avatar_head.svg`, alineado con la cabeza del cuerpo y pintado con el pelaje y los ojos
+  elegidos.
+- El usuario cambia el tono de cabello, parte superior y parte inferior con un slider. Si el
+  color actual es blanco, negro o gris, el primer movimiento introduce saturación y luminosidad
+  visibles en lugar de dejar el tono sin efecto.
+- Cada accesorio seleccionado tiene su propio mini slider de tono en el borde inferior de la
+  tarjeta. El control es hermano del botón de selección, no está anidado en él; cambia el
+  preview y el lienzo sin seleccionar ni quitar el accesorio. Los colores son independientes.
+- Cada botón de opción renderiza el gato real con esa prenda o peinado; no usa una muestra de
+  color plana. El preview y el lienzo principal comparten `CatSVG`.
+- Se pueden combinar varios accesorios. El backend y el editor sustituyen automáticamente uno
+  nuevo si ya existe otro del mismo `compatibility_group`; “Ninguno” vacía la selección.
+- Los SVG se importan como texto y las clases de Illustrator se convierten en atributos
+  `fill`/`stroke`. Solo se tintan los rellenos base de prenda, cabello o accesorio; los blancos
+  de detalle se conservan y no se añade un rectángulo de fondo.
+- No se dibujan texturas, rayas ni manchas de pelaje hasta que la diseñadora entregue esos
+  recursos. La variación actual de pelaje se limita a los colores base y secundario.
 
 ## Generación de stickers
 
@@ -107,7 +137,7 @@ Para el prototipo:
 La rúbrica valora que el producto sea utilizable por alguien que no programa y que la demo fluya sin errores. El diseño debe cubrir:
 
 - **Móvil primero:** el editor y el hub deben funcionar en una pantalla pequeña sin controles inaccesibles.
-- **Consistencia visual:** las 18 opciones comparten proporciones, paleta y estilo; no se mezclan ilustraciones incompatibles.
+- **Consistencia visual:** las opciones del primer paquete comparten proporciones, paleta y estilo; no se mezclan ilustraciones incompatibles.
 - **Estados completos:** cada pantalla debe tener estado de carga, vacío, error y éxito. Un fallo visible y comprensible cuenta para el criterio 2.
 - **Feedback inmediato:** al cambiar una categoría, el personaje se actualiza; al generar, se muestra progreso; al descargar, se confirma el resultado.
 - **Accesibilidad básica:** contraste suficiente, textos legibles, controles con etiquetas y navegación clara.
@@ -117,9 +147,14 @@ La rúbrica valora que el producto sea utilizable por alguien que no programa y 
 
 ## Estado
 
-- Guía visual y proporciones: **pendiente** de aprobación (tarea P06, fecha objetivo 31 de octubre).
-- Previsualización provisional: el editor usa la paleta del catálogo local y etiquetas de
-  color para cada pieza; no pretende ser el arte final ni reemplaza los assets (9 nov).
-- Primer gato componible: **pendiente** (tarea P04 / día 2 del plan de 72 horas).
-- Formato definitivo de recursos y poses: decisión pendiente con fecha 2 de noviembre ([01_MASTER_PLAN.md](01_MASTER_PLAN.md)).
-- Capturas para README y sustentación: **pendiente** (tarea P31/P37).
+- Guía visual y proporciones: **implementadas en el editor React** con los SVG entregados;
+  falta aprobar la hoja de control y la lista de recursos del primer paquete (P06).
+- Previsualización: React compone el personaje real por capas, con previews por opción,
+  colores y accesorios múltiples. La implementación Flet quedó retirada (ADR-011).
+- Primer gato componible: **verificado en React** (23 de noviembre); el motor Pillow sigue
+  pendiente (P04/P13).
+- Formato de recursos del editor: SVG con anclajes y colores tintables. La exportación final
+  de stickers seguirá siendo PNG RGBA cuando exista P13/P14.
+- Capturas para README y sustentación: el editor y el orden cabeza/cuello ya tienen capturas
+  ([`reports/editor-visual-assets.md`](reports/editor-visual-assets.md)); la demostración integral
+  sigue pendiente (P31/P37).
